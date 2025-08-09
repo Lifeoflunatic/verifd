@@ -19,11 +19,11 @@ vi.mock('../src/db/index.js', () => ({
 }));
 
 // Mock data store
-let mockPasses: Array<{ id: string; expires_at: number; created_at: number; phone_number: string }> = [];
+let mockPasses: Array<{ id: string; expires_at: number; created_at: number; number_e164: string }> = [];
 
 function mockDbGet(phoneNumber: string, nowSec: number) {
   return mockPasses
-    .filter(pass => pass.phone_number === phoneNumber && pass.expires_at > nowSec)
+    .filter(pass => pass.number_e164 === phoneNumber && pass.expires_at > nowSec)
     .sort((a, b) => b.expires_at - a.expires_at)[0] || undefined;
 }
 
@@ -41,6 +41,15 @@ describe('GET /pass/check - Integration Tests (Mocked)', () => {
 
   afterAll(async () => {
     await app.close();
+  });
+
+  beforeEach(async () => {
+    // Clear mock data between tests
+    mockPasses = [];
+    
+    // Clear rate limits between tests to avoid interference
+    const { clearRateLimits } = await import('../src/routes/pass.js');
+    clearRateLimits();
   });
 
   it('returns allowed=false for unknown number', async () => {
@@ -62,7 +71,7 @@ describe('GET /pass/check - Integration Tests (Mocked)', () => {
 
     mockPasses = [{
       id: 'pass_123',
-      phone_number: '+15551234567',
+      number_e164: '+15551234567',
       expires_at: expiresAt,
       created_at: nowSec
     }];
@@ -85,7 +94,7 @@ describe('GET /pass/check - Integration Tests (Mocked)', () => {
 
     mockPasses = [{
       id: 'pass_expired',
-      phone_number: '+15551234567',
+      number_e164: '+15551234567',
       expires_at: expiredAt,
       created_at: expiredAt - 7200
     }];
@@ -128,7 +137,7 @@ describe('GET /pass/check - Integration Tests (Mocked)', () => {
     
     mockPasses = [{
       id: 'pass_30m',
-      phone_number: '+15551111111',
+      number_e164: '+15551111111',
       expires_at: nowSec + 1800, // 30 minutes
       created_at: nowSec
     }];
@@ -138,7 +147,9 @@ describe('GET /pass/check - Integration Tests (Mocked)', () => {
       url: '/pass/check?number_e164=%2B15551111111'
     });
 
+    expect(response.statusCode).toBe(200);
     const body: PassCheckResponse = JSON.parse(response.body);
+    expect(body.allowed).toBe(true);
     expect(body.scope).toBe('30m');
   });
 
@@ -147,7 +158,7 @@ describe('GET /pass/check - Integration Tests (Mocked)', () => {
     
     mockPasses = [{
       id: 'pass_30d',
-      phone_number: '+15553333333',
+      number_e164: '+15553333333',
       expires_at: nowSec + 2592000, // 30 days
       created_at: nowSec
     }];
@@ -157,7 +168,9 @@ describe('GET /pass/check - Integration Tests (Mocked)', () => {
       url: '/pass/check?number_e164=%2B15553333333'
     });
 
+    expect(response.statusCode).toBe(200);
     const body: PassCheckResponse = JSON.parse(response.body);
+    expect(body.allowed).toBe(true);
     expect(body.scope).toBe('30d');
   });
 });

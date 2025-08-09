@@ -43,9 +43,9 @@ export function formatPhoneNumber(phone: string): string {
  * Validate phone number format
  */
 export function isValidPhoneNumber(phone: string): boolean {
-  // E.164 format validation
-  const e164Regex = /^\+?[1-9]\d{1,14}$/;
-  return e164Regex.test(phone.replace(/\D/g, ''));
+  // E.164 format validation: must start with +, followed by 1-15 digits, first digit 1-9
+  const e164Regex = /^\+[1-9]\d{1,14}$/;
+  return e164Regex.test(phone);
 }
 
 /**

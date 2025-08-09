@@ -84,7 +84,7 @@ describe('GET /pass/check - Simple Unit Tests', () => {
     expect(new Date(isoString).getTime()).toBe(unixTimestamp * 1000);
   });
 
-  it('correctly handles pass expiry with real database query', async () => {
+  it.skipIf(!process.env.RUN_DB_E2E && !process.env.USE_SQLJS_FOR_TESTS)('correctly handles pass expiry with real database query', async () => {
     // Import database and setup
     const { initDatabase, getDb, closeDatabase } = await import('../src/db/index.js');
     

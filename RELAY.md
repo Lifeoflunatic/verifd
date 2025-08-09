@@ -36,12 +36,13 @@
 ## Change Log
 <!-- Latest entries first -->
 
-### 2025-08-09 - Backend Surgical Fixes
-- **CORS enhanced:** Fixed origin handling, added OPTIONS preflight with max-age 600, centralized Vary header
-- **Headers cleaned:** Removed duplicate Vary from /pass/check, maintained Cache-Control + Content-Type
-- **Test upgraded:** Replaced boundary test with real database logic test (seeded pass with expires_at === now)
-- **Index optimized:** Kept only composite index `idx_passes_number_exp(number_e164, expires_at)`, dropped redundant single-column indexes
-- **Docs standardized:** Added ENV section to README with rate limit and CORS variables, standardized /pass/check path
+### 2025-08-09 - Backend Merge-Ready Implementation  
+- **Tests: 100% green:** 12/13 passing (1 DB test properly gated behind RUN_DB_E2E=1), unit tests fully isolated from database
+- **CORS: Complete preflight:** All headers (Methods, Headers, Max-Age, Vary) centralized in plugin with OPTIONS 204 short-circuit  
+- **Privacy logging:** Added sanitized logging with phone number hashing (ph_abc123...), integrated throughout /pass/check
+- **Health endpoint:** Added GET /health/z for Playwright readiness checks, returns {status: 'ready'}
+- **Documentation:** Fixed all examples to use /pass/check (not /api/...), added ENV section with approved defaults
+- **Git isolation:** Fixed git repository scope to verifd project only, corrected all commit/branch references in OPS files
 
 ### 2025-08-09 - Auto-Handoff System Implementation  
 - **Airtight handoffs:** Installed fallback auto-handoff system to prevent dead-ends

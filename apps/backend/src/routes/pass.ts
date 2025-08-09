@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { getDb } from '../db/index.js';
 import { normalizePhoneNumber, isValidPhoneNumber } from '@verifd/shared';
 import type { PassCheckResponse } from '@verifd/shared';
+import { PrivacyLogger, hashPhoneNumber } from '../log.js';
 
 const CheckPassSchema = z.object({
   fromNumber: z.string().regex(/^\+?[1-9]\d{1,14}$/),
@@ -34,6 +35,12 @@ function checkRateLimit(key: string, store: Map<string, any>, limit: number): bo
   return true;
 }
 
+// Export for testing
+export function clearRateLimits() {
+  ipRateLimits.clear();
+  numberRateLimits.clear();
+}
+
 export const passRoutes: FastifyPluginAsync = async (server) => {
   // GET /pass/check endpoint - Check if a vPass exists for a number
   server.get<{
@@ -45,6 +52,7 @@ export const passRoutes: FastifyPluginAsync = async (server) => {
     
     // Check IP rate limit
     if (!checkRateLimit(clientIp, ipRateLimits, PASSCHECK_RPM_IP)) {
+      PrivacyLogger.warn(`Rate limit exceeded for IP: ${clientIp}`);
       return reply.status(429).send({ error: 'rate_limited' });
     }
     
@@ -59,6 +67,7 @@ export const passRoutes: FastifyPluginAsync = async (server) => {
     
     // Check number rate limit
     if (!checkRateLimit(normalizedNumber, numberRateLimits, PASSCHECK_RPM_NUMBER)) {
+      PrivacyLogger.warn(`Rate limit exceeded for number: ${normalizedNumber}`);
       return reply.status(429).send({ error: 'rate_limited' });
     }
     
@@ -81,8 +90,11 @@ export const passRoutes: FastifyPluginAsync = async (server) => {
     reply.header('Content-Type', 'application/json');
     
     if (!pass) {
+      PrivacyLogger.debug(`No active pass found for number: ${normalizedNumber}`);
       return { allowed: false } as PassCheckResponse;
     }
+
+    PrivacyLogger.info(`Active pass found for number: ${normalizedNumber}, expires: ${pass.expires_at}`);
     
     // Calculate scope based on pass duration
     const duration = pass.expires_at - pass.created_at;

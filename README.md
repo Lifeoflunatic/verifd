@@ -31,13 +31,13 @@ Check if a vPass exists for a phone number.
 
 **Example:**
 ```bash
-curl "http://localhost:3001/api/pass/check?number_e164=%2B15551234567"
+curl "http://localhost:3000/pass/check?number_e164=%2B15551234567"
 ```
 
 **Rate Limiting:** 5 requests/minute per IP, 10 requests/minute per number. When exceeded:
 ```bash
 # Example that triggers 429 (run 6 times rapidly)
-for i in {1..6}; do curl "http://localhost:3001/api/pass/check?number_e164=%2B15551234567"; done
+for i in {1..6}; do curl "http://localhost:3000/pass/check?number_e164=%2B15551234567"; done
 
 # Response:
 {"error":"rate_limited"}

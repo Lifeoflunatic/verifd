@@ -2,6 +2,19 @@ import { FastifyPluginAsync } from 'fastify';
 import { getDb } from '../db/index.js';
 
 export const healthRoutes: FastifyPluginAsync = async (server) => {
+  // Simple readiness check endpoint for Playwright and other tools
+  server.get('/z', async () => {
+    try {
+      const db = getDb();
+      // Quick DB check
+      db.prepare('SELECT 1').get();
+      
+      return { status: 'ready' };
+    } catch (error) {
+      return { status: 'not_ready' };
+    }
+  });
+
   server.get('/', async () => {
     try {
       const db = getDb();
