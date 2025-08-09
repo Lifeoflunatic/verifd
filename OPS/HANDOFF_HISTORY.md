@@ -53,7 +53,7 @@ Checksum: 3f3940c | When: 2025-08-09T15:10:00Z
 
 ---HANDOFF---
 Task: Backend Surgical Fixes for /pass/check
-Branch: phase-1/immediate-stabilization
+Branch: main
 Status: READY FOR PM
 
 Diff Summary:
@@ -102,5 +102,5 @@ ENV/Config Notes:
 * PASSCHECK_RPM_NUMBER=10 (rate limit per number)  
 * WEB_VERIFY_DEV_ORIGIN=http://localhost:3000 (CORS allowlist)
 
-Checksum: 3f3940c | When: 2025-08-09T19:12:21Z
+Checksum: 10b0cbe | When: 2025-08-09T19:12:21Z
 ---END-HANDOFF---
