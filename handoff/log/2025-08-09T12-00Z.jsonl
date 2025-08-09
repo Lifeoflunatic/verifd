@@ -1,0 +1,4 @@
+{"by":"claude","type":"init","paths":["/*"],"summary":"Initial project setup with monorepo structure","timestamp":"2025-08-09T12:00:00Z"}
+{"by":"claude","type":"feat","paths":["apps/backend/*"],"summary":"Implemented backend with Fastify, SQLite, and verification endpoints","timestamp":"2025-08-09T12:05:00Z"}
+{"by":"claude","type":"feat","paths":["packages/shared/*"],"summary":"Created shared types package with vPass types, constants, and utilities","timestamp":"2025-08-09T12:10:00Z"}
+{"by":"claude","type":"docs","paths":["CLAUDE.md","RELAY.md","CONTRIBUTING.md"],"summary":"Established project conventions and handoff protocol","timestamp":"2025-08-09T12:15:00Z"}

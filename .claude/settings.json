@@ -1,0 +1,47 @@
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "printf \"## CLAUDE.md\\n\\n\"; [ -f CLAUDE.md ] && cat CLAUDE.md || true"
+          },
+          {
+            "type": "command",
+            "command": "printf \"\\n\\n## OPS/MCP_PLAYBOOK.md\\n\\n\"; [ -f OPS/MCP_PLAYBOOK.md ] && cat OPS/MCP_PLAYBOOK.md || true"
+          },
+          {
+            "type": "command",
+            "command": "printf \"\\n\\n## RELAY.md\\n\\n\"; [ -f RELAY.md ] && cat RELAY.md || true"
+          },
+          {
+            "type": "command",
+            "command": "printf \"\\n\\n## OPS/SYNC.md\\n\\n\"; [ -f OPS/SYNC.md ] && cat OPS/SYNC.md || true"
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "Edit|Write|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "$CLAUDE_PROJECT_DIR/.claude/hooks/protect_ops.sh"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "$CLAUDE_PROJECT_DIR/.claude/hooks/auto_handoff.sh"
+          }
+        ]
+      }
+    ]
+  }
+}

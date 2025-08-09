@@ -1,0 +1,30 @@
+{
+  "name": "verifd",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Privacy-preserving call verification system",
+  "scripts": {
+    "dev": "turbo dev",
+    "build": "turbo build",
+    "test": "turbo test",
+    "test:api": "pnpm --filter @verifd/backend test",
+    "test:web": "pnpm --filter web-verify test",
+    "lint": "turbo lint",
+    "clean": "turbo clean",
+    "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md}\"",
+    "save-handoff": "cat OPS/LAST_HANDOFF.txt 2>/dev/null || echo 'No handoff found'",
+    "get-handoff": "cat OPS/LAST_HANDOFF.txt 2>/dev/null || echo 'No handoff found'",
+    "full-update": "echo \"Sync updated $(date -u)\" >> OPS/SYNC.md && git status -s",
+    "check-in": "git add -A && git commit -m \"PM: approved & applied\" && git tag -f approved-latest",
+    "gen-pr": "git push -u origin HEAD && gh pr create -f || true"
+  },
+  "devDependencies": {
+    "prettier": "^3.3.3",
+    "turbo": "^2.0.0",
+    "typescript": "^5.5.0"
+  },
+  "packageManager": "pnpm@9.5.0",
+  "engines": {
+    "node": ">=20.0.0"
+  }
+}
