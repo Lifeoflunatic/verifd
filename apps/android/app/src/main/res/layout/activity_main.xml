@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="16dp">
+
+    <!-- Permission Error View -->
+    <LinearLayout
+        android:id="@+id/permissionError"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:gravity="center"
+        android:visibility="gone"
+        android:padding="24dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Permissions Required"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            android:layout_marginBottom="16dp" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="verifd needs phone and SMS permissions to work properly."
+            android:textAlignment="center"
+            android:layout_marginBottom="16dp" />
+
+        <Button
+            android:id="@+id/grantPermissionsButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Grant Permissions" />
+
+    </LinearLayout>
+
+    <!-- Main Content -->
+    <LinearLayout
+        android:id="@+id/mainContent"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
+
+        <!-- Header -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginBottom="16dp">
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="verifd"
+                android:textSize="24sp"
+                android:textStyle="bold" />
+
+            <Button
+                android:id="@+id/refreshButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Refresh"
+                style="?android:attr/buttonStyleSmall" />
+
+            <Button
+                android:id="@+id/cleanupButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Cleanup"
+                android:layout_marginStart="8dp"
+                style="?android:attr/buttonStyleSmall" />
+
+        </LinearLayout>
+
+        <!-- Status -->
+        <TextView
+            android:id="@+id/statusText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Loading..."
+            android:textSize="16sp"
+            android:layout_marginBottom="16dp" />
+
+        <!-- Loading indicator -->
+        <ProgressBar
+            android:id="@+id/loadingIndicator"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:visibility="gone" />
+
+        <!-- vPass List -->
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/vpassRecyclerView"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:background="@android:color/white" />
+
+        <!-- Instructions -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Tip: Enable the 'Expecting Call' Quick Settings tile for temporary call allowance."
+            android:textSize="14sp"
+            android:textStyle="italic"
+            android:layout_marginTop="16dp"
+            android:padding="8dp"
+            android:background="@android:color/background_light" />
+
+    </LinearLayout>
+
+</LinearLayout>

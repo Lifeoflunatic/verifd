@@ -5,12 +5,23 @@ import { createHash } from 'crypto';
  * Hashes sensitive data like phone numbers before logging
  */
 
+// Default salt for hashing - use LOG_SALT env var to override
+const DEFAULT_LOG_SALT = 'verifd-default-log-salt-2025';
+
+/**
+ * Get the log salt from environment or default
+ */
+function getLogSalt(): string {
+  return process.env.LOG_SALT || DEFAULT_LOG_SALT;
+}
+
 /**
  * Hash a phone number for privacy-safe logging
- * Uses SHA-256 with a prefix for easy identification in logs
+ * Uses SHA-256 with configurable salt and a prefix for easy identification in logs
  */
 export function hashPhoneNumber(phoneNumber: string): string {
-  const hash = createHash('sha256').update(phoneNumber).digest('hex');
+  const salt = getLogSalt();
+  const hash = createHash('sha256').update(phoneNumber + salt).digest('hex');
   return `ph_${hash.substring(0, 16)}`;
 }
 

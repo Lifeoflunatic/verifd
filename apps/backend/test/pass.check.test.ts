@@ -177,6 +177,50 @@ describe('GET /pass/check', () => {
     expect(response.headers['cache-control']).toBe('no-store');
   });
 
+  it('supports deprecated phoneNumber parameter with same behavior', async () => {
+    const nowSec = Math.floor(Date.now() / 1000);
+    const expiresAt = nowSec + 3600; // 1 hour from now
+    
+    // Insert test pass
+    db.prepare(`
+      INSERT INTO passes (id, number_e164, granted_by, granted_to_name, expires_at, created_at)
+      VALUES (?, ?, ?, ?, ?, ?)
+    `).run('pass_legacy', '+15551234567', '+15559876543', 'Legacy User', expiresAt, nowSec);
+
+    // Test using deprecated phoneNumber parameter
+    const response = await app.inject({
+      method: 'GET',
+      url: '/pass/check?phoneNumber=%2B15551234567'
+    });
+
+    expect(response.statusCode).toBe(200);
+    const body: PassCheckResponse = JSON.parse(response.body);
+    expect(body.allowed).toBe(true);
+    expect(body.scope).toBe('24h');
+    expect(body.expires_at).toBeDefined();
+  });
+
+  it('prioritizes number_e164 over phoneNumber when both provided', async () => {
+    const nowSec = Math.floor(Date.now() / 1000);
+    const expiresAt = nowSec + 3600;
+    
+    // Insert pass for first number only
+    db.prepare(`
+      INSERT INTO passes (id, number_e164, granted_by, granted_to_name, expires_at, created_at)
+      VALUES (?, ?, ?, ?, ?, ?)
+    `).run('pass_priority', '+15551111111', '+15559876543', 'Priority User', expiresAt, nowSec);
+
+    // Request with both parameters - number_e164 should take precedence
+    const response = await app.inject({
+      method: 'GET',
+      url: '/pass/check?number_e164=%2B15551111111&phoneNumber=%2B15552222222'
+    });
+
+    expect(response.statusCode).toBe(200);
+    const body: PassCheckResponse = JSON.parse(response.body);
+    expect(body.allowed).toBe(true); // Should find pass for +15551111111
+  });
+
   it('correctly identifies scope based on duration', async () => {
     const nowSec = Math.floor(Date.now() / 1000);
     

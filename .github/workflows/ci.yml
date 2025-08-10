@@ -1,0 +1,278 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  store-compliance-check:
+    name: Store Compliance Check
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Check Android Permissions
+        run: |
+          echo "🔍 Checking Android manifest for forbidden permissions..."
+          
+          MANIFEST_FILE="apps/android/app/src/main/AndroidManifest.xml"
+          
+          if [ ! -f "$MANIFEST_FILE" ]; then
+            echo "⚠️ Android manifest not found at $MANIFEST_FILE - skipping Android checks"
+          else
+            echo "📄 Android manifest found at: $MANIFEST_FILE"
+            echo "📝 First 10 lines of manifest for debugging:"
+            head -n 10 "$MANIFEST_FILE" | sed 's/^/    /'
+            echo ""
+            
+            # Define forbidden permissions
+            FORBIDDEN_PERMS=(
+              "SEND_SMS"
+              "READ_SMS" 
+              "READ_CALL_LOG"
+              "WRITE_CALL_LOG"
+            )
+            
+            # Check for forbidden permissions
+            VIOLATIONS=""
+            for perm in "${FORBIDDEN_PERMS[@]}"; do
+              if grep -q "android\.permission\.$perm" "$MANIFEST_FILE"; then
+                VIOLATIONS="$VIOLATIONS\n❌ ANDROID VIOLATION: android.permission.$perm found in AndroidManifest.xml"
+              fi
+            done
+            
+            if [ -n "$VIOLATIONS" ]; then
+              echo -e "\n🚨 ANDROID STORE COMPLIANCE VIOLATIONS DETECTED:"
+              echo -e "$VIOLATIONS"
+              echo -e "\n📋 These permissions violate Google Play Store policies:"
+              echo "   • SEND_SMS: Use ACTION_SENDTO intent instead"
+              echo "   • READ_SMS: Use ACTION_SENDTO for SMS composition"  
+              echo "   • READ_CALL_LOG: Not needed for call screening"
+              echo "   • WRITE_CALL_LOG: Not allowed for call screening apps"
+              echo -e "\n📖 See OPS/STORE_CHECKS.md for compliant alternatives"
+              
+              # Store Android violations for final check
+              echo "ANDROID_VIOLATIONS_DETECTED=true" >> $GITHUB_ENV
+            else
+              echo "✅ Android manifest passes store compliance check"
+              echo "   • No forbidden permissions detected"
+              echo "   • Using privacy-first SMS approach (ACTION_SENDTO)"
+              echo "   • Call screening permissions are minimal and compliant"
+            fi
+          fi
+
+      - name: Check iOS Privacy Compliance
+        run: |
+          echo "🔍 Checking iOS Info.plist for privacy compliance..."
+          
+          MAIN_PLIST="apps/ios/verifd/Info.plist"
+          CALL_DIR_PLIST="apps/ios/CallDirectoryExtension/Info.plist"
+          
+          if [ ! -f "$MAIN_PLIST" ]; then
+            echo "⚠️ iOS main Info.plist not found at $MAIN_PLIST - skipping iOS checks"
+          else
+            IOS_VIOLATIONS=""
+            
+            # Required privacy descriptions
+            REQUIRED_PRIVACY_KEYS=(
+              "NSContactsUsageDescription"
+              "NSCallDirectoryUsageDescription"
+            )
+            
+            # Check for required privacy descriptions
+            for key in "${REQUIRED_PRIVACY_KEYS[@]}"; do
+              if ! grep -q "<key>$key</key>" "$MAIN_PLIST"; then
+                IOS_VIOLATIONS="$IOS_VIOLATIONS\n❌ iOS VIOLATION: Missing required privacy key '$key' in Info.plist"
+              else
+                # Check if description is not empty/generic
+                DESCRIPTION=$(sed -n "/<key>$key<\/key>/{n;s/<string>\(.*\)<\/string>/\1/p;}" "$MAIN_PLIST" | xargs)
+                if [ -z "$DESCRIPTION" ] || [ ${#DESCRIPTION} -lt 20 ]; then
+                  IOS_VIOLATIONS="$IOS_VIOLATIONS\n❌ iOS VIOLATION: Privacy description for '$key' is too generic or empty"
+                fi
+              fi
+            done
+            
+            # Check Call Directory extension for network usage (if exists)
+            if [ -f "$CALL_DIR_PLIST" ]; then
+              CALL_DIR_HANDLER="apps/ios/CallDirectoryExtension/CallDirectoryHandler.swift"
+              if [ -f "$CALL_DIR_HANDLER" ]; then
+                # Check for forbidden network calls in Call Directory extension
+                # Look for actual usage patterns, not just comments or documentation
+                NETWORK_VIOLATIONS=""
+                
+                # Check for URLSession instantiation or usage
+                if grep -E "(URLSession\.|URLSession\()" "$CALL_DIR_HANDLER" | grep -v "^[[:space:]]*//\|^[[:space:]]*\*" | grep -v "NO URLSession"; then
+                  NETWORK_VIOLATIONS="$NETWORK_VIOLATIONS\n❌ iOS VIOLATION: URLSession usage detected in Call Directory extension"
+                fi
+                
+                # Check for other network library usage
+                if grep -E "(Alamofire\.|AFNetworking\.|NSURLConnection\()" "$CALL_DIR_HANDLER" | grep -v "^[[:space:]]*//\|^[[:space:]]*\*"; then
+                  NETWORK_VIOLATIONS="$NETWORK_VIOLATIONS\n❌ iOS VIOLATION: Network library usage detected in Call Directory extension"
+                fi
+                
+                # Check for data task creation
+                if grep -E "\.(dataTask|downloadTask|uploadTask)\(" "$CALL_DIR_HANDLER" | grep -v "^[[:space:]]*//\|^[[:space:]]*\*"; then
+                  NETWORK_VIOLATIONS="$NETWORK_VIOLATIONS\n❌ iOS VIOLATION: Network task creation detected in Call Directory extension"
+                fi
+                
+                # Add network violations to overall iOS violations if any found
+                if [ -n "$NETWORK_VIOLATIONS" ]; then
+                  IOS_VIOLATIONS="$IOS_VIOLATIONS$NETWORK_VIOLATIONS"
+                fi
+              fi
+            fi
+            
+            if [ -n "$IOS_VIOLATIONS" ]; then
+              echo -e "\n🚨 iOS STORE COMPLIANCE VIOLATIONS DETECTED:"
+              echo -e "$IOS_VIOLATIONS"
+              echo -e "\n📋 These violations will cause App Store rejection:"
+              echo "   • Missing privacy descriptions prevent app review approval"
+              echo "   • Network calls in Call Directory extensions are forbidden"
+              echo "   • Generic privacy descriptions don't meet Apple's requirements"
+              echo -e "\n📖 See OPS/STORE_CHECKS.md for iOS compliance requirements"
+              
+              # Store iOS violations for final check
+              echo "IOS_VIOLATIONS_DETECTED=true" >> $GITHUB_ENV
+            else
+              echo "✅ iOS Info.plist passes store compliance check"
+              echo "   • Required privacy descriptions present and detailed"
+              echo "   • Call Directory extension uses only cached data"
+              echo "   • All privacy strings meet Apple's requirements"
+            fi
+          fi
+
+      - name: Final Compliance Check
+        run: |
+          echo "🔍 Performing final store compliance validation..."
+          
+          # Check if override is present
+          if echo "${{ github.event.head_commit.message }}" | grep -q '\[skip-store-check\]'; then
+            echo -e "\n⚠️ EMERGENCY OVERRIDE DETECTED: Skipping store compliance failures"
+            echo "   This should only be used for critical emergency releases!"
+            echo "   Manual store compliance review is REQUIRED before release."
+            exit 0
+          fi
+          
+          # Check for any violations
+          VIOLATIONS_DETECTED=false
+          
+          if [ "$ANDROID_VIOLATIONS_DETECTED" = "true" ]; then
+            VIOLATIONS_DETECTED=true
+            echo "❌ Android store compliance violations detected"
+          fi
+          
+          if [ "$IOS_VIOLATIONS_DETECTED" = "true" ]; then
+            VIOLATIONS_DETECTED=true
+            echo "❌ iOS store compliance violations detected"
+          fi
+          
+          if [ "$VIOLATIONS_DETECTED" = "true" ]; then
+            echo -e "\n🚨 BUILD FAILED: Store compliance violations must be fixed"
+            echo -e "\n🔧 To bypass this check (emergency only):"
+            echo "   Add '[skip-store-check]' to your commit message"
+            echo "   Include justification in commit body"
+            echo "   Ensure manual compliance review before release"
+            echo -e "\n📖 See OPS/STORE_CHECKS.md for full compliance requirements"
+            exit 1
+          else
+            echo "✅ All store compliance checks passed"
+            echo "   • Ready for store submission"
+            echo "   • No forbidden permissions or privacy violations detected"
+          fi
+
+  backend-test:
+    name: Backend Tests
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [20, 22]
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9.5.0
+          
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'pnpm'
+          
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+        
+      - name: Build packages
+        run: pnpm build
+        
+      - name: Rebuild better-sqlite3 (if DB E2E enabled)
+        if: env.RUN_DB_E2E == '1'
+        run: pnpm --filter @verifd/backend rebuild better-sqlite3
+        
+      - name: Run backend tests
+        run: pnpm test:api
+        env:
+          RUN_DB_E2E: ${{ env.RUN_DB_E2E }}
+
+  web-verify-test:
+    name: Web Verify Tests  
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [20, 22]
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9.5.0
+          
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'pnpm'
+          
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+        
+      - name: Build packages
+        run: pnpm build
+        
+      - name: Install Playwright browsers
+        run: pnpm --filter web-verify exec playwright install --with-deps
+        
+      - name: Start backend server
+        run: pnpm --filter @verifd/backend dev &
+        env:
+          NODE_ENV: test
+          PORT: 3001
+          
+      - name: Wait for backend health check
+        run: |
+          timeout 30s bash -c 'until curl -f http://localhost:3001/healthz; do sleep 1; done'
+        
+      - name: Start web-verify server
+        run: pnpm --filter web-verify dev &
+        env:
+          NODE_ENV: test
+          
+      - name: Wait for web-verify to be ready
+        run: |
+          timeout 30s bash -c 'until curl -f http://localhost:3000; do sleep 1; done'
+        
+      - name: Run Playwright tests
+        run: pnpm test:web
+        
+      - name: Upload test screenshots
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-screenshots-node-${{ matrix.node-version }}
+          path: apps/web-verify/test-results/
+          retention-days: 7

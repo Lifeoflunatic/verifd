@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">verifd</string>
+    
+    <!-- Quick Settings Tile -->
+    <string name="expecting_call_tile_label">Expecting Call</string>
+    <string name="expecting_call_active">Expecting Call (ON)</string>
+    <string name="expecting_call_inactive">Expecting Call</string>
+    
+    <!-- Call Screening -->
+    <string name="unknown_caller_label">Unknown Caller</string>
+    
+    <!-- Post Call Sheet -->
+    <string name="send_identity_ping">Send Identity Ping</string>
+    <string name="grant_vpass_24h">Grant 24h vPass</string>
+    <string name="grant_vpass_30d">Grant 30d vPass</string>
+    <string name="block_caller">Block Caller</string>
+    <string name="dismiss">Dismiss</string>
+    
+    <!-- Messages -->
+    <string name="identity_ping_sent">Identity ping sent!</string>
+    <string name="vpass_granted">vPass granted</string>
+    <string name="sms_send_failed">Failed to send SMS</string>
+    <string name="verification_link_copied">Verification link copied to clipboard</string>
+    
+    <!-- Permissions -->
+    <string name="permissions_required">Permissions Required</string>
+    <string name="permissions_required_message">verifd needs phone and SMS permissions to work properly.</string>
+    <string name="grant_permissions">Grant Permissions</string>
+    
+    <!-- Default SMS template -->
+    <string name="default_identity_ping_message">Hi! Please verify your identity for future calls: https://verify.verifd.com/</string>
+    
+    <!-- Identity Ping template -->
+    <string name="identity_ping_template">Hey—it\'s %1$s. I screen unknown calls. Reply with Name + Reason or tap to verify: %2$s</string>
+</resources>

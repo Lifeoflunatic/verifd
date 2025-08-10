@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <!-- Call screening permissions - minimal set for store compliance -->
+    <uses-permission android:name="android.permission.READ_PHONE_STATE" />
+    <uses-permission android:name="android.permission.ANSWER_PHONE_CALLS" />
+    
+    <!-- STORE COMPLIANCE: We explicitly do NOT request dangerous SMS/call log permissions -->
+    <!-- Identity Ping uses ACTION_SENDTO (sms:) intent - no SEND_SMS permission needed -->
+    <!-- Call screening uses CallScreeningService - no READ/WRITE_CALL_LOG permissions needed -->
+    <!-- This ensures Play Store compliance and respects user privacy -->
+    
+    <!-- Network and storage -->
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    
+    <!-- Quick Settings Tile -->
+    <uses-permission android:name="android.permission.BIND_QUICK_SETTINGS_TILE" />
+    
+    <!-- Background tasks -->
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+
+    <application
+        android:allowBackup="true"
+        android:dataExtractionRules="@xml/data_extraction_rules"
+        android:fullBackupContent="@xml/backup_rules"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:roundIcon="@mipmap/ic_launcher_round"
+        android:supportsRtl="true"
+        android:theme="@style/Theme.Verifd"
+        tools:targetApi="31">
+
+        <!-- Main Activity -->
+        <activity
+            android:name=".ui.MainActivity"
+            android:exported="true"
+            android:theme="@style/Theme.Verifd">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+        <!-- Call Screening Service -->
+        <service
+            android:name=".service.CallScreeningService"
+            android:permission="android.permission.BIND_SCREENING_SERVICE"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.telecom.CallScreeningService" />
+            </intent-filter>
+        </service>
+
+        <!-- Post-Call Activity -->
+        <activity
+            android:name=".ui.PostCallActivity"
+            android:exported="false"
+            android:theme="@style/Theme.Verifd.Dialog"
+            android:taskAffinity=""
+            android:excludeFromRecents="true" />
+
+        <!-- Quick Settings Tile -->
+        <service
+            android:name=".service.ExpectingCallTileService"
+            android:exported="true"
+            android:icon="@drawable/ic_phone_in_talk"
+            android:label="@string/expecting_call_tile_label"
+            android:permission="android.permission.BIND_QUICK_SETTINGS_TILE">
+            <intent-filter>
+                <action android:name="android.service.quicksettings.action.QS_TILE" />
+            </intent-filter>
+        </service>
+
+        <!-- Background cleanup service -->
+        <service
+            android:name=".service.CleanupService"
+            android:exported="false" />
+
+    </application>
+
+</manifest>

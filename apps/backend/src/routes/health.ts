@@ -3,7 +3,7 @@ import { getDb } from '../db/index.js';
 
 export const healthRoutes: FastifyPluginAsync = async (server) => {
   // Simple readiness check endpoint for Playwright and other tools
-  server.get('/z', async () => {
+  const readinessHandler = async () => {
     try {
       const db = getDb();
       // Quick DB check
@@ -13,7 +13,10 @@ export const healthRoutes: FastifyPluginAsync = async (server) => {
     } catch (error) {
       return { status: 'not_ready' };
     }
-  });
+  };
+  
+  server.get('/z', readinessHandler);
+  server.get('/healthz', readinessHandler);  // Common ops convention alias (used by CI)
 
   server.get('/', async () => {
     try {
