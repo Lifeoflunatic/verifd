@@ -82,6 +82,18 @@
 - Confirmed subagent files (android-agent, ios-agent, backend-agent)
 - Initialized project memory with core facts and relationships
 
+### 2025-08-10 - Zod Row Typing Enhancement
+- **Plan:** Fix TypeScript build errors by properly typing DB rows with Zod schemas
+- **Changes needed in pass.ts:**
+  - Update PassRowSchema: id should be z.number() not z.string()
+  - Ensure SELECT includes: id, granted_to_name, reason, expires_at
+  - Cast DB result to unknown then parse with Zod
+- **Changes needed in verify.ts:**
+  - Use simplified VerificationAttemptRowSchema with only: status, expires_at, completed_at
+  - Update SELECT to fetch only needed fields
+  - Cast to unknown and parse with Zod
+- **Version control:** Create feat/zod-row-typing branch, commit, push, open PR to main
+
 ### 2025-08-09 - Initial Setup
 - Created project structure
 - Added workspace configuration
