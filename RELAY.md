@@ -1,5 +1,26 @@
 # RELAY.md - verifd Handoff Log
 
+## How to Run
+
+### Backend Server
+```bash
+# Default port 3000
+pnpm -F @verifd/backend dev
+
+# Custom port
+PORT=3001 pnpm -F @verifd/backend dev
+
+# Health check endpoints
+curl http://localhost:3000/health          # => {"ok":true}
+curl http://localhost:3000/health/health   # => {"ok":true} (alias)
+curl http://localhost:3000/healthz         # => {"status":"ready"}
+
+# Metrics endpoint
+curl http://localhost:3000/health/metrics  # => active passes, pending verifications
+```
+
+Note: Backend respects PORT environment variable (default 3000). Metrics are under `/health/metrics`.
+
 ## Decisions
 - **2025-08-09**: Initialized verifd monorepo with pnpm workspaces
 - **2025-08-09**: Chose Fastify for backend (performance + TypeScript support)
