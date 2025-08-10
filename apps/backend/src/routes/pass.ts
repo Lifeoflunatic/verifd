@@ -14,7 +14,7 @@ type CheckPassBody = z.infer<typeof CheckPassSchema>;
 
 // Database result schemas with Zod
 const PassRowSchema = z.object({
-  id: z.number(),
+  id: z.string(),
   granted_to_name: z.string(),
   reason: z.string(),
   expires_at: z.number(), // epoch seconds
