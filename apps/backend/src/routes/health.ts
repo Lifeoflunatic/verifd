@@ -17,6 +17,11 @@ export const healthRoutes: FastifyPluginAsync = async (server) => {
   
   server.get('/z', readinessHandler);
   server.get('/healthz', readinessHandler);  // Common ops convention alias (used by CI)
+  
+  // Simple health check that returns { ok: true }
+  server.get('/health', async () => {
+    return { ok: true };
+  });
 
   server.get('/', async () => {
     try {

@@ -1,37 +1,35 @@
 ---HANDOFF---
 Task: (auto) Fallback handoff — assistant reply had no explicit ---HANDOFF---
-When: 2025-08-10T11:20:39Z
+When: 2025-08-10T12:47:32Z
 Branch: main
 
 Diff Summary:
- .claude/settings.json                |   12 +
- OPS/HANDOFF_HISTORY.md               |  296 +++-
- OPS/LAST_HANDOFF.txt                 |  157 +-
- apps/backend/package.json            |   21 +-
- apps/backend/src/log.ts              |   15 +-
- apps/backend/src/routes/health.ts    |    7 +-
- apps/backend/src/routes/index.ts     |   25 +-
- apps/backend/test/pass.check.test.ts |   44 +
- package.json                         |    2 +-
- packages/shared/package.json         |    2 +-
- pnpm-lock.yaml                       | 2815 +++++++++++++++++++++++++++++++++-
- 11 files changed, 3276 insertions(+), 120 deletions(-)
+ OPS/HANDOFF_HISTORY.md            | 290 ++++++++++++++++++++++++++++++++++++++
+ OPS/LAST_HANDOFF.txt              |  36 +++--
+ apps/backend/package.json         |   5 +-
+ apps/backend/src/db/index.ts      |  14 +-
+ apps/backend/src/routes/health.ts |   5 +
+ apps/backend/src/server.ts        |   1 +
+ apps/backend/tsconfig.json        |  20 +--
+ packages/shared/package.json      |   3 +-
+ packages/shared/tsconfig.json     |  20 +--
+ pnpm-lock.yaml                    |  28 ++--
+ 10 files changed, 362 insertions(+), 60 deletions(-)
 
 Files Touched:
-.claude/settings.json
 OPS/HANDOFF_HISTORY.md
 OPS/LAST_HANDOFF.txt
 apps/backend/package.json
-apps/backend/src/log.ts
+apps/backend/src/db/index.ts
 apps/backend/src/routes/health.ts
-apps/backend/src/routes/index.ts
-apps/backend/test/pass.check.test.ts
-package.json
+apps/backend/src/server.ts
+apps/backend/tsconfig.json
 packages/shared/package.json
+packages/shared/tsconfig.json
 pnpm-lock.yaml
 
 Last Commit:
-7ee1cb1 feat: Unify API contract and harden vanity links
+a530582 feat: verifd v0.1.1 — Identity Ping → vPass → Ring vertical
 
 Commands/Tests Run (tail):
 
