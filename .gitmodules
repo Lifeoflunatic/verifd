@@ -1,0 +1,3 @@
+[submodule "OPS/vendor/claudecode-rule2hook"]
+	path = OPS/vendor/claudecode-rule2hook
+	url = https://github.com/zxdxjtu/claudecode-rule2hook

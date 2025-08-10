@@ -50,8 +50,9 @@ export interface VerifyStartRequest {
 export interface VerifyStartResponse {
   success: boolean;
   token: string;
-  verifyUrl: string;
-  expiresIn: number;
+  vanity_url: string;
+  number_e164: string;
+  expires_at: string; // ISO8601 format
 }
 
 export interface VerifySubmitRequest {

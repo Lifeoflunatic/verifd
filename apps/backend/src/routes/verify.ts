@@ -1,8 +1,105 @@
 import { FastifyPluginAsync } from 'fastify';
 import { z } from 'zod';
 import { nanoid } from 'nanoid';
+import { createHmac, timingSafeEqual } from 'crypto';
 import { getDb } from '../db/index.js';
 import { config } from '../config.js';
+import { normalizePhoneNumber, isValidPhoneNumber } from '@verifd/shared';
+
+// Rate limiting store for /verify/start (per-number)
+const startRateLimits = new Map<string, { count: number; resetAt: number }>();
+
+// Vanity token mapping (vanityToken -> fullToken)
+const vanityTokenMap = new Map<string, { token: string; expiresAt: number }>();
+
+// Used token tracking for single-use enforcement
+const usedTokens = new Set<string>();
+
+// Export function to get vanity token mapping
+export function getVanityToken(vanityToken: string): { token: string; expiresAt: number } | undefined {
+  return vanityTokenMap.get(vanityToken);
+}
+
+// Export function to delete expired vanity token
+export function deleteVanityToken(vanityToken: string): void {
+  vanityTokenMap.delete(vanityToken);
+}
+
+function checkStartRateLimit(key: string): boolean {
+  const now = Date.now();
+  const entry = startRateLimits.get(key);
+  
+  if (!entry || entry.resetAt < now) {
+    startRateLimits.set(key, { count: 1, resetAt: now + 600000 }); // Reset after 10 minutes
+    return true;
+  }
+  
+  if (entry.count >= 3) { // 3 attempts per 10 minutes per number
+    return false;
+  }
+  
+  entry.count++;
+  return true;
+}
+
+// Generate HMAC-bound token
+function generateSecureToken(payload: string, expiresAt: number): string {
+  const token = nanoid(32);
+  const hmacData = `${token}:${payload}:${expiresAt}`;
+  const hmac = createHmac('sha256', config.hmacSecret).update(hmacData).digest('hex');
+  return `${token}:${hmac}`;
+}
+
+// Verify HMAC-bound token
+function verifySecureToken(secureToken: string, payload: string, expiresAt: number): boolean {
+  if (usedTokens.has(secureToken)) {
+    return false; // Token already used
+  }
+  
+  const [token, hmac] = secureToken.split(':');
+  if (!token || !hmac) return false;
+  
+  const expectedHmacData = `${token}:${payload}:${expiresAt}`;
+  const expectedHmac = createHmac('sha256', config.hmacSecret).update(expectedHmacData).digest('hex');
+  
+  // Timing-safe comparison
+  return hmac.length === expectedHmac.length && timingSafeEqual(Buffer.from(hmac), Buffer.from(expectedHmac));
+}
+
+// Mark token as used
+function markTokenUsed(secureToken: string): void {
+  usedTokens.add(secureToken);
+}
+
+// Export for testing
+export function clearRateLimits(): void {
+  startRateLimits.clear();
+}
+
+export function clearUsedTokens(): void {
+  usedTokens.clear();
+}
+
+// Clean up expired vanity tokens and used tokens periodically
+setInterval(() => {
+  const now = Math.floor(Date.now() / 1000);
+  
+  // Clean up expired vanity tokens
+  for (const [vanityToken, data] of vanityTokenMap.entries()) {
+    if (data.expiresAt < now) {
+      vanityTokenMap.delete(vanityToken);
+    }
+  }
+  
+  // Clean up old used tokens (keep for 24 hours to prevent replay)
+  const cutoff = now - 86400; // 24 hours ago
+  const tokensToRemove = Array.from(usedTokens).filter(token => {
+    // Extract creation time from nanoid if possible, otherwise keep all tokens
+    // For simplicity, clear all after 24 hours
+    return false; // Keep all for now, in production we'd need timestamp tracking
+  });
+  tokensToRemove.forEach(token => usedTokens.delete(token));
+}, 5 * 60 * 1000); // Clean up every 5 minutes
 
 const VerifyStartSchema = z.object({
   phoneNumber: z.string().regex(/^\+?[1-9]\d{1,14}$/),
@@ -22,34 +119,61 @@ export const verifyRoutes: FastifyPluginAsync = async (server) => {
   server.post('/start', async (request, reply) => {
     const body = VerifyStartSchema.parse(request.body);
     
+    // Normalize and validate phone number
+    if (!isValidPhoneNumber(body.phoneNumber)) {
+      return reply.status(400).send({
+        error: 'Invalid phone number format'
+      });
+    }
+    const normalizedNumber = normalizePhoneNumber(body.phoneNumber);
+    
+    // Rate limiting by normalized phone number
+    if (!checkStartRateLimit(normalizedNumber)) {
+      return reply.status(429).send({
+        error: 'Too many verification attempts from this number. Please try again in 10 minutes.'
+      });
+    }
+    
+    // Set security headers
+    reply.header('Cache-Control', 'no-store');
+    reply.header('Vary', 'Origin');
+    
     const db = getDb();
-    const token = nanoid(32);
     const expiresAt = Math.floor(Date.now() / 1000) + (15 * 60); // 15 minutes
+    const secureToken = generateSecureToken(normalizedNumber, expiresAt);
+    const vanityToken = nanoid(8); // Shorter token for vanity URL
     
     // Store verification attempt
     const stmt = db.prepare(`
       INSERT INTO verification_attempts 
-      (id, phone_number, name, reason, verification_token, expires_at)
+      (id, number_e164, name, reason, verification_token, expires_at)
       VALUES (?, ?, ?, ?, ?, ?)
     `);
     
     const attemptId = nanoid();
     stmt.run(
       attemptId,
-      body.phoneNumber,
+      normalizedNumber,
       body.name,
       body.reason,
-      token,
+      secureToken,
       expiresAt
     );
+    
+    // Store vanity token mapping
+    vanityTokenMap.set(vanityToken, {
+      token: secureToken,
+      expiresAt: expiresAt
+    });
     
     // TODO: Handle voice ping upload if provided
     
     return {
       success: true,
-      token,
-      verifyUrl: `${config.corsOrigin}/verify/${token}`,
-      expiresIn: 900 // seconds
+      token: secureToken,
+      vanity_url: `/v/${vanityToken}`,
+      number_e164: normalizedNumber,
+      expires_at: new Date(expiresAt * 1000).toISOString()
     };
   });
   
@@ -65,7 +189,7 @@ export const verifyRoutes: FastifyPluginAsync = async (server) => {
       WHERE verification_token = ? 
       AND status = 'pending'
       AND expires_at > unixepoch()
-    `).get(body.token);
+    `).get(body.token) as any;
     
     if (!attempt) {
       return reply.status(404).send({
@@ -73,7 +197,17 @@ export const verifyRoutes: FastifyPluginAsync = async (server) => {
       });
     }
     
-    // Mark as completed
+    // Verify HMAC signature and check if token is single-use
+    if (!verifySecureToken(body.token, attempt.number_e164, attempt.expires_at)) {
+      return reply.status(401).send({
+        error: 'Invalid token signature or token already used'
+      });
+    }
+    
+    // Mark token as used
+    markTokenUsed(body.token);
+    
+    // Mark attempt as completed
     db.prepare(`
       UPDATE verification_attempts 
       SET status = 'completed', completed_at = unixepoch()
@@ -89,11 +223,11 @@ export const verifyRoutes: FastifyPluginAsync = async (server) => {
       
       db.prepare(`
         INSERT INTO passes 
-        (id, phone_number, granted_by, granted_to_name, reason, expires_at)
+        (id, number_e164, granted_by, granted_to_name, reason, expires_at)
         VALUES (?, ?, ?, ?, ?, ?)
       `).run(
         passId,
-        attempt.phone_number,
+        attempt.number_e164,
         body.recipientPhone,
         attempt.name,
         attempt.reason,
@@ -130,4 +264,5 @@ export const verifyRoutes: FastifyPluginAsync = async (server) => {
       completedAt: attempt.completed_at
     };
   });
+
 };

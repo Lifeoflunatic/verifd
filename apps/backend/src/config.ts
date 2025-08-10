@@ -14,6 +14,7 @@ export const config = {
   
   // Security
   jwtSecret: process.env.JWT_SECRET || 'dev-secret-change-in-production',
+  hmacSecret: process.env.HMAC_SECRET || 'dev-hmac-secret-change-in-production',
   
   // Voice ping
   maxVoicePingSizeBytes: 500_000, // ~500KB for 3 seconds of audio

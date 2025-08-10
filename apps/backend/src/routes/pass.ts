@@ -44,7 +44,7 @@ export function clearRateLimits() {
 export const passRoutes: FastifyPluginAsync = async (server) => {
   // GET /pass/check endpoint - Check if a vPass exists for a number
   server.get<{
-    Querystring: { number_e164: string };
+    Querystring: { number_e164?: string; phoneNumber?: string };
     Reply: PassCheckResponse | { error: string };
   }>('/check', async (request, reply) => {
     // Extract IP for rate limiting
@@ -56,14 +56,15 @@ export const passRoutes: FastifyPluginAsync = async (server) => {
       return reply.status(429).send({ error: 'rate_limited' });
     }
     
-    // Validate and normalize phone number
-    const { number_e164 } = request.query;
+    // Support both number_e164 (primary) and phoneNumber (deprecated alias)
+    const { number_e164, phoneNumber } = request.query;
+    const phoneToCheck = number_e164 || phoneNumber;
     
-    if (!number_e164 || !isValidPhoneNumber(number_e164)) {
+    if (!phoneToCheck || !isValidPhoneNumber(phoneToCheck)) {
       return reply.status(400).send({ error: 'bad_number' });
     }
     
-    const normalizedNumber = normalizePhoneNumber(number_e164);
+    const normalizedNumber = normalizePhoneNumber(phoneToCheck);
     
     // Check number rate limit
     if (!checkRateLimit(normalizedNumber, numberRateLimits, PASSCHECK_RPM_NUMBER)) {

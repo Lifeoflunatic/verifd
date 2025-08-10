@@ -173,4 +173,47 @@ describe('GET /pass/check - Integration Tests (Mocked)', () => {
     expect(body.allowed).toBe(true);
     expect(body.scope).toBe('30d');
   });
+
+  it('supports deprecated phoneNumber parameter', async () => {
+    const nowSec = Math.floor(Date.now() / 1000);
+    mockPasses = [{
+      id: 'pass_legacy',
+      number_e164: '+15551234567',
+      expires_at: nowSec + 3600,
+      created_at: nowSec
+    }];
+
+    // Test using deprecated phoneNumber parameter
+    const response = await app.inject({
+      method: 'GET',
+      url: '/pass/check?phoneNumber=%2B15551234567'
+    });
+
+    expect(response.statusCode).toBe(200);
+    const body: PassCheckResponse = JSON.parse(response.body);
+    expect(body.allowed).toBe(true);
+    expect(body.scope).toBe('24h');
+  });
+
+  it('prioritizes number_e164 over phoneNumber when both provided', async () => {
+    const nowSec = Math.floor(Date.now() / 1000);
+    
+    // Only create pass for the first number
+    mockPasses = [{
+      id: 'pass_priority',
+      number_e164: '+15551111111',
+      expires_at: nowSec + 3600,
+      created_at: nowSec
+    }];
+
+    // Request with both parameters - number_e164 should take precedence
+    const response = await app.inject({
+      method: 'GET',
+      url: '/pass/check?number_e164=%2B15551111111&phoneNumber=%2B15552222222'
+    });
+
+    expect(response.statusCode).toBe(200);
+    const body: PassCheckResponse = JSON.parse(response.body);
+    expect(body.allowed).toBe(true); // Should find pass for +15551111111
+  });
 });
