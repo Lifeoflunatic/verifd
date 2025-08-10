@@ -10,6 +10,18 @@ const CheckPassSchema = z.object({
   toNumber: z.string().regex(/^\+?[1-9]\d{1,14}$/)
 });
 
+type CheckPassBody = z.infer<typeof CheckPassSchema>;
+
+// Database result schemas with Zod
+const PassRowSchema = z.object({
+  id: z.number(),
+  granted_to_name: z.string(),
+  reason: z.string(),
+  expires_at: z.number(), // epoch seconds
+});
+
+type PassRow = z.infer<typeof PassRowSchema>;
+
 // Rate limiting stores
 const ipRateLimits = new Map<string, { count: number; resetAt: number }>();
 const numberRateLimits = new Map<string, { count: number; resetAt: number }>();
@@ -120,26 +132,35 @@ export const passRoutes: FastifyPluginAsync = async (server) => {
   });
   
   // Check if a valid pass exists
-  server.post('/check', async (request, reply) => {
+  server.post<{
+    Body: CheckPassBody;
+  }>('/check', async (request, reply) => {
     const body = CheckPassSchema.parse(request.body);
     
     const db = getDb();
-    const pass = db.prepare(`
-      SELECT id, granted_to_name, reason, expires_at, used_count, max_uses
-      FROM passes 
-      WHERE number_e164 = ? 
-      AND granted_by = ?
-      AND expires_at > unixepoch()
-      AND (max_uses IS NULL OR used_count < max_uses)
+    const row = db.prepare(`
+      SELECT
+        id,
+        granted_to_name,
+        reason,
+        expires_at
+      FROM passes
+      WHERE number_e164 = ?
+        AND granted_by = ?
+        AND expires_at > unixepoch()
+        AND (max_uses IS NULL OR used_count < max_uses)
       ORDER BY expires_at DESC
       LIMIT 1
-    `).get(body.fromNumber, body.toNumber);
+    `).get(body.fromNumber, body.toNumber) as unknown;
     
-    if (!pass) {
+    if (!row) {
       return {
         hasValidPass: false
       };
     }
+    
+    // Parse and validate the row with Zod
+    const pass = PassRowSchema.parse(row);
     
     // Increment usage count
     db.prepare(`

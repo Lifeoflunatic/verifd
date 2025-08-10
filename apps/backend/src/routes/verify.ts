@@ -114,9 +114,30 @@ const VerifySubmitSchema = z.object({
   grantPass: z.boolean().default(false)
 });
 
+type VerifyStartBody = z.infer<typeof VerifyStartSchema>;
+type VerifySubmitBody = z.infer<typeof VerifySubmitSchema>;
+
+// Database result schemas with Zod
+const VerificationAttemptRowSchema = z.object({
+  status: z.string(),
+  expires_at: z.number(),                 // epoch seconds
+  completed_at: z.number().nullable(),    // null or epoch seconds
+  number_e164: z.string().optional(),     // needed for HMAC verification in submit
+  name: z.string().optional(),            // needed for response in submit
+  id: z.string().optional(),              // needed for update queries
+  reason: z.string().optional(),          // needed for pass creation
+});
+
+type VerificationAttemptRow = z.infer<typeof VerificationAttemptRowSchema>;
+
+// Schema for status endpoint result
+
+
 export const verifyRoutes: FastifyPluginAsync = async (server) => {
   // Start verification process
-  server.post('/start', async (request, reply) => {
+  server.post<{
+    Body: VerifyStartBody;
+  }>('/start', async (request, reply) => {
     const body = VerifyStartSchema.parse(request.body);
     
     // Normalize and validate phone number
@@ -178,27 +199,33 @@ export const verifyRoutes: FastifyPluginAsync = async (server) => {
   });
   
   // Submit verification and optionally grant pass
-  server.post('/submit', async (request, reply) => {
+  server.post<{
+    Body: VerifySubmitBody;
+  }>('/submit', async (request, reply) => {
     const body = VerifySubmitSchema.parse(request.body);
     
     const db = getDb();
     
     // Validate token
-    const attempt = db.prepare(`
-      SELECT * FROM verification_attempts 
-      WHERE verification_token = ? 
+    const row = db.prepare(`
+      SELECT status, expires_at, completed_at, number_e164, name, id, reason
+      FROM verification_attempts
+      WHERE verification_token = ?
       AND status = 'pending'
       AND expires_at > unixepoch()
-    `).get(body.token) as any;
+    `).get(body.token) as unknown;
     
-    if (!attempt) {
+    if (!row) {
       return reply.status(404).send({
         error: 'Invalid or expired verification token'
       });
     }
     
+    // Parse and validate the row with Zod
+    const attempt = VerificationAttemptRowSchema.parse(row);
+    
     // Verify HMAC signature and check if token is single-use
-    if (!verifySecureToken(body.token, attempt.number_e164, attempt.expires_at)) {
+    if (!verifySecureToken(body.token, attempt.number_e164!, attempt.expires_at)) {
       return reply.status(401).send({
         error: 'Invalid token signature or token already used'
       });
@@ -248,15 +275,18 @@ export const verifyRoutes: FastifyPluginAsync = async (server) => {
     const { token } = request.params as { token: string };
     
     const db = getDb();
-    const attempt = db.prepare(`
+    const row = db.prepare(`
       SELECT status, expires_at, completed_at 
       FROM verification_attempts 
       WHERE verification_token = ?
-    `).get(token);
+    `).get(token) as unknown;
     
-    if (!attempt) {
+    if (!row) {
       return reply.status(404).send({ error: 'Token not found' });
     }
+    
+    // Parse and validate the row with Zod
+    const attempt = VerificationAttemptRowSchema.parse(row);
     
     return {
       status: attempt.status,
