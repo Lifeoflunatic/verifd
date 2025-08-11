@@ -1,5 +1,6 @@
 package com.verifd.android.util
 
+import android.os.Build
 import android.telecom.Call
 import android.util.Log
 import com.verifd.android.config.FeatureFlags
@@ -22,7 +23,7 @@ class RiskAssessment {
         const val ATTESTATION_NONE = ""       // No attestation
         
         // Burst detection parameters
-        private const val BURST_WINDOW_MS = TimeUnit.MINUTES.toMillis(5) // 5-minute window
+        private val BURST_WINDOW_MS = TimeUnit.MINUTES.toMillis(5) // 5-minute window
         private const val BURST_THRESHOLD = 3 // 3+ calls in window = burst
         
         // Call history for burst detection
@@ -131,31 +132,38 @@ class RiskAssessment {
     private fun analyzeAttestation(callDetails: Call.Details, reasons: MutableList<String>): Float {
         // Extract STIR/SHAKEN verification status from call details
         // Note: This requires Android API level 30+ and carrier support
-        val verificationStatus = try {
-            // Access verification status if available
-            callDetails.callerNumberVerificationStatus
-        } catch (e: Exception) {
-            Log.w(TAG, "Unable to access caller verification status", e)
-            Call.Details.CALLER_NUMBER_VERIFICATION_NOT_VERIFIED
-        }
-        
-        return when (verificationStatus) {
-            Call.Details.CALLER_NUMBER_VERIFICATION_PASSED -> {
-                reasons.add("Full STIR/SHAKEN attestation")
-                0.0f // Low risk
+        // Check API level for CALLER_NUMBER_VERIFICATION support
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            val verificationStatus = try {
+                // Access verification status if available
+                callDetails.callerNumberVerificationStatus
+            } catch (e: Exception) {
+                Log.w(TAG, "Unable to access caller verification status", e)
+                Call.Details.CALLER_NUMBER_VERIFICATION_NOT_VERIFIED
             }
-            Call.Details.CALLER_NUMBER_VERIFICATION_FAILED -> {
-                reasons.add("Failed STIR/SHAKEN verification")
-                0.8f // High risk
+            
+            return when (verificationStatus) {
+                Call.Details.CALLER_NUMBER_VERIFICATION_PASSED -> {
+                    reasons.add("Full STIR/SHAKEN attestation")
+                    0.0f // Low risk
+                }
+                Call.Details.CALLER_NUMBER_VERIFICATION_FAILED -> {
+                    reasons.add("Failed STIR/SHAKEN verification")
+                    0.8f // High risk
+                }
+                Call.Details.CALLER_NUMBER_VERIFICATION_NOT_VERIFIED -> {
+                    reasons.add("No STIR/SHAKEN attestation")
+                    0.4f // Medium risk
+                }
+                else -> {
+                    reasons.add("Unknown verification status")
+                    0.5f // Medium risk
+                }
             }
-            Call.Details.CALLER_NUMBER_VERIFICATION_NOT_VERIFIED -> {
-                reasons.add("No STIR/SHAKEN attestation")
-                0.4f // Medium risk
-            }
-            else -> {
-                reasons.add("Unknown verification status")
-                0.5f // Medium risk
-            }
+        } else {
+            // API < 30, skip STIR/SHAKEN check
+            reasons.add("STIR/SHAKEN not available (API < 30)")
+            return 0.4f // Medium risk default
         }
     }
     

@@ -281,6 +281,16 @@ class PostCallActivity : AppCompatActivity() {
                             Toast.LENGTH_SHORT
                         ).show()
                     }
+                    
+                    BackendClient.GrantPassResult.RateLimited -> {
+                        Log.w(TAG, "Backend rate limited")
+                        Toast.makeText(
+                            this@PostCallActivity,
+                            "Rate limited, try later",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                        return@launch
+                    }
                 }
                 
                 finish()

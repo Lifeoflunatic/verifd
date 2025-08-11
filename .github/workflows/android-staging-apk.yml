@@ -45,19 +45,13 @@ jobs:
       - name: Build Staging APK
         working-directory: apps/android
         run: |
-          # List available tasks to debug
-          ./gradlew tasks | grep -i assemble || true
+          # Build staging variant explicitly
+          echo "Building staging variant..."
+          ./gradlew clean :app:assembleStaging --stacktrace --no-daemon
           
-          # Try to build staging, fall back to debug if staging doesn't exist
-          if ./gradlew tasks | grep -q "assembleStaging"; then
-            echo "Building staging variant..."
-            ./gradlew clean assembleStaging --stacktrace
-          else
-            echo "Staging variant not found, building debug as fallback..."
-            ./gradlew clean assembleDebug --stacktrace
-            # Rename for consistency
-            find app/build/outputs/apk -name "*.apk" -exec mv {} app/build/outputs/apk/verifd-staging.apk \; 2>/dev/null || true
-          fi
+          # List APK output
+          echo "APK build outputs:"
+          ls -lah app/build/outputs/apk/staging/ || true
       
       - name: Sign APK
         working-directory: apps/android
@@ -73,8 +67,8 @@ jobs:
             # Decode keystore
             echo "$ANDROID_KEYSTORE_BASE64" | base64 -d > keystore.jks
             
-            # Find unsigned APK (check both staging and debug directories)
-            UNSIGNED_APK=$(find app/build/outputs/apk -name "*.apk" -type f | head -1)
+            # Find unsigned APK in staging directory
+            UNSIGNED_APK=$(find app/build/outputs/apk/staging -name "*.apk" -type f | head -1)
             
             if [ -z "$UNSIGNED_APK" ]; then
               echo "❌ No unsigned APK found"
@@ -119,7 +113,7 @@ jobs:
           APK_PATH="app/build/outputs/apk/verifd-staging-signed.apk"
           
           if [ ! -f "$APK_PATH" ]; then
-            APK_PATH=$(find app/build/outputs/apk -name "*.apk" -type f | head -1)
+            APK_PATH=$(find app/build/outputs/apk/staging -name "*.apk" -type f | head -1)
           fi
           
           if [ ! -f "$APK_PATH" ]; then
