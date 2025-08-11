@@ -13,6 +13,7 @@ import androidx.core.content.ContextCompat
 import com.verifd.android.R
 import com.verifd.android.data.ExpectingWindowManager
 import com.verifd.android.ui.MainActivity
+import com.verifd.android.receiver.ExpectingWindowActionReceiver
 
 /**
  * Manages persistent notifications for active expecting windows.
@@ -36,6 +37,14 @@ class ExpectingWindowNotificationManager private constructor(private val context
                     INSTANCE = it 
                 }
             }
+        }
+        
+        fun updateNotification(context: Context, phoneNumber: String) {
+            getInstance(context).showExpectingWindowNotification(phoneNumber)
+        }
+        
+        fun cancelNotification(context: Context, notificationId: Int) {
+            NotificationManagerCompat.from(context).cancel(notificationId)
         }
     }
     

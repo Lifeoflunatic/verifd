@@ -228,6 +228,32 @@ class ExpectingWindowManager private constructor(
     /**
      * Clean up expired windows (called by sweeper)
      */
+    suspend fun extendWindow(phoneNumber: String): Boolean {
+        return withContext(Dispatchers.IO) {
+            try {
+                val currentEnd = getWindowEndTime()
+                if (currentEnd != null) {
+                    val newEnd = Date(currentEnd.time + TimeUnit.MINUTES.toMillis(getPreferredDuration().toLong()))
+                    prefs.edit()
+                        .putLong(KEY_WINDOW_END_TIME, newEnd.time)
+                        .apply()
+                    Log.d(TAG, "Extended window for $phoneNumber until $newEnd")
+                    true
+                } else {
+                    Log.w(TAG, "No active window to extend")
+                    false
+                }
+            } catch (e: Exception) {
+                Log.e(TAG, "Error extending window", e)
+                false
+            }
+        }
+    }
+    
+    suspend fun removeWindow(phoneNumber: String): Boolean {
+        return stopWindow()
+    }
+    
     suspend fun cleanupExpiredWindows(): Int {
         return withContext(Dispatchers.IO) {
             try {
