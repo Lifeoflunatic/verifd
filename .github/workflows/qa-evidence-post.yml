@@ -1,0 +1,302 @@
+name: QA Evidence Post to Slack
+
+on:
+  workflow_dispatch:
+  workflow_run:
+    workflows: ["APK Artifact Reality Check", "Publish Staging Release"]
+    types: [completed]
+    branches: [main]
+
+jobs:
+  post-evidence:
+    name: Post QA Evidence to Slack
+    runs-on: ubuntu-latest
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Gather Evidence
+        id: gather_evidence
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          echo "📊 Gathering QA evidence..."
+          
+          # Get latest reality check evidence
+          EVIDENCE_URL="https://api.github.com/repos/${{ github.repository }}/actions/artifacts?name=apk-reality-evidence"
+          
+          EVIDENCE_ID=$(curl -s \
+            -H "Authorization: token $GITHUB_TOKEN" \
+            -H "Accept: application/vnd.github.v3+json" \
+            "$EVIDENCE_URL" | jq -r '.artifacts[0].id')
+          
+          if [ "$EVIDENCE_ID" != "null" ] && [ -n "$EVIDENCE_ID" ]; then
+            echo "✅ Found reality check evidence"
+            
+            # Download evidence
+            curl -L \
+              -H "Authorization: token $GITHUB_TOKEN" \
+              -H "Accept: application/vnd.github.v3+json" \
+              "https://api.github.com/repos/${{ github.repository }}/actions/artifacts/$EVIDENCE_ID/zip" \
+              -o evidence.zip
+            
+            unzip -q evidence.zip
+            
+            # Extract key information
+            if [ -f "summary.json" ]; then
+              RUN_ID=$(jq -r '.run.id' summary.json)
+              RUN_URL=$(jq -r '.run.url' summary.json)
+              ARTIFACT_ID=$(jq -r '.artifact.id' summary.json)
+              APK_SHA256=$(jq -r '.apk.sha256' summary.json)
+              APK_SIZE=$(jq -r '.apk.size_bytes' summary.json)
+              
+              echo "run_id=$RUN_ID" >> $GITHUB_OUTPUT
+              echo "run_url=$RUN_URL" >> $GITHUB_OUTPUT
+              echo "artifact_id=$ARTIFACT_ID" >> $GITHUB_OUTPUT
+              echo "apk_sha256=$APK_SHA256" >> $GITHUB_OUTPUT
+              echo "apk_size=$APK_SIZE" >> $GITHUB_OUTPUT
+              echo "evidence_found=true" >> $GITHUB_OUTPUT
+            fi
+          else
+            echo "⚠️ No reality check evidence found"
+            echo "evidence_found=false" >> $GITHUB_OUTPUT
+          fi
+      
+      - name: Get Latest Release Info
+        id: get_release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          echo "🔍 Finding latest staging release..."
+          
+          # Get latest prerelease
+          RELEASE_JSON=$(curl -s \
+            -H "Authorization: token $GITHUB_TOKEN" \
+            -H "Accept: application/vnd.github.v3+json" \
+            "https://api.github.com/repos/${{ github.repository }}/releases" \
+            | jq '[.[] | select(.prerelease == true and (.tag_name | contains("staging")))][0]')
+          
+          if [ "$RELEASE_JSON" != "null" ] && [ -n "$RELEASE_JSON" ]; then
+            TAG=$(echo "$RELEASE_JSON" | jq -r '.tag_name')
+            RELEASE_URL=$(echo "$RELEASE_JSON" | jq -r '.html_url')
+            APK_URL=$(echo "$RELEASE_JSON" | jq -r '.assets[] | select(.name == "verifd-staging.apk") | .browser_download_url')
+            
+            echo "✅ Found release: $TAG"
+            echo "release_tag=$TAG" >> $GITHUB_OUTPUT
+            echo "release_url=$RELEASE_URL" >> $GITHUB_OUTPUT
+            echo "apk_url=$APK_URL" >> $GITHUB_OUTPUT
+            echo "release_found=true" >> $GITHUB_OUTPUT
+          else
+            echo "⚠️ No staging releases found"
+            echo "release_found=false" >> $GITHUB_OUTPUT
+          fi
+      
+      - name: Generate QR Code
+        if: steps.get_release.outputs.release_found == 'true'
+        run: |
+          APK_URL="${{ steps.get_release.outputs.apk_url }}"
+          
+          if [ -n "$APK_URL" ] && [ "$APK_URL" != "null" ]; then
+            # Install qr generator
+            npm install --no-save qrcode
+            
+            # Generate QR using Node.js
+            node -e "
+              const QRCode = require('qrcode');
+              QRCode.toFile('qr-staging.png', '$APK_URL', {
+                width: 256,
+                margin: 1
+              }, (err) => {
+                if (err) console.error(err);
+                else console.log('✅ QR code generated');
+              });
+            "
+            
+            # Verify QR was created
+            if [ -f "qr-staging.png" ]; then
+              echo "qr_generated=true" >> $GITHUB_OUTPUT
+            else
+              echo "qr_generated=false" >> $GITHUB_OUTPUT
+            fi
+          fi
+      
+      - name: Update Documentation
+        run: |
+          TIMESTAMP=$(date -u +"%Y-%m-%d %H:%M:%S UTC")
+          
+          # Check if OPS/STAGING_QA_LINKS.md exists
+          if [ ! -f "OPS/STAGING_QA_LINKS.md" ]; then
+            mkdir -p OPS
+            echo "# Staging QA Links" > OPS/STAGING_QA_LINKS.md
+            echo "" >> OPS/STAGING_QA_LINKS.md
+          fi
+          
+          # Add verification timestamp
+          echo "" >> OPS/STAGING_QA_LINKS.md
+          echo "---" >> OPS/STAGING_QA_LINKS.md
+          echo "" >> OPS/STAGING_QA_LINKS.md
+          echo "## Last Verified: $TIMESTAMP" >> OPS/STAGING_QA_LINKS.md
+          
+          if [ "${{ steps.gather_evidence.outputs.evidence_found }}" == "true" ]; then
+            echo "" >> OPS/STAGING_QA_LINKS.md
+            echo "### Reality Check Evidence" >> OPS/STAGING_QA_LINKS.md
+            echo "- **Run**: [${{ steps.gather_evidence.outputs.run_id }}](${{ steps.gather_evidence.outputs.run_url }})" >> OPS/STAGING_QA_LINKS.md
+            echo "- **Artifact ID**: ${{ steps.gather_evidence.outputs.artifact_id }}" >> OPS/STAGING_QA_LINKS.md
+            echo "- **SHA256**: \`${{ steps.gather_evidence.outputs.apk_sha256 }}\`" >> OPS/STAGING_QA_LINKS.md
+          fi
+          
+          if [ "${{ steps.get_release.outputs.release_found }}" == "true" ]; then
+            echo "" >> OPS/STAGING_QA_LINKS.md
+            echo "### GitHub Release" >> OPS/STAGING_QA_LINKS.md
+            echo "- **Tag**: [${{ steps.get_release.outputs.release_tag }}](${{ steps.get_release.outputs.release_url }})" >> OPS/STAGING_QA_LINKS.md
+            echo "- **APK**: [${{ steps.get_release.outputs.apk_url }}](${{ steps.get_release.outputs.apk_url }})" >> OPS/STAGING_QA_LINKS.md
+          fi
+          
+          echo "📝 Documentation updated"
+      
+      - name: Prepare Slack Message
+        id: prepare_slack
+        run: |
+          # Build Slack message JSON
+          TIMESTAMP=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+          
+          # Start building blocks
+          cat > slack_message.json << 'EOF'
+          {
+            "blocks": [
+              {
+                "type": "header",
+                "text": {
+                  "type": "plain_text",
+                  "text": "📱 verifd Staging APK - QA Evidence",
+                  "emoji": true
+                }
+              },
+              {
+                "type": "context",
+                "elements": [
+                  {
+                    "type": "mrkdwn",
+                    "text": "*Timestamp:* TIMESTAMP_PLACEHOLDER | *Build:* #${{ github.run_number }}"
+                  }
+                ]
+              },
+              {
+                "type": "divider"
+              }
+          EOF
+          
+          # Add evidence section if found
+          if [ "${{ steps.gather_evidence.outputs.evidence_found }}" == "true" ]; then
+            cat >> slack_message.json << 'EOF'
+              ,{
+                "type": "section",
+                "text": {
+                  "type": "mrkdwn",
+                  "text": "*✅ Reality Check Verified*\n• Run ID: RUN_ID_PLACEHOLDER\n• Artifact ID: ARTIFACT_ID_PLACEHOLDER\n• SHA256: `SHA256_PLACEHOLDER`"
+                }
+              }
+          EOF
+          fi
+          
+          # Add release section if found
+          if [ "${{ steps.get_release.outputs.release_found }}" == "true" ]; then
+            cat >> slack_message.json << 'EOF'
+              ,{
+                "type": "section",
+                "text": {
+                  "type": "mrkdwn",
+                  "text": "*📦 GitHub Release*\n• Tag: RELEASE_TAG_PLACEHOLDER\n• <APK_URL_PLACEHOLDER|Download APK>"
+                }
+              }
+          EOF
+          fi
+          
+          # Add QR code section if generated
+          if [ "${{ steps.get_release.outputs.qr_generated }}" == "true" ]; then
+            cat >> slack_message.json << 'EOF'
+              ,{
+                "type": "section",
+                "text": {
+                  "type": "mrkdwn",
+                  "text": "*📲 QR Code*\nScan to download APK directly to device"
+                },
+                "accessory": {
+                  "type": "image",
+                  "image_url": "QR_URL_PLACEHOLDER",
+                  "alt_text": "QR Code for APK Download"
+                }
+              }
+          EOF
+          fi
+          
+          # Close JSON
+          cat >> slack_message.json << 'EOF'
+            ]
+          }
+          EOF
+          
+          # Replace placeholders
+          sed -i "s|TIMESTAMP_PLACEHOLDER|$TIMESTAMP|g" slack_message.json
+          sed -i "s|RUN_ID_PLACEHOLDER|${{ steps.gather_evidence.outputs.run_id }}|g" slack_message.json
+          sed -i "s|ARTIFACT_ID_PLACEHOLDER|${{ steps.gather_evidence.outputs.artifact_id }}|g" slack_message.json
+          sed -i "s|SHA256_PLACEHOLDER|${{ steps.gather_evidence.outputs.apk_sha256 }}|g" slack_message.json
+          sed -i "s|RELEASE_TAG_PLACEHOLDER|${{ steps.get_release.outputs.release_tag }}|g" slack_message.json
+          sed -i "s|APK_URL_PLACEHOLDER|${{ steps.get_release.outputs.apk_url }}|g" slack_message.json
+          
+          echo "✅ Slack message prepared"
+      
+      - name: Post to Slack
+        if: env.SLACK_WEBHOOK_URL != ''
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        run: |
+          if [ -n "$SLACK_WEBHOOK_URL" ]; then
+            echo "📤 Posting to Slack #canary-ops..."
+            
+            # Post message
+            RESPONSE=$(curl -X POST \
+              -H 'Content-type: application/json' \
+              --data @slack_message.json \
+              "$SLACK_WEBHOOK_URL")
+            
+            if [ "$RESPONSE" == "ok" ]; then
+              echo "✅ Posted to Slack successfully"
+            else
+              echo "❌ Failed to post to Slack: $RESPONSE"
+            fi
+          else
+            echo "⚠️ SLACK_WEBHOOK_URL not configured"
+          fi
+      
+      - name: Generate Summary
+        run: |
+          echo "## 📤 QA Evidence Posted" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          
+          if [ "${{ steps.gather_evidence.outputs.evidence_found }}" == "true" ]; then
+            echo "### Reality Check Evidence" >> $GITHUB_STEP_SUMMARY
+            echo "- **Run ID**: ${{ steps.gather_evidence.outputs.run_id }}" >> $GITHUB_STEP_SUMMARY
+            echo "- **Artifact ID**: ${{ steps.gather_evidence.outputs.artifact_id }}" >> $GITHUB_STEP_SUMMARY
+            echo "- **SHA256**: \`${{ steps.gather_evidence.outputs.apk_sha256 }}\`" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+          fi
+          
+          if [ "${{ steps.get_release.outputs.release_found }}" == "true" ]; then
+            echo "### GitHub Release" >> $GITHUB_STEP_SUMMARY
+            echo "- **Tag**: ${{ steps.get_release.outputs.release_tag }}" >> $GITHUB_STEP_SUMMARY
+            echo "- **Release**: [${{ steps.get_release.outputs.release_url }}](${{ steps.get_release.outputs.release_url }})" >> $GITHUB_STEP_SUMMARY
+            echo "- **APK**: [${{ steps.get_release.outputs.apk_url }}](${{ steps.get_release.outputs.apk_url }})" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+          fi
+          
+          echo "### Documentation" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ OPS/STAGING_QA_LINKS.md updated" >> $GITHUB_STEP_SUMMARY
+          
+          if [ -n "${{ secrets.SLACK_WEBHOOK_URL }}" ]; then
+            echo "- ✅ Posted to Slack #canary-ops" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "- ⚠️ Slack posting skipped (no webhook configured)" >> $GITHUB_STEP_SUMMARY
+          fi

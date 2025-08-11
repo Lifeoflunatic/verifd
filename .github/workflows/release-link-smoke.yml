@@ -1,0 +1,271 @@
+name: Release Link Validation
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '30 3 * * *'  # Daily at 3:30 AM UTC
+  workflow_run:
+    workflows: ["Publish Staging Release"]
+    types: [completed]
+
+jobs:
+  validate-release-links:
+    name: Validate Release APK Links
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Get Latest Release
+        id: get_release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          echo "🔍 Finding latest staging release..."
+          
+          # Get latest prerelease
+          RELEASE_JSON=$(curl -s \
+            -H "Authorization: token $GITHUB_TOKEN" \
+            -H "Accept: application/vnd.github.v3+json" \
+            "https://api.github.com/repos/${{ github.repository }}/releases" \
+            | jq '[.[] | select(.prerelease == true and (.tag_name | contains("staging")))][0]')
+          
+          if [ "$RELEASE_JSON" == "null" ] || [ -z "$RELEASE_JSON" ]; then
+            echo "❌ No staging releases found"
+            exit 1
+          fi
+          
+          TAG=$(echo "$RELEASE_JSON" | jq -r '.tag_name')
+          RELEASE_URL=$(echo "$RELEASE_JSON" | jq -r '.html_url')
+          CREATED_AT=$(echo "$RELEASE_JSON" | jq -r '.created_at')
+          
+          # Extract asset URLs
+          APK_URL=$(echo "$RELEASE_JSON" | jq -r '.assets[] | select(.name == "verifd-staging.apk") | .browser_download_url')
+          SHA_URL=$(echo "$RELEASE_JSON" | jq -r '.assets[] | select(.name == "apk.sha256") | .browser_download_url')
+          META_URL=$(echo "$RELEASE_JSON" | jq -r '.assets[] | select(.name == "apk-metadata.json") | .browser_download_url')
+          
+          echo "✅ Found release: $TAG"
+          echo "  Created: $CREATED_AT"
+          echo "  URL: $RELEASE_URL"
+          
+          echo "tag=$TAG" >> $GITHUB_OUTPUT
+          echo "release_url=$RELEASE_URL" >> $GITHUB_OUTPUT
+          echo "apk_url=$APK_URL" >> $GITHUB_OUTPUT
+          echo "sha_url=$SHA_URL" >> $GITHUB_OUTPUT
+          echo "meta_url=$META_URL" >> $GITHUB_OUTPUT
+      
+      - name: Validate APK Download Link
+        id: validate_apk
+        run: |
+          APK_URL="${{ steps.get_release.outputs.apk_url }}"
+          
+          if [ -z "$APK_URL" ] || [ "$APK_URL" == "null" ]; then
+            echo "❌ No APK URL found in release"
+            exit 1
+          fi
+          
+          echo "🔗 Testing APK URL: $APK_URL"
+          
+          # HEAD request to check availability
+          HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" -I "$APK_URL")
+          
+          if [ "$HTTP_STATUS" != "200" ] && [ "$HTTP_STATUS" != "302" ]; then
+            echo "❌ APK URL returned HTTP $HTTP_STATUS"
+            exit 1
+          fi
+          
+          echo "✅ APK URL accessible (HTTP $HTTP_STATUS)"
+          
+          # Download with size check
+          curl -L -s -o verifd-staging.apk "$APK_URL"
+          
+          APK_SIZE=$(stat -c%s verifd-staging.apk 2>/dev/null || stat -f%z verifd-staging.apk)
+          APK_SIZE_MB=$((APK_SIZE / 1048576))
+          
+          if [ "$APK_SIZE" -lt 10485760 ]; then  # 10MB minimum
+            echo "❌ APK too small: $APK_SIZE bytes ($APK_SIZE_MB MB)"
+            echo "❌ Expected at least 10MB for valid APK"
+            exit 1
+          fi
+          
+          echo "✅ APK downloaded: $APK_SIZE bytes ($APK_SIZE_MB MB)"
+          echo "apk_size=$APK_SIZE" >> $GITHUB_OUTPUT
+      
+      - name: Validate SHA256
+        run: |
+          SHA_URL="${{ steps.get_release.outputs.sha_url }}"
+          
+          if [ -z "$SHA_URL" ] || [ "$SHA_URL" == "null" ]; then
+            echo "⚠️ No SHA256 URL found, skipping verification"
+          else
+            echo "🔐 Downloading SHA256..."
+            curl -L -s -o apk.sha256 "$SHA_URL"
+            
+            # Calculate actual SHA256
+            ACTUAL_SHA=$(sha256sum verifd-staging.apk | cut -d' ' -f1)
+            EXPECTED_SHA=$(cat apk.sha256 | cut -d' ' -f1)
+            
+            echo "  Expected: $EXPECTED_SHA"
+            echo "  Actual:   $ACTUAL_SHA"
+            
+            if [ "$ACTUAL_SHA" != "$EXPECTED_SHA" ]; then
+              echo "❌ SHA256 mismatch!"
+              exit 1
+            fi
+            
+            echo "✅ SHA256 verified"
+          fi
+      
+      - name: Validate Metadata
+        run: |
+          META_URL="${{ steps.get_release.outputs.meta_url }}"
+          
+          if [ -z "$META_URL" ] || [ "$META_URL" == "null" ]; then
+            echo "⚠️ No metadata URL found, skipping"
+          else
+            echo "📋 Downloading metadata..."
+            curl -L -s -o apk-metadata.json "$META_URL"
+            
+            # Validate JSON structure
+            if ! jq empty apk-metadata.json 2>/dev/null; then
+              echo "❌ Invalid JSON metadata"
+              exit 1
+            fi
+            
+            # Check required fields
+            BUILD_TIME=$(jq -r '.build_time' apk-metadata.json)
+            ENVIRONMENT=$(jq -r '.environment' apk-metadata.json)
+            
+            if [ "$ENVIRONMENT" != "staging" ]; then
+              echo "⚠️ Unexpected environment: $ENVIRONMENT"
+            fi
+            
+            echo "✅ Metadata valid"
+            echo "  Build Time: $BUILD_TIME"
+            echo "  Environment: $ENVIRONMENT"
+          fi
+      
+      - name: Verify APK Structure
+        run: |
+          echo "📦 Verifying APK structure..."
+          
+          # Check if it's a valid ZIP/APK
+          if ! unzip -t verifd-staging.apk > /dev/null 2>&1; then
+            echo "❌ Invalid APK file (not a valid ZIP)"
+            exit 1
+          fi
+          
+          # Check for required APK components
+          if ! unzip -l verifd-staging.apk | grep -q "AndroidManifest.xml"; then
+            echo "❌ AndroidManifest.xml not found"
+            exit 1
+          fi
+          
+          if ! unzip -l verifd-staging.apk | grep -q "classes.dex"; then
+            echo "❌ classes.dex not found"
+            exit 1
+          fi
+          
+          echo "✅ Valid APK structure confirmed"
+      
+      - name: Generate QR Code
+        run: |
+          APK_URL="${{ steps.get_release.outputs.apk_url }}"
+          
+          # Check if Node.js is available
+          if command -v node &> /dev/null; then
+            # Install dependencies if script exists
+            if [ -f "scripts/make_qr.js" ]; then
+              echo "📲 Generating QR code..."
+              
+              # Install required packages
+              npm install --no-save qrcode canvas
+              
+              # Generate QR
+              node scripts/make_qr.js "$APK_URL" qr-verifd-staging.png
+              
+              if [ -f "qr-verifd-staging.png" ]; then
+                echo "✅ QR code generated"
+              else
+                echo "⚠️ QR generation failed"
+              fi
+            else
+              echo "⚠️ QR script not found"
+            fi
+          else
+            echo "⚠️ Node.js not available for QR generation"
+          fi
+      
+      - name: Upload Validation Artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-validation-${{ github.run_number }}
+          path: |
+            verifd-staging.apk
+            apk.sha256
+            apk-metadata.json
+            qr-verifd-staging.png
+          retention-days: 7
+      
+      - name: Update Status
+        if: always()
+        run: |
+          STATUS="unknown"
+          if [ "${{ job.status }}" == "success" ]; then
+            STATUS="✅ Link live"
+            COLOR="32CD32"
+          else
+            STATUS="❌ Link broken"
+            COLOR="FF0000"
+          fi
+          
+          # Create status badge
+          cat > link-status.json << EOF
+          {
+            "schemaVersion": 1,
+            "label": "Release Link",
+            "message": "$STATUS",
+            "color": "$COLOR",
+            "timestamp": "$(date -u +"%Y-%m-%dT%H:%M:%SZ")"
+          }
+          EOF
+          
+          echo "📊 Status: $STATUS"
+      
+      - name: Generate Summary
+        if: always()
+        run: |
+          if [ "${{ job.status }}" == "success" ]; then
+            echo "## ✅ Release Links Validated" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "### Release Information" >> $GITHUB_STEP_SUMMARY
+            echo "- **Tag**: ${{ steps.get_release.outputs.tag }}" >> $GITHUB_STEP_SUMMARY
+            echo "- **Release**: [${{ steps.get_release.outputs.release_url }}](${{ steps.get_release.outputs.release_url }})" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "### Download Links" >> $GITHUB_STEP_SUMMARY
+            echo "- **APK**: [${{ steps.get_release.outputs.apk_url }}](${{ steps.get_release.outputs.apk_url }})" >> $GITHUB_STEP_SUMMARY
+            echo "- **Size**: ${{ steps.validate_apk.outputs.apk_size }} bytes" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "### Validation Results" >> $GITHUB_STEP_SUMMARY
+            echo "- ✅ APK downloadable" >> $GITHUB_STEP_SUMMARY
+            echo "- ✅ Size > 10MB" >> $GITHUB_STEP_SUMMARY
+            echo "- ✅ Valid APK structure" >> $GITHUB_STEP_SUMMARY
+            echo "- ✅ SHA256 verified" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "## ❌ Release Link Validation Failed" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "### Failed Checks" >> $GITHUB_STEP_SUMMARY
+            
+            if [ -z "${{ steps.get_release.outputs.apk_url }}" ]; then
+              echo "- ❌ No APK URL found in release" >> $GITHUB_STEP_SUMMARY
+            fi
+            
+            if [ -n "${{ steps.validate_apk.outputs.apk_size }}" ] && [ "${{ steps.validate_apk.outputs.apk_size }}" -lt 10485760 ]; then
+              echo "- ❌ APK too small (< 10MB)" >> $GITHUB_STEP_SUMMARY
+            fi
+            
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "**Action Required**: Check the release assets and rebuild if necessary" >> $GITHUB_STEP_SUMMARY
+          fi

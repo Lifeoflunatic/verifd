@@ -1,0 +1,293 @@
+name: APK Artifact Reality Check
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 2 * * *'  # Daily at 2 AM UTC
+
+jobs:
+  verify-apk:
+    name: Verify APK Artifact Exists
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: List Latest Successful Runs
+        id: list_runs
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          echo "🔍 Finding latest successful android-staging-apk.yml run..."
+          
+          # Get latest successful run
+          RUNS_JSON=$(curl -s \
+            -H "Authorization: token $GITHUB_TOKEN" \
+            -H "Accept: application/vnd.github.v3+json" \
+            "https://api.github.com/repos/${{ github.repository }}/actions/workflows/android-staging-apk.yml/runs?branch=main&status=success&per_page=1")
+          
+          # Save for evidence
+          echo "$RUNS_JSON" > run_listing.json
+          
+          # Extract run info
+          RUN_ID=$(echo "$RUNS_JSON" | jq -r '.workflow_runs[0].id')
+          HTML_URL=$(echo "$RUNS_JSON" | jq -r '.workflow_runs[0].html_url')
+          RUN_NUMBER=$(echo "$RUNS_JSON" | jq -r '.workflow_runs[0].run_number')
+          CREATED_AT=$(echo "$RUNS_JSON" | jq -r '.workflow_runs[0].created_at')
+          
+          if [ "$RUN_ID" == "null" ] || [ -z "$RUN_ID" ]; then
+            echo "❌ No successful runs found for android-staging-apk.yml"
+            exit 1
+          fi
+          
+          echo "✅ Found run #$RUN_NUMBER"
+          echo "  Run ID: $RUN_ID"
+          echo "  URL: $HTML_URL"
+          echo "  Created: $CREATED_AT"
+          
+          echo "run_id=$RUN_ID" >> $GITHUB_OUTPUT
+          echo "html_url=$HTML_URL" >> $GITHUB_OUTPUT
+          echo "run_number=$RUN_NUMBER" >> $GITHUB_OUTPUT
+      
+      - name: List Artifacts for Run
+        id: list_artifacts
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          echo "📦 Listing artifacts for run ${{ steps.list_runs.outputs.run_id }}..."
+          
+          # Get artifacts
+          ARTIFACTS_JSON=$(curl -s \
+            -H "Authorization: token $GITHUB_TOKEN" \
+            -H "Accept: application/vnd.github.v3+json" \
+            "https://api.github.com/repos/${{ github.repository }}/actions/runs/${{ steps.list_runs.outputs.run_id }}/artifacts")
+          
+          # Save for evidence
+          echo "$ARTIFACTS_JSON" > artifact_listing.json
+          
+          # Check for verifd-staging-apk artifact
+          ARTIFACT_ID=$(echo "$ARTIFACTS_JSON" | jq -r '.artifacts[] | select(.name == "verifd-staging-apk") | .id')
+          ARTIFACT_SIZE=$(echo "$ARTIFACTS_JSON" | jq -r '.artifacts[] | select(.name == "verifd-staging-apk") | .size_in_bytes')
+          ARTIFACT_EXPIRED=$(echo "$ARTIFACTS_JSON" | jq -r '.artifacts[] | select(.name == "verifd-staging-apk") | .expired')
+          
+          if [ -z "$ARTIFACT_ID" ]; then
+            echo "❌ Artifact 'verifd-staging-apk' not found"
+            echo "Available artifacts:"
+            echo "$ARTIFACTS_JSON" | jq -r '.artifacts[].name'
+            exit 1
+          fi
+          
+          if [ "$ARTIFACT_EXPIRED" == "true" ]; then
+            echo "⚠️ Artifact has expired"
+            exit 1
+          fi
+          
+          echo "✅ Found artifact 'verifd-staging-apk'"
+          echo "  Artifact ID: $ARTIFACT_ID"
+          echo "  Size: $ARTIFACT_SIZE bytes ($(($ARTIFACT_SIZE / 1048576)) MB)"
+          
+          echo "artifact_id=$ARTIFACT_ID" >> $GITHUB_OUTPUT
+          echo "artifact_size=$ARTIFACT_SIZE" >> $GITHUB_OUTPUT
+      
+      - name: Download Artifact
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          echo "⬇️ Downloading artifact ${{ steps.list_artifacts.outputs.artifact_id }}..."
+          
+          # Download artifact
+          curl -L \
+            -H "Authorization: token $GITHUB_TOKEN" \
+            -H "Accept: application/vnd.github.v3+json" \
+            "https://api.github.com/repos/${{ github.repository }}/actions/artifacts/${{ steps.list_artifacts.outputs.artifact_id }}/zip" \
+            -o artifact.zip
+          
+          # Extract
+          unzip -q artifact.zip -d ./artifact
+          
+          echo "📂 Artifact contents:"
+          ls -la ./artifact/
+      
+      - name: Verify APK Structure
+        id: verify_apk
+        run: |
+          echo "🔎 Verifying APK structure..."
+          
+          # Find APK files
+          APK_COUNT=$(find ./artifact -name "*.apk" -type f | wc -l)
+          
+          if [ "$APK_COUNT" -eq 0 ]; then
+            echo "❌ No APK files found in artifact"
+            exit 1
+          elif [ "$APK_COUNT" -gt 1 ]; then
+            echo "⚠️ Multiple APK files found, using first one"
+          fi
+          
+          # Get first APK
+          APK_PATH=$(find ./artifact -name "*.apk" -type f | head -1)
+          APK_NAME=$(basename "$APK_PATH")
+          APK_SIZE=$(stat -c%s "$APK_PATH" 2>/dev/null || stat -f%z "$APK_PATH")
+          
+          echo "✅ Found APK: $APK_NAME"
+          echo "  Path: $APK_PATH"
+          echo "  Size: $APK_SIZE bytes ($(($APK_SIZE / 1048576)) MB)"
+          
+          # Compute SHA256
+          SHA256=$(sha256sum "$APK_PATH" | cut -d' ' -f1)
+          echo "$SHA256  $APK_NAME" > apk.sha256
+          
+          echo "  SHA256: $SHA256"
+          
+          # Verify APK contains required files
+          echo ""
+          echo "📋 Checking APK contents..."
+          
+          # List APK contents
+          unzip -l "$APK_PATH" > apk_contents.txt
+          
+          # Check for AndroidManifest.xml
+          if ! unzip -l "$APK_PATH" | grep -q "AndroidManifest.xml"; then
+            echo "❌ AndroidManifest.xml not found in APK"
+            exit 1
+          fi
+          echo "✅ AndroidManifest.xml present"
+          
+          # Check for classes.dex
+          if ! unzip -l "$APK_PATH" | grep -q "classes.dex"; then
+            echo "❌ classes.dex not found in APK"
+            exit 1
+          fi
+          echo "✅ classes.dex present"
+          
+          # Check for resources
+          if ! unzip -l "$APK_PATH" | grep -q "resources.arsc"; then
+            echo "⚠️ resources.arsc not found (may be okay for some builds)"
+          else
+            echo "✅ resources.arsc present"
+          fi
+          
+          echo "apk_path=$APK_PATH" >> $GITHUB_OUTPUT
+          echo "apk_name=$APK_NAME" >> $GITHUB_OUTPUT
+          echo "apk_size=$APK_SIZE" >> $GITHUB_OUTPUT
+          echo "apk_sha256=$SHA256" >> $GITHUB_OUTPUT
+      
+      - name: Extract APK Metadata
+        run: |
+          APK_PATH="${{ steps.verify_apk.outputs.apk_path }}"
+          
+          # Try aapt if available
+          if command -v aapt &> /dev/null; then
+            echo "📱 Using aapt to extract metadata..."
+            aapt dump badging "$APK_PATH" > apk-badging.txt
+            echo "✅ Badging info saved to apk-badging.txt"
+          else
+            echo "📱 aapt not available, using fallback..."
+            
+            # Extract and check AndroidManifest.xml size
+            MANIFEST_SIZE=$(unzip -p "$APK_PATH" AndroidManifest.xml | wc -c)
+            
+            if [ "$MANIFEST_SIZE" -eq 0 ]; then
+              echo "❌ AndroidManifest.xml is empty"
+              exit 1
+            fi
+            
+            echo "AndroidManifest.xml size: $MANIFEST_SIZE bytes" > apk-badging.txt
+            echo "✅ Manifest size: $MANIFEST_SIZE bytes"
+          fi
+          
+          # Extract basic info from APK
+          echo "" >> apk-badging.txt
+          echo "=== APK Structure ===" >> apk-badging.txt
+          echo "Total files: $(unzip -l "$APK_PATH" | tail -1 | awk '{print $2}')" >> apk-badging.txt
+          echo "Compressed size: $(unzip -l "$APK_PATH" | tail -1 | awk '{print $1}')" >> apk-badging.txt
+          echo "DEX files: $(unzip -l "$APK_PATH" | grep -c '\.dex')" >> apk-badging.txt
+      
+      - name: Create Evidence Package
+        run: |
+          echo "📦 Creating evidence package..."
+          
+          # Create evidence directory
+          mkdir -p evidence
+          
+          # Copy all evidence files
+          cp apk.sha256 evidence/
+          cp apk-badging.txt evidence/
+          cp artifact_listing.json evidence/
+          cp run_listing.json evidence/
+          
+          # Create summary
+          cat > evidence/summary.json << EOF
+          {
+            "timestamp": "$(date -u +"%Y-%m-%dT%H:%M:%SZ")",
+            "run": {
+              "id": "${{ steps.list_runs.outputs.run_id }}",
+              "number": "${{ steps.list_runs.outputs.run_number }}",
+              "url": "${{ steps.list_runs.outputs.html_url }}"
+            },
+            "artifact": {
+              "id": "${{ steps.list_artifacts.outputs.artifact_id }}",
+              "size_bytes": ${{ steps.list_artifacts.outputs.artifact_size }}
+            },
+            "apk": {
+              "name": "${{ steps.verify_apk.outputs.apk_name }}",
+              "size_bytes": ${{ steps.verify_apk.outputs.apk_size }},
+              "sha256": "${{ steps.verify_apk.outputs.apk_sha256 }}"
+            },
+            "verification": "success"
+          }
+          EOF
+          
+          echo "✅ Evidence package ready"
+      
+      - name: Upload Evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: apk-reality-evidence
+          path: evidence/
+          retention-days: 30
+      
+      - name: Update Documentation
+        run: |
+          # Update OPS/STAGING_QA_LINKS.md with verified info
+          cat >> OPS/STAGING_QA_LINKS.md << EOF
+          
+          ---
+          
+          ## ✅ Android APK (Verified)
+          
+          **Last Verification**: $(date -u +"%Y-%m-%d %H:%M:%S UTC")
+          
+          | Property | Value |
+          |----------|-------|
+          | Run ID | [${{ steps.list_runs.outputs.run_id }}](${{ steps.list_runs.outputs.html_url }}) |
+          | Artifact ID | ${{ steps.list_artifacts.outputs.artifact_id }} |
+          | APK Name | ${{ steps.verify_apk.outputs.apk_name }} |
+          | Size | $((${{ steps.verify_apk.outputs.apk_size }} / 1048576)) MB |
+          | SHA256 | \`${{ steps.verify_apk.outputs.apk_sha256 }}\` |
+          | Status | ✅ Verified |
+          EOF
+          
+          echo "📝 Documentation updated"
+      
+      - name: Generate Summary
+        run: |
+          echo "## ✅ APK Reality Check - Verified" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Build Information" >> $GITHUB_STEP_SUMMARY
+          echo "- **Run ID**: [${{ steps.list_runs.outputs.run_id }}](${{ steps.list_runs.outputs.html_url }})" >> $GITHUB_STEP_SUMMARY
+          echo "- **Run Number**: #${{ steps.list_runs.outputs.run_number }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Artifact Details" >> $GITHUB_STEP_SUMMARY
+          echo "- **Artifact ID**: ${{ steps.list_artifacts.outputs.artifact_id }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Artifact Size**: $((${{ steps.list_artifacts.outputs.artifact_size }} / 1048576)) MB" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### APK Verification" >> $GITHUB_STEP_SUMMARY
+          echo "- **APK Name**: ${{ steps.verify_apk.outputs.apk_name }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **APK Size**: $((${{ steps.verify_apk.outputs.apk_size }} / 1048576)) MB" >> $GITHUB_STEP_SUMMARY
+          echo "- **SHA256**: \`${{ steps.verify_apk.outputs.apk_sha256 }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Structure Validation" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ AndroidManifest.xml present" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ classes.dex present" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ Valid APK structure confirmed" >> $GITHUB_STEP_SUMMARY
