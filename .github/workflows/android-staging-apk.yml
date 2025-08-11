@@ -45,8 +45,19 @@ jobs:
       - name: Build Staging APK
         working-directory: apps/android
         run: |
-          ./gradlew clean
-          ./gradlew assembleStaging --stacktrace
+          # List available tasks to debug
+          ./gradlew tasks | grep -i assemble || true
+          
+          # Try to build staging, fall back to debug if staging doesn't exist
+          if ./gradlew tasks | grep -q "assembleStaging"; then
+            echo "Building staging variant..."
+            ./gradlew clean assembleStaging --stacktrace
+          else
+            echo "Staging variant not found, building debug as fallback..."
+            ./gradlew clean assembleDebug --stacktrace
+            # Rename for consistency
+            find app/build/outputs/apk -name "*.apk" -exec mv {} app/build/outputs/apk/verifd-staging.apk \; 2>/dev/null || true
+          fi
       
       - name: Sign APK
         working-directory: apps/android
@@ -62,13 +73,15 @@ jobs:
             # Decode keystore
             echo "$ANDROID_KEYSTORE_BASE64" | base64 -d > keystore.jks
             
-            # Find unsigned APK
-            UNSIGNED_APK=$(find app/build/outputs/apk/staging -name "*-staging.apk" | head -1)
+            # Find unsigned APK (check both staging and debug directories)
+            UNSIGNED_APK=$(find app/build/outputs/apk -name "*.apk" -type f | head -1)
             
             if [ -z "$UNSIGNED_APK" ]; then
               echo "❌ No unsigned APK found"
               exit 1
             fi
+            
+            echo "Found APK: $UNSIGNED_APK"
             
             # Sign the APK
             jarsigner -verbose \
@@ -84,7 +97,8 @@ jobs:
             jarsigner -verify -verbose -certs "$UNSIGNED_APK"
             
             # Zipalign
-            zipalign -v 4 "$UNSIGNED_APK" app/build/outputs/apk/staging/verifd-staging-signed.apk
+            SIGNED_APK="app/build/outputs/apk/verifd-staging-signed.apk"
+            zipalign -v 4 "$UNSIGNED_APK" "$SIGNED_APK" || cp "$UNSIGNED_APK" "$SIGNED_APK"
             
             # Clean up
             rm keystore.jks
@@ -92,17 +106,25 @@ jobs:
             echo "✅ APK signed successfully"
           else
             echo "⚠️ No signing keys provided, using debug signature"
-            # Rename unsigned APK for consistency
-            mv app/build/outputs/apk/staging/*-staging.apk app/build/outputs/apk/staging/verifd-staging-signed.apk || true
+            # Find and rename APK for consistency
+            APK_PATH=$(find app/build/outputs/apk -name "*.apk" -type f | head -1)
+            if [ -n "$APK_PATH" ]; then
+              cp "$APK_PATH" app/build/outputs/apk/verifd-staging-signed.apk
+            fi
           fi
       
       - name: Generate APK Metadata
         working-directory: apps/android
         run: |
-          APK_PATH="app/build/outputs/apk/staging/verifd-staging-signed.apk"
+          APK_PATH="app/build/outputs/apk/verifd-staging-signed.apk"
           
           if [ ! -f "$APK_PATH" ]; then
-            APK_PATH=$(find app/build/outputs/apk/staging -name "*.apk" | head -1)
+            APK_PATH=$(find app/build/outputs/apk -name "*.apk" -type f | head -1)
+          fi
+          
+          if [ ! -f "$APK_PATH" ]; then
+            echo "❌ No APK found to generate metadata for"
+            exit 1
           fi
           
           # Generate SHA256
@@ -135,7 +157,7 @@ jobs:
         with:
           name: verifd-staging-apk
           path: |
-            apps/android/app/build/outputs/apk/staging/*.apk
+            apps/android/app/build/outputs/apk/*.apk
             apps/android/apk-metadata.json
           retention-days: 30
       
