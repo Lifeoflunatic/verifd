@@ -26,9 +26,22 @@ android {
     }
 
     buildTypes {
+        debug {
+            buildConfigField "String", "BASE_URL", "\"http://10.0.2.2:3000\""  // Android emulator localhost
+            buildConfigField "String", "BUILD_VARIANT", "\"debug\""
+        }
+        staging {
+            initWith debug
+            applicationIdSuffix ".staging"
+            resValue "string", "app_name", "verifd Staging"
+            buildConfigField "String", "BASE_URL", "\"https://staging.api.verifd.com\""
+            buildConfigField "String", "BUILD_VARIANT", "\"staging\""
+        }
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            buildConfigField "String", "BASE_URL", "\"https://api.verifd.com\""
+            buildConfigField "String", "BUILD_VARIANT", "\"release\""
         }
     }
     

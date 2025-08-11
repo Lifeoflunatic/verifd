@@ -25,5 +25,9 @@
 	<string>verifd needs to create temporary contacts for verified callers (30-day passes only)</string>
 	<key>NSCallDirectoryUsageDescription</key>
 	<string>verifd labels verified calls to identify legitimate callers</string>
+	<key>BackendURL</key>
+	<string>$(BACKEND_URL)</string>
+	<key>BuildVariant</key>
+	<string>$(BUILD_VARIANT)</string>
 </dict>
 </plist>

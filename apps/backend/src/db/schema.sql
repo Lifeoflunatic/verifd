@@ -48,4 +48,25 @@ CREATE TABLE IF NOT EXISTS call_logs (
 
 CREATE INDEX IF NOT EXISTS idx_call_logs_timestamp ON call_logs(timestamp);
 CREATE INDEX IF NOT EXISTS idx_call_logs_from_number ON call_logs(from_number);
+
+-- Devices table for mobile authentication
+CREATE TABLE IF NOT EXISTS devices (
+  device_id TEXT PRIMARY KEY,
+  device_key TEXT NOT NULL,
+  platform TEXT, -- 'ios' or 'android'
+  model TEXT,
+  app_version TEXT,
+  created_at INTEGER NOT NULL DEFAULT (unixepoch()),
+  last_seen_at INTEGER NOT NULL DEFAULT (unixepoch()),
+  is_active INTEGER DEFAULT 1,
+  revoked_at INTEGER,
+  metadata TEXT -- JSON field for additional data
+);
+
+CREATE INDEX IF NOT EXISTS idx_devices_last_seen ON devices(last_seen_at);
+CREATE INDEX IF NOT EXISTS idx_devices_active ON devices(is_active);
+
+-- Add channel column to passes if not exists
+-- This tracks how the pass was granted: 'sms', 'wa', 'voice', 'device'
+ALTER TABLE passes ADD COLUMN channel TEXT DEFAULT 'sms';
 CREATE INDEX IF NOT EXISTS idx_call_logs_to_number ON call_logs(to_number);

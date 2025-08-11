@@ -130,6 +130,35 @@ val intent = Intent(Intent.ACTION_SENDTO, Uri.parse("sms:$phoneNumber")).apply {
 
 ## Development
 
+### Backend URL Configuration
+
+The app supports three build variants with different backend URLs:
+
+| Variant | Backend URL | Usage |
+|---------|------------|-------|
+| **debug** | `http://10.0.2.2:3000` | Development with Android emulator |
+| **staging** | `https://staging-api.verifd.com` | QA testing |
+| **release** | `https://api.verifd.com` | Production |
+
+#### Emulator vs Device URLs
+
+**Android Emulator:**
+- Use `http://10.0.2.2:3000` to access host machine's localhost
+- This is the default for debug builds
+
+**Physical Device:**
+1. Find your machine's IP: `ifconfig | grep inet`
+2. Start backend on all interfaces: `HOST=0.0.0.0 PORT=3000 pnpm -F @verifd/backend dev`
+3. Set custom URL in app: `BackendClient.getInstance(context).setCustomBackendUrl("http://YOUR_IP:3000")`
+4. Ensure device and machine are on same network
+
+**Runtime Override (for developers):**
+```kotlin
+val client = BackendClient.getInstance(context)
+client.setCustomBackendUrl("http://192.168.1.100:3000")  // Set custom
+client.setCustomBackendUrl(null)  // Reset to build default
+```
+
 ### Testing
 Run unit tests with:
 ```bash
@@ -137,9 +166,10 @@ Run unit tests with:
 ```
 
 ### Building
-Build release APK:
 ```bash
-./gradlew assembleRelease
+./gradlew assembleDebug    # Debug build with local backend
+./gradlew assembleStaging  # Staging build
+./gradlew assembleRelease  # Production build
 ```
 
 ## Store Compliance Summary

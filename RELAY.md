@@ -103,6 +103,12 @@ Note: Backend respects PORT environment variable (default 3000). Metrics are und
 - Confirmed subagent files (android-agent, ios-agent, backend-agent)
 - Initialized project memory with core facts and relationships
 
+### 2025-08-10 - Hotfix: PassRowSchema.id Type Correction
+- **Issue:** PassRowSchema.id incorrectly typed as z.number()
+- **Fix:** Change to z.string() to match SQLite TEXT/VARCHAR storage
+- **Reason:** Database IDs are strings to avoid JS number precision issues
+- **Impact:** Type safety maintained, no behavior changes
+
 ### 2025-08-10 - Zod Row Typing Enhancement
 - **Plan:** Fix TypeScript build errors by properly typing DB rows with Zod schemas
 - **Changes needed in pass.ts:**

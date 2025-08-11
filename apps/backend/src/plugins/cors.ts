@@ -37,3 +37,5 @@ export const corsPlugin: FastifyPluginAsync = async (server) => {
     return reply.code(204).send();
   });
 };
+
+export default corsPlugin;

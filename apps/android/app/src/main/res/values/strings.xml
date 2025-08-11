@@ -33,4 +33,16 @@
     
     <!-- Identity Ping template -->
     <string name="identity_ping_template">Hey—it\'s %1$s. I screen unknown calls. Reply with Name + Reason or tap to verify: %2$s</string>
+    
+    <!-- Expecting Window -->
+    <string name="expecting_window_notification_title">Expecting calls</string>
+    <string name="expecting_window_notification_content">Allow unknown calls for %1$dm remaining</string>
+    <string name="expecting_window_action_stop">Stop</string>
+    <string name="expecting_window_action_settings">Settings</string>
+    
+    <!-- Tile Service -->
+    <string name="tile_expecting_15m">Expecting 15m</string>
+    <string name="tile_expecting_30m">Expecting 30m</string>
+    <string name="tile_expecting_active">Expecting (%1$dm)</string>
+    <string name="tile_expecting_disabled">Expecting (Disabled)</string>
 </resources>

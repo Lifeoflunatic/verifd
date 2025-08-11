@@ -1,34 +1,79 @@
 ---HANDOFF---
-Task: verifd – Zod row typing + health/metrics documentation
-When: 2025-08-10T17:49:00Z
+Task: (auto) Fallback handoff — assistant reply had no explicit ---HANDOFF---
+When: 2025-08-11T15:33:41Z
 Branch: feat/zod-row-typing
 
 Diff Summary:
- HANDOFF.md                        | 137 +++++-----
- OPS/HANDOFF_HISTORY.md            | 536 ++++++++++++++++++++++++++++++++++++++
- OPS/LAST_HANDOFF.txt              |  30 +--
- apps/backend/src/routes/health.ts |   7 +-
- apps/backend/src/server.ts        |   5 +-
- 5 files changed, 613 insertions(+), 102 deletions(-)
+ .github/workflows/ci.yml                           |  514 +-
+ HANDOFF.md                                         |  322 +-
+ OPS/HANDOFF_HISTORY.md                             | 5944 ++++++++++++++++++++
+ OPS/LAST_HANDOFF.txt                               |   81 +-
+ README.md                                          |   33 +-
+ RELAY.md                                           |    6 +
+ apps/android/README.md                             |   34 +-
+ apps/android/app/build.gradle                      |   11 +
+ apps/android/app/src/main/AndroidManifest.xml      |    5 +
+ .../com/verifd/android/data/ContactRepository.kt   |   57 +
+ .../verifd/android/service/CallScreeningService.kt |  146 +-
+ .../java/com/verifd/android/ui/PostCallActivity.kt |   98 +-
+ apps/android/app/src/main/res/values/strings.xml   |   12 +
+ apps/backend/.env.example                          |   41 +-
+ apps/backend/package.json                          |   17 +-
+ apps/backend/src/config.ts                         |   82 +-
+ apps/backend/src/db/schema.sql                     |   21 +
+ apps/backend/src/plugins/cors.ts                   |    4 +-
+ apps/backend/src/routes/health.ts                  |  106 +-
+ apps/backend/src/routes/index.ts                   |   33 +-
+ apps/backend/src/routes/pass.ts                    |  159 +-
+ apps/backend/src/server.ts                         |    7 +-
+ apps/backend/test/verify.hmac.mock.test.ts         |   24 +-
+ apps/backend/vitest.config.ts                      |   26 +-
+ .../CallDirectoryHandler.swift                     |    9 +
+ apps/ios/verifd/Info.plist                         |    4 +
+ apps/ios/verifd/VerifdPassManager.swift            |   32 +
+ apps/web-verify/app/page.tsx                       |   17 +-
+ package.json                                       |    1 +
+ packages/shared/src/constants.ts                   |   24 +
+ packages/shared/src/types/index.ts                 |   20 +
+ pnpm-lock.yaml                                     |  263 +-
+ 32 files changed, 7741 insertions(+), 412 deletions(-)
 
 Files Touched:
+.github/workflows/ci.yml
 HANDOFF.md
 OPS/HANDOFF_HISTORY.md
 OPS/LAST_HANDOFF.txt
+README.md
+RELAY.md
+apps/android/README.md
+apps/android/app/build.gradle
+apps/android/app/src/main/AndroidManifest.xml
+apps/android/app/src/main/java/com/verifd/android/data/ContactRepository.kt
+apps/android/app/src/main/java/com/verifd/android/service/CallScreeningService.kt
+apps/android/app/src/main/java/com/verifd/android/ui/PostCallActivity.kt
+apps/android/app/src/main/res/values/strings.xml
+apps/backend/.env.example
+apps/backend/package.json
+apps/backend/src/config.ts
+apps/backend/src/db/schema.sql
+apps/backend/src/plugins/cors.ts
 apps/backend/src/routes/health.ts
+apps/backend/src/routes/index.ts
+apps/backend/src/routes/pass.ts
 apps/backend/src/server.ts
+apps/backend/test/verify.hmac.mock.test.ts
+apps/backend/vitest.config.ts
+apps/ios/CallDirectoryExtension/CallDirectoryHandler.swift
+apps/ios/verifd/Info.plist
+apps/ios/verifd/VerifdPassManager.swift
+apps/web-verify/app/page.tsx
+package.json
+packages/shared/src/constants.ts
+packages/shared/src/types/index.ts
+pnpm-lock.yaml
 
 Last Commit:
-c94af3f typing: Zod-validate DB rows in pass.ts & verify.ts; fix SELECTs
-
-## Today's Summary (2025-08-10)
-- Branch created: feat/zod-row-typing (pushed to GitHub)
-- DB path fix: var/db/verifd.sqlite with auto-mkdir
-- Zod typing: DB rows validated at query boundaries in pass.ts and verify.ts
-- Health aliases: /health, /health/health, /healthz all working
-- PORT support: Backend respects PORT env variable (default 3000)
-- Metrics: Available at /health/metrics (not /metrics)
-- TypeScript: Build passes with zero errors
+c363aaa fix: Android APK build workflow - handle missing staging variant
 
 Commands/Tests Run (tail):
 

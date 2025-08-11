@@ -4,6 +4,30 @@ export const VERIFICATION_EXPIRY_MINUTES = 15;
 export const VOICE_PING_MAX_SECONDS = 3;
 export const VOICE_PING_MAX_SIZE_BYTES = 500_000; // ~500KB
 
+// vPass scope durations (in seconds)
+export const VPASS_SCOPES = {
+  '30m': 30 * 60,
+  '24h': 24 * 60 * 60,
+  '30d': 30 * 24 * 60 * 60,
+} as const;
+
+// Policy constants
+export const POLICY = {
+  voicePing: {
+    maxPerDay: 3,
+    businessHoursOnly: true,
+    businessStart: '09:00',
+    businessEnd: '17:00',
+  },
+  rateLimits: {
+    perIp: { max: 5, windowMs: 60000 }, // 5 per minute
+    perPhone: { max: 10, windowMs: 60000 }, // 10 per minute
+  },
+  channels: ['sms', 'wa', 'voice'] as const,
+  defaultChannel: 'sms' as const,
+  defaultScope: '24h' as const,
+} as const;
+
 // SMS Template
 export const IDENTITY_PING_TEMPLATE = `Hi {{recipientName}}, this is {{senderName}}. I'm trying to reach you about: {{reason}}. 
 

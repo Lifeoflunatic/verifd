@@ -219,4 +219,61 @@ class ContactRepository private constructor(
             expecting
         }
     }
+    
+    /**
+     * Add phone number to blocked list (placeholder implementation)
+     * In a full implementation, this would integrate with system call blocking
+     */
+    suspend fun addBlockedNumber(phoneNumber: String) {
+        withContext(Dispatchers.IO) {
+            try {
+                val normalizedNumber = PhoneNumberUtils.normalize(phoneNumber)
+                
+                // For now, store in SharedPreferences
+                // In a full implementation, this would integrate with system call blocking APIs
+                val blockedNumbers = getBlockedNumbers().toMutableSet()
+                blockedNumbers.add(normalizedNumber)
+                
+                prefs.edit()
+                    .putStringSet("blocked_numbers", blockedNumbers)
+                    .apply()
+                
+                Log.d(TAG, "Added $normalizedNumber to blocked list")
+                
+            } catch (e: Exception) {
+                Log.e(TAG, "Error adding blocked number: $phoneNumber", e)
+                throw e
+            }
+        }
+    }
+    
+    /**
+     * Get all blocked phone numbers
+     */
+    suspend fun getBlockedNumbers(): Set<String> {
+        return withContext(Dispatchers.IO) {
+            try {
+                prefs.getStringSet("blocked_numbers", emptySet()) ?: emptySet()
+            } catch (e: Exception) {
+                Log.e(TAG, "Error getting blocked numbers", e)
+                emptySet()
+            }
+        }
+    }
+    
+    /**
+     * Check if phone number is blocked
+     */
+    suspend fun isBlockedNumber(phoneNumber: String): Boolean {
+        return withContext(Dispatchers.IO) {
+            try {
+                val normalizedNumber = PhoneNumberUtils.normalize(phoneNumber)
+                val blockedNumbers = getBlockedNumbers()
+                blockedNumbers.contains(normalizedNumber)
+            } catch (e: Exception) {
+                Log.e(TAG, "Error checking if number is blocked: $phoneNumber", e)
+                false
+            }
+        }
+    }
 }

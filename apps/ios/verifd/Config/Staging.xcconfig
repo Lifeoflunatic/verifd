@@ -1,0 +1,11 @@
+// Staging Configuration
+// For QA and pre-production testing
+
+// Backend API URL - staging environment
+BACKEND_URL = https://staging-api.verifd.com
+
+// Build variant identifier
+BUILD_VARIANT = staging
+
+// Enable limited logging
+DEBUG_LOGGING_ENABLED = YES

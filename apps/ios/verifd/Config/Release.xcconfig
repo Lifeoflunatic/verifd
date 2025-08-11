@@ -1,0 +1,11 @@
+// Release Configuration
+// For production deployment
+
+// Backend API URL - production environment
+BACKEND_URL = https://api.verifd.com
+
+// Build variant identifier
+BUILD_VARIANT = release
+
+// Disable debug logging
+DEBUG_LOGGING_ENABLED = NO

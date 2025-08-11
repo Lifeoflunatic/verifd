@@ -10,9 +10,13 @@ import android.telecom.CallScreeningService
 import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.core.app.ActivityCompat
+import com.verifd.android.config.FeatureFlags
+import com.verifd.android.data.BackendClient
 import com.verifd.android.data.ContactRepository
+import com.verifd.android.notification.MissedCallNotificationManager
 import com.verifd.android.ui.PostCallActivity
 import com.verifd.android.util.PhoneNumberUtils
+import com.verifd.android.util.RiskAssessment
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -99,6 +103,14 @@ class CallScreeningService : CallScreeningService() {
     }
     
     private val serviceScope = CoroutineScope(Dispatchers.Main)
+    private val riskAssessment = RiskAssessment.getInstance()
+    private lateinit var notificationManager: MissedCallNotificationManager
+    
+    override fun onCreate() {
+        super.onCreate()
+        FeatureFlags.initialize(this)
+        notificationManager = MissedCallNotificationManager.getInstance(this)
+    }
     
     override fun onScreenCall(callDetails: Call.Details) {
         Log.d(TAG, "Screening call from: ${callDetails.handle}")
@@ -129,10 +141,8 @@ class CallScreeningService : CallScreeningService() {
             val screeningResponse = processCall(normalizedNumber, callDetails)
             respondToCall(callDetails, screeningResponse)
             
-            // Schedule post-call sheet if this is an unknown caller (no vPass, not in contacts)
-            if (screeningResponse.callerDisplayName == UNKNOWN_CALLER_LABEL) {
-                schedulePostCallSheet(normalizedNumber)
-            }
+            // Handle missed call notifications and post-call actions
+            handlePostCallActions(normalizedNumber, screeningResponse)
         }
     }
     
@@ -143,14 +153,19 @@ class CallScreeningService : CallScreeningService() {
         try {
             val repository = ContactRepository.getInstance(this)
             
-            // Check if caller is in vPass allowlist
+            // Perform risk assessment early
+            val riskAssessmentResult = riskAssessment.assessCall(callDetails, phoneNumber)
+            Log.d(TAG, "Risk assessment: ${riskAssessmentResult.tier} (confidence: ${riskAssessmentResult.confidence})")
+            
+            // First check local vPass allowlist (fast path)
             val vPassEntry = repository.getValidVPass(phoneNumber)
             if (vPassEntry != null) {
-                Log.d(TAG, "Caller has valid vPass: $phoneNumber")
+                Log.d(TAG, "Caller has valid local vPass: $phoneNumber")
                 return CallResponse(
                     shouldAllowCall = true,
                     callerDisplayName = vPassEntry.name,
-                    shouldShowAsSpam = false
+                    shouldShowAsSpam = false,
+                    riskAssessment = riskAssessmentResult
                 )
             }
             
@@ -161,26 +176,115 @@ class CallScreeningService : CallScreeningService() {
                 return CallResponse(
                     shouldAllowCall = true,
                     callerDisplayName = null, // Let system handle
-                    shouldShowAsSpam = false
+                    shouldShowAsSpam = false,
+                    riskAssessment = riskAssessmentResult
                 )
             }
             
-            // Unknown caller - label and allow (don't auto-reject)
+            // Unknown caller - check backend for pass
+            Log.d(TAG, "Unknown caller, checking backend: $phoneNumber")
+            val backendClient = BackendClient.getInstance(this)
+            
+            try {
+                val passResult = backendClient.checkPass(phoneNumber)
+                when (passResult) {
+                    is BackendClient.PassCheckResult.Allowed -> {
+                        Log.d(TAG, "Backend pass found for: $phoneNumber")
+                        
+                        // Cache in local store for next time
+                        repository.addVPass(
+                            phoneNumber = phoneNumber,
+                            name = passResult.grantedToName,
+                            reason = "Backend verified",
+                            expiresAt = System.currentTimeMillis() + (24 * 60 * 60 * 1000) // TODO: Parse actual expiry
+                        )
+                        
+                        return CallResponse(
+                            shouldAllowCall = true,
+                            callerDisplayName = passResult.grantedToName,
+                            shouldShowAsSpam = false,
+                            riskAssessment = riskAssessmentResult
+                        )
+                    }
+                    is BackendClient.PassCheckResult.NotAllowed -> {
+                        Log.d(TAG, "No backend pass for: $phoneNumber")
+                    }
+                    is BackendClient.PassCheckResult.RateLimited -> {
+                        Log.w(TAG, "Backend rate limited, falling back to local")
+                    }
+                    is BackendClient.PassCheckResult.Error -> {
+                        Log.e(TAG, "Backend error: ${passResult.message}")
+                    }
+                }
+            } catch (e: Exception) {
+                Log.e(TAG, "Failed to check backend", e)
+                // Continue with local-only decision
+            }
+            
+            // No pass found - make decision based on risk assessment
             Log.d(TAG, "Unknown caller, will label: $phoneNumber")
+            
+            // Handle high-risk calls with potential blocking
+            val shouldAllowCall = when (riskAssessmentResult.tier) {
+                RiskAssessment.RiskTier.CRITICAL -> {
+                    Log.w(TAG, "Blocking critical risk call: $phoneNumber")
+                    false
+                }
+                RiskAssessment.RiskTier.HIGH -> {
+                    // Allow but silence high-risk calls
+                    Log.w(TAG, "Allowing but silencing high-risk call: $phoneNumber")
+                    true
+                }
+                else -> true
+            }
+            
             return CallResponse(
-                shouldAllowCall = true,
+                shouldAllowCall = shouldAllowCall,
                 callerDisplayName = UNKNOWN_CALLER_LABEL,
-                shouldShowAsSpam = false
+                shouldShowAsSpam = riskAssessmentResult.tier == RiskAssessment.RiskTier.CRITICAL,
+                riskAssessment = riskAssessmentResult
             )
             
         } catch (e: Exception) {
             Log.e(TAG, "Error processing call screening", e)
-            // Fail safe - allow call
+            // Fail safe - allow call with basic risk assessment
+            val fallbackRiskAssessment = riskAssessment.assessCall(callDetails, phoneNumber)
             return CallResponse(
                 shouldAllowCall = true,
                 callerDisplayName = null,
-                shouldShowAsSpam = false
+                shouldShowAsSpam = false,
+                riskAssessment = fallbackRiskAssessment
             )
+        }
+    }
+    
+    private fun handlePostCallActions(phoneNumber: String, response: CallResponse) {
+        Log.d(TAG, "Handling post-call actions for: $phoneNumber")
+        
+        // Show missed call notification with action buttons (if enabled)
+        if (FeatureFlags.isMissedCallActionsEnabled && 
+            response.callerDisplayName == UNKNOWN_CALLER_LABEL) {
+            
+            // Delay slightly to avoid interfering with ongoing call
+            serviceScope.launch {
+                kotlinx.coroutines.delay(2000) // 2 second delay
+                try {
+                    notificationManager.showMissedCallNotification(
+                        phoneNumber = phoneNumber,
+                        callerName = response.callerDisplayName,
+                        riskAssessment = response.riskAssessment
+                    )
+                } catch (e: Exception) {
+                    Log.e(TAG, "Failed to show missed call notification", e)
+                }
+            }
+        }
+        
+        // Schedule traditional post-call sheet for unknown callers (as fallback or when notifications disabled)
+        if (response.callerDisplayName == UNKNOWN_CALLER_LABEL && 
+            (!FeatureFlags.isMissedCallActionsEnabled || 
+             response.riskAssessment?.tier == RiskAssessment.RiskTier.CRITICAL)) {
+            schedulePostCallSheet(phoneNumber)
         }
     }
     
@@ -204,17 +308,24 @@ class CallScreeningService : CallScreeningService() {
     }
     
     private fun respondToCall(callDetails: Call.Details, response: CallResponse) {
+        val riskAssessment = response.riskAssessment
+        
         val responseBuilder = CallScreeningService.CallResponse.Builder()
             .setDisallowCall(!response.shouldAllowCall)
             .setRejectCall(!response.shouldAllowCall)
-            .setSkipCallLog(false)
-            .setSkipNotification(false)
-            .setSilenceCall(false)
+            .setSkipCallLog(riskAssessment?.shouldSkipCallLog ?: false)
+            .setSkipNotification(riskAssessment?.shouldSkipNotification ?: false)
+            .setSilenceCall(riskAssessment?.shouldSilenceCall ?: false)
         
         // Set caller display name if provided
         response.callerDisplayName?.let { displayName ->
             responseBuilder.setCallScreeningAppName(displayName)
         }
+        
+        Log.d(TAG, "Responding to call: allow=${response.shouldAllowCall}, " +
+                "skipLog=${riskAssessment?.shouldSkipCallLog}, " +
+                "skipNotification=${riskAssessment?.shouldSkipNotification}, " +
+                "silence=${riskAssessment?.shouldSilenceCall}")
         
         respondToCall(callDetails, responseBuilder.build())
     }
@@ -225,6 +336,7 @@ class CallScreeningService : CallScreeningService() {
     private data class CallResponse(
         val shouldAllowCall: Boolean,
         val callerDisplayName: String?,
-        val shouldShowAsSpam: Boolean
+        val shouldShowAsSpam: Boolean,
+        val riskAssessment: RiskAssessment.RiskAssessmentResult? = null
     )
 }

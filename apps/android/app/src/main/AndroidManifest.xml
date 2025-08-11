@@ -36,7 +36,7 @@
 
         <!-- Main Activity -->
         <activity
-            android:name=".ui.MainActivity"
+            android:name=".MainActivity"
             android:exported="true"
             android:theme="@style/Theme.Verifd">
             <intent-filter>
@@ -44,6 +44,13 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <!-- Debug Panel Activity (staging only) -->
+        <activity
+            android:name=".ui.DebugPanelActivity"
+            android:exported="false"
+            android:theme="@style/Theme.Verifd"
+            android:label="Debug Panel" />
 
         <!-- Call Screening Service -->
         <service
@@ -78,6 +85,11 @@
         <!-- Background cleanup service -->
         <service
             android:name=".service.CleanupService"
+            android:exported="false" />
+
+        <!-- Notification action receiver -->
+        <receiver
+            android:name=".receiver.NotificationActionReceiver"
             android:exported="false" />
 
     </application>

@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { getApiEndpoint, getEnvironmentBadge } from '../src/config';
 
 export default function Home() {
   const [formData, setFormData] = useState({
@@ -15,6 +16,7 @@ export default function Home() {
   const [token, setToken] = useState<string | null>(null);
   const router = useRouter();
   const searchParams = useSearchParams();
+  const environmentBadge = getEnvironmentBadge();
 
   useEffect(() => {
     // Check if we have a token in the URL (from vanity redirect)
@@ -30,11 +32,9 @@ export default function Home() {
     setError('');
 
     try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:3001';
-      
       if (token) {
         // We have a token from vanity URL - submit the verification form
-        const response = await fetch(`${apiUrl}/verify/submit`, {
+        const response = await fetch(getApiEndpoint('/verify/submit'), {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -62,7 +62,7 @@ export default function Home() {
         router.push(`/success?token=${encodeURIComponent(token)}&granted=${data.passGranted}`);
       } else {
         // No token - start a new verification request
-        const response = await fetch(`${apiUrl}/verify/start`, {
+        const response = await fetch(getApiEndpoint('/verify/start'), {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -100,7 +100,14 @@ export default function Home() {
     <div className="min-h-screen flex items-center justify-center p-4">
       <div className="max-w-md w-full bg-white rounded-lg shadow-md p-6" data-testid="verify-form">
         <div className="text-center mb-6">
-          <h1 className="text-2xl font-bold text-gray-900">verifd</h1>
+          <div className="flex items-center justify-center gap-2">
+            <h1 className="text-2xl font-bold text-gray-900">verifd</h1>
+            {environmentBadge && (
+              <span className={`px-2 py-1 text-xs font-medium border rounded-full ${environmentBadge.className}`}>
+                {environmentBadge.label}
+              </span>
+            )}
+          </div>
           <p className="text-gray-600 mt-2">
             {token ? 'Approve or deny call verification' : 'Request call verification'}
           </p>
