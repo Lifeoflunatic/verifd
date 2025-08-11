@@ -20,6 +20,9 @@ import com.verifd.android.util.RiskAssessment
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import java.util.Date
+import com.verifd.android.data.model.VPassEntry
+import kotlinx.coroutines.launch
 
 /**
  * CallScreeningService implementation that labels unknown calls and triggers
@@ -192,12 +195,17 @@ class CallScreeningService : CallScreeningService() {
                         Log.d(TAG, "Backend pass found for: $phoneNumber")
                         
                         // Cache in local store for next time
-                        repository.addVPass(
-                            phoneNumber = phoneNumber,
-                            name = passResult.grantedToName,
-                            reason = "Backend verified",
-                            expiresAt = System.currentTimeMillis() + (24 * 60 * 60 * 1000) // TODO: Parse actual expiry
-                        )
+                        CoroutineScope(Dispatchers.IO).launch {
+                            val expiresAt = Date(System.currentTimeMillis() + (24 * 60 * 60 * 1000)) // TODO: Parse actual expiry
+                            val vPassEntry = VPassEntry(
+                                phoneNumber = phoneNumber,
+                                name = passResult.grantedToName,
+                                duration = VPassEntry.Duration.HOURS_24,
+                                createdAt = Date(),
+                                expiresAt = expiresAt
+                            )
+                            repository.insertVPass(vPassEntry)
+                        }
                         
                         return CallResponse(
                             shouldAllowCall = true,
@@ -317,10 +325,8 @@ class CallScreeningService : CallScreeningService() {
             .setSkipNotification(riskAssessment?.shouldSkipNotification ?: false)
             .setSilenceCall(riskAssessment?.shouldSilenceCall ?: false)
         
-        // Set caller display name if provided
-        response.callerDisplayName?.let { displayName ->
-            responseBuilder.setCallScreeningAppName(displayName)
-        }
+        // Note: Display name cannot be set via CallScreeningService API
+        // It's only shown in our UI, not in system call log
         
         Log.d(TAG, "Responding to call: allow=${response.shouldAllowCall}, " +
                 "skipLog=${riskAssessment?.shouldSkipCallLog}, " +

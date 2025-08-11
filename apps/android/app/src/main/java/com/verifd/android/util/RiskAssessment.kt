@@ -139,19 +139,19 @@ class RiskAssessment {
                 callDetails.callerNumberVerificationStatus
             } catch (e: Exception) {
                 Log.w(TAG, "Unable to access caller verification status", e)
-                Call.Details.CALLER_NUMBER_VERIFICATION_NOT_VERIFIED
+                android.telecom.Call.Details.CALLER_NUMBER_VERIFICATION_NOT_VERIFIED
             }
             
             return when (verificationStatus) {
-                Call.Details.CALLER_NUMBER_VERIFICATION_PASSED -> {
+                android.telecom.Call.Details.CALLER_NUMBER_VERIFICATION_PASSED -> {
                     reasons.add("Full STIR/SHAKEN attestation")
                     0.0f // Low risk
                 }
-                Call.Details.CALLER_NUMBER_VERIFICATION_FAILED -> {
+                android.telecom.Call.Details.CALLER_NUMBER_VERIFICATION_FAILED -> {
                     reasons.add("Failed STIR/SHAKEN verification")
                     0.8f // High risk
                 }
-                Call.Details.CALLER_NUMBER_VERIFICATION_NOT_VERIFIED -> {
+                android.telecom.Call.Details.CALLER_NUMBER_VERIFICATION_NOT_VERIFIED -> {
                     reasons.add("No STIR/SHAKEN attestation")
                     0.4f // Medium risk
                 }

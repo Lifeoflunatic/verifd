@@ -60,6 +60,18 @@
 - Android SDK with compileSdk 34
 - Gradle 8.x with Kotlin support
 
+## Additional Fixes Applied (Round 2)
+
+### 1. Fixed Compilation Errors
+- Fixed CALLER_NUMBER_VERIFICATION constants to use fully qualified names (android.telecom.Call.Details.*)
+- Fixed Manifest.permission.CALL_LOG to READ_CALL_LOG
+- Created missing ApiService.kt for network requests
+- Created missing ic_block.xml drawable resource
+- Fixed CallScreeningService to use insertVPass instead of addVPass
+- Fixed VPassEntry constructor parameters
+- Removed invalid setCallScreeningAppName method call
+- Added proper coroutine scope and imports
+
 ## Testing the Build
 ```bash
 cd apps/android
