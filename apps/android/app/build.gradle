@@ -9,6 +9,10 @@ android {
     namespace 'com.verifd.android'
     compileSdk 34
 
+    buildFeatures {
+        buildConfig true
+    }
+
     defaultConfig {
         applicationId "com.verifd.android"
         minSdk 26
