@@ -24,8 +24,8 @@ class ExpectingWindowNotificationManager private constructor(private val context
     companion object {
         private const val TAG = "ExpectingWindowNotificationManager"
         
-        // Notification channel and ID
-        private const val CHANNEL_EXPECTING_WINDOW = "expecting_window"
+        // Notification channel and ID - using App channel
+        private const val CHANNEL_EXPECTING_WINDOW = "verifd_persistent"
         private const val NOTIFICATION_ID_EXPECTING = 1001
         
         @Volatile
@@ -212,29 +212,12 @@ class ExpectingWindowNotificationManager private constructor(private val context
     
     /**
      * Create notification channels for expecting window notifications
+     * Note: Channels are now created in App.kt, this is kept for compatibility
      */
     private fun createNotificationChannels() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val channel = NotificationChannel(
-                CHANNEL_EXPECTING_WINDOW,
-                "Expecting Window",
-                NotificationManager.IMPORTANCE_DEFAULT
-            ).apply {
-                description = "Persistent notifications for active expecting windows"
-                enableVibration(false)
-                enableLights(false)
-                setSound(null, null) // No sound for ongoing notifications
-                setShowBadge(false)
-            }
-            
-            val systemNotificationManager = ContextCompat.getSystemService(
-                context,
-                NotificationManager::class.java
-            )
-            
-            systemNotificationManager?.createNotificationChannel(channel)
-            Log.d(TAG, "Created expecting window notification channel")
-        }
+        // Channels are created in App.kt application class
+        // This method is kept for compatibility but doesn't create channels anymore
+        Log.d(TAG, "Notification channels managed by App class")
     }
     
     /**

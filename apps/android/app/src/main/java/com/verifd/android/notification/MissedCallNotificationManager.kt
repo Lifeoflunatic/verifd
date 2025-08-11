@@ -25,9 +25,9 @@ class MissedCallNotificationManager private constructor(private val context: Con
     companion object {
         private const val TAG = "MissedCallNotificationManager"
         
-        // Notification channels
-        private const val CHANNEL_MISSED_CALLS = "missed_calls"
-        private const val CHANNEL_HIGH_RISK_CALLS = "high_risk_calls"
+        // Notification channels - using App channels
+        private const val CHANNEL_MISSED_CALLS = "verifd_actions"
+        private const val CHANNEL_HIGH_RISK_CALLS = "verifd_persistent"
         
         // Notification IDs base
         private const val NOTIFICATION_ID_BASE = 2000
@@ -245,43 +245,12 @@ class MissedCallNotificationManager private constructor(private val context: Con
     
     /**
      * Create notification channels for different call types
+     * Note: Channels are now created in App.kt, this is kept for compatibility
      */
     private fun createNotificationChannels() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val channels = listOf(
-                NotificationChannel(
-                    CHANNEL_MISSED_CALLS,
-                    "Missed Calls",
-                    NotificationManager.IMPORTANCE_DEFAULT
-                ).apply {
-                    description = "Notifications for missed calls with vPass approval options"
-                    enableVibration(true)
-                    enableLights(true)
-                },
-                
-                NotificationChannel(
-                    CHANNEL_HIGH_RISK_CALLS,
-                    "High Risk Calls", 
-                    NotificationManager.IMPORTANCE_LOW
-                ).apply {
-                    description = "Notifications for high risk or spam calls"
-                    enableVibration(false)
-                    enableLights(false)
-                    setSound(null, null)
-                }
-            )
-            
-            val systemNotificationManager = ContextCompat.getSystemService(
-                context, 
-                NotificationManager::class.java
-            )
-            
-            channels.forEach { channel ->
-                systemNotificationManager?.createNotificationChannel(channel)
-            }
-            
-            Log.d(TAG, "Created ${channels.size} notification channels")
-        }
+        // Channels are created in App.kt application class
+        // This method is kept for compatibility but doesn't create channels anymore
+        Log.d(TAG, "Notification channels managed by App class")
     }
     
     /**

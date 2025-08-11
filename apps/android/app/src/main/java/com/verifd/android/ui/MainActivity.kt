@@ -1,19 +1,28 @@
 package com.verifd.android.ui
 
 import android.Manifest
+import android.content.Intent
 import android.content.pm.PackageManager
+import android.os.Build
 import android.os.Bundle
+import android.provider.Settings
 import android.util.Log
+import android.view.View
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.google.android.material.snackbar.Snackbar
 import com.verifd.android.R
 import com.verifd.android.data.ContactRepository
 import com.verifd.android.databinding.ActivityMainBinding
 import com.verifd.android.ui.adapter.VPassAdapter
 import kotlinx.coroutines.launch
+import android.view.Menu
+import android.view.MenuItem
+import com.verifd.android.BuildConfig
 
 /**
  * Main activity showing vPass list and app controls
@@ -33,6 +42,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
     private lateinit var repository: ContactRepository
     private lateinit var vPassAdapter: VPassAdapter
+    private var notificationSnackbar: Snackbar? = null
 
     private val permissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestMultiplePermissions()
@@ -46,6 +56,19 @@ class MainActivity : AppCompatActivity() {
             showPermissionError()
         }
     }
+    
+    // Separate launcher for notification permission (Android 13+)
+    private val notificationPermissionLauncher = registerForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { isGranted ->
+        if (isGranted) {
+            Log.d(TAG, "Notification permission granted")
+            notificationSnackbar?.dismiss()
+        } else {
+            Log.w(TAG, "Notification permission denied")
+            showNotificationPermissionBanner()
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -57,6 +80,15 @@ class MainActivity : AppCompatActivity() {
         
         setupUI()
         checkPermissions()
+    }
+    
+    override fun onStart() {
+        super.onStart()
+        
+        // Check notification permission on Android 13+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            checkNotificationPermission()
+        }
     }
     
     override fun onResume() {
@@ -182,5 +214,119 @@ class MainActivity : AppCompatActivity() {
                 Log.e(TAG, "Error cleaning up expired vPasses", e)
             }
         }
+    }
+    
+    /**
+     * Check if notifications are enabled for the app
+     */
+    private fun areNotificationsEnabled(): Boolean {
+        return NotificationManagerCompat.from(this).areNotificationsEnabled()
+    }
+    
+    /**
+     * Check and request notification permission on Android 13+
+     */
+    private fun checkNotificationPermission() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            when {
+                ContextCompat.checkSelfPermission(
+                    this,
+                    Manifest.permission.POST_NOTIFICATIONS
+                ) == PackageManager.PERMISSION_GRANTED -> {
+                    // Permission already granted
+                    Log.d(TAG, "Notification permission already granted")
+                    notificationSnackbar?.dismiss()
+                }
+                shouldShowRequestPermissionRationale(Manifest.permission.POST_NOTIFICATIONS) -> {
+                    // User has previously denied the permission
+                    showNotificationPermissionBanner()
+                }
+                else -> {
+                    // First time asking
+                    notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+                }
+            }
+        }
+    }
+    
+    /**
+     * Show banner when notifications are disabled
+     */
+    private fun showNotificationPermissionBanner() {
+        notificationSnackbar = Snackbar.make(
+            binding.root,
+            "Enable notifications to receive missed call alerts",
+            Snackbar.LENGTH_INDEFINITE
+        ).setAction("Enable") {
+            // Open app notification settings
+            openNotificationSettings()
+        }.apply {
+            show()
+        }
+    }
+    
+    /**
+     * Open app notification settings
+     */
+    private fun openNotificationSettings() {
+        val intent = Intent().apply {
+            when {
+                Build.VERSION.SDK_INT >= Build.VERSION_CODES.O -> {
+                    action = Settings.ACTION_APP_NOTIFICATION_SETTINGS
+                    putExtra(Settings.EXTRA_APP_PACKAGE, packageName)
+                }
+                else -> {
+                    action = Settings.ACTION_APPLICATION_DETAILS_SETTINGS
+                    data = android.net.Uri.parse("package:$packageName")
+                }
+            }
+        }
+        startActivity(intent)
+    }
+    
+    /**
+     * Create options menu
+     */
+    override fun onCreateOptionsMenu(menu: Menu): Boolean {
+        menuInflater.inflate(R.menu.menu_main, menu)
+        
+        // Show QA Panel only in staging builds
+        val qaMenuItem = menu.findItem(R.id.action_qa_panel)
+        qaMenuItem?.isVisible = BuildConfig.BUILD_TYPE == "staging" || BuildConfig.DEBUG
+        
+        return true
+    }
+    
+    /**
+     * Handle menu item selection
+     */
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        return when (item.itemId) {
+            R.id.action_qa_panel -> {
+                openQAPanel()
+                true
+            }
+            R.id.action_settings -> {
+                openSettings()
+                true
+            }
+            else -> super.onOptionsItemSelected(item)
+        }
+    }
+    
+    /**
+     * Open QA Debug Panel
+     */
+    private fun openQAPanel() {
+        val intent = Intent(this, DebugPanelActivity::class.java)
+        startActivity(intent)
+    }
+    
+    /**
+     * Open Settings (placeholder for now)
+     */
+    private fun openSettings() {
+        // For now, just open app settings
+        openNotificationSettings()
     }
 }

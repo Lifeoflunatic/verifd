@@ -7135,3 +7135,483 @@ Asks for PM:
 - Approve or request changes based on diff/test tails; if unclear, ask Claude to regenerate via /handoff:prep.
 
 ---END-HANDOFF---
+
+
+## 2025-08-11T17:04:21Z
+
+---HANDOFF---
+Task: (auto) Fallback handoff — assistant reply had no explicit ---HANDOFF---
+When: 2025-08-11T17:04:21Z
+Branch: feat/zod-row-typing
+
+Diff Summary:
+ HANDOFF.md | 40 ++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 40 insertions(+)
+
+Files Touched:
+HANDOFF.md
+
+Last Commit:
+3b5b7f8 fix: update APK reality check to find runs on current branch
+
+Commands/Tests Run (tail):
+
+> @verifd/backend@0.1.0 test /Users/harshilpatel/Desktop/Claude_Projects/verifd/apps/backend
+> vitest
+
+[33mThe CJS build of Vite's Node API is deprecated. See https://vite.dev/guide/troubleshooting.html#vite-cjs-node-api-deprecated for more details.[39m
+
+ DEV  v2.1.9 /Users/harshilpatel/Desktop/Claude_Projects/verifd/apps/backend
+
+ ✓ test/pass.check.simple.test.ts (6 tests | 1 skipped) 2ms
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > returns allowed=false for unknown number
+[DEBUG] No active pass found for number: ph_8a59780bb8cd2ba0
+
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > returns allowed=true for active pass
+[INFO] Active pass found for number: ph_8a59780bb8cd2ba0, expires: 1754771816
+
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > returns allowed=false for expired pass
+[DEBUG] No active pass found for number: ph_8a59780bb8cd2ba0
+
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > includes Cache-Control header
+[DEBUG] No active pass found for number: ph_8a59780bb8cd2ba0
+
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > correctly identifies 30m scope
+[INFO] Active pass found for number: ph_f5be76815beedc12, expires: 1754770016
+
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > correctly identifies 30d scope
+[INFO] Active pass found for number: ph_554285f82182d3dd, expires: 1757360216
+
+ ✓ test/pass.check.mock.test.ts (7 tests) 65ms
+
+ Test Files  2 passed (2)
+      Tests  12 passed | 1 skipped (13)
+   Start at  15:36:55
+   Duration  378ms (transform 78ms, setup 0ms, collect 174ms, tests 67ms, environment 0ms, prepare 106ms)
+
+ PASS  Waiting for file changes...
+       press h to show help, press q to quit
+
+Playwright (tail):
+
+
+Open Risks:
+- Auto-generated handoff; ask Claude to run /handoff:prep next time for richer details.
+
+Asks for PM:
+- Approve or request changes based on diff/test tails; if unclear, ask Claude to regenerate via /handoff:prep.
+
+---END-HANDOFF---
+
+
+## 2025-08-11T18:37:41Z
+
+---HANDOFF---
+Task: (auto) Fallback handoff — assistant reply had no explicit ---HANDOFF---
+When: 2025-08-11T18:37:41Z
+Branch: feat/zod-row-typing
+
+Diff Summary:
+ HANDOFF.md             | 40 ++++++++++++++++++++++++++++++
+ OPS/HANDOFF_HISTORY.md | 67 ++++++++++++++++++++++++++++++++++++++++++++++++++
+ OPS/LAST_HANDOFF.txt   | 10 ++++----
+ 3 files changed, 112 insertions(+), 5 deletions(-)
+
+Files Touched:
+HANDOFF.md
+OPS/HANDOFF_HISTORY.md
+OPS/LAST_HANDOFF.txt
+
+Last Commit:
+3b5b7f8 fix: update APK reality check to find runs on current branch
+
+Commands/Tests Run (tail):
+
+> @verifd/backend@0.1.0 test /Users/harshilpatel/Desktop/Claude_Projects/verifd/apps/backend
+> vitest
+
+[33mThe CJS build of Vite's Node API is deprecated. See https://vite.dev/guide/troubleshooting.html#vite-cjs-node-api-deprecated for more details.[39m
+
+ DEV  v2.1.9 /Users/harshilpatel/Desktop/Claude_Projects/verifd/apps/backend
+
+ ✓ test/pass.check.simple.test.ts (6 tests | 1 skipped) 2ms
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > returns allowed=false for unknown number
+[DEBUG] No active pass found for number: ph_8a59780bb8cd2ba0
+
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > returns allowed=true for active pass
+[INFO] Active pass found for number: ph_8a59780bb8cd2ba0, expires: 1754771816
+
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > returns allowed=false for expired pass
+[DEBUG] No active pass found for number: ph_8a59780bb8cd2ba0
+
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > includes Cache-Control header
+[DEBUG] No active pass found for number: ph_8a59780bb8cd2ba0
+
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > correctly identifies 30m scope
+[INFO] Active pass found for number: ph_f5be76815beedc12, expires: 1754770016
+
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > correctly identifies 30d scope
+[INFO] Active pass found for number: ph_554285f82182d3dd, expires: 1757360216
+
+ ✓ test/pass.check.mock.test.ts (7 tests) 65ms
+
+ Test Files  2 passed (2)
+      Tests  12 passed | 1 skipped (13)
+   Start at  15:36:55
+   Duration  378ms (transform 78ms, setup 0ms, collect 174ms, tests 67ms, environment 0ms, prepare 106ms)
+
+ PASS  Waiting for file changes...
+       press h to show help, press q to quit
+
+Playwright (tail):
+
+
+Open Risks:
+- Auto-generated handoff; ask Claude to run /handoff:prep next time for richer details.
+
+Asks for PM:
+- Approve or request changes based on diff/test tails; if unclear, ask Claude to regenerate via /handoff:prep.
+
+---END-HANDOFF---
+
+
+## 2025-08-11T20:38:54Z
+
+---HANDOFF---
+Task: (auto) Fallback handoff — assistant reply had no explicit ---HANDOFF---
+When: 2025-08-11T20:38:54Z
+Branch: feat/zod-row-typing
+
+Diff Summary:
+ HANDOFF.md                                         |  40 ++++++
+ OPS/HANDOFF_HISTORY.md                             | 138 +++++++++++++++++++++
+ OPS/LAST_HANDOFF.txt                               |  14 ++-
+ RELAY.md                                           |  31 ++++-
+ apps/android/app/src/main/AndroidManifest.xml      |   4 +
+ .../ExpectingWindowNotificationManager.kt          |  29 +----
+ .../notification/MissedCallNotificationManager.kt  |  45 ++-----
+ .../java/com/verifd/android/ui/MainActivity.kt     |  97 +++++++++++++++
+ .../src/main/res/layout/activity_debug_panel.xml   |  71 +++++++++++
+ 9 files changed, 401 insertions(+), 68 deletions(-)
+
+Files Touched:
+HANDOFF.md
+OPS/HANDOFF_HISTORY.md
+OPS/LAST_HANDOFF.txt
+RELAY.md
+apps/android/app/src/main/AndroidManifest.xml
+apps/android/app/src/main/java/com/verifd/android/notification/ExpectingWindowNotificationManager.kt
+apps/android/app/src/main/java/com/verifd/android/notification/MissedCallNotificationManager.kt
+apps/android/app/src/main/java/com/verifd/android/ui/MainActivity.kt
+apps/android/app/src/main/res/layout/activity_debug_panel.xml
+
+Last Commit:
+3b5b7f8 fix: update APK reality check to find runs on current branch
+
+Commands/Tests Run (tail):
+
+> @verifd/backend@0.1.0 test /Users/harshilpatel/Desktop/Claude_Projects/verifd/apps/backend
+> vitest
+
+[33mThe CJS build of Vite's Node API is deprecated. See https://vite.dev/guide/troubleshooting.html#vite-cjs-node-api-deprecated for more details.[39m
+
+ DEV  v2.1.9 /Users/harshilpatel/Desktop/Claude_Projects/verifd/apps/backend
+
+ ✓ test/pass.check.simple.test.ts (6 tests | 1 skipped) 2ms
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > returns allowed=false for unknown number
+[DEBUG] No active pass found for number: ph_8a59780bb8cd2ba0
+
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > returns allowed=true for active pass
+[INFO] Active pass found for number: ph_8a59780bb8cd2ba0, expires: 1754771816
+
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > returns allowed=false for expired pass
+[DEBUG] No active pass found for number: ph_8a59780bb8cd2ba0
+
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > includes Cache-Control header
+[DEBUG] No active pass found for number: ph_8a59780bb8cd2ba0
+
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > correctly identifies 30m scope
+[INFO] Active pass found for number: ph_f5be76815beedc12, expires: 1754770016
+
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > correctly identifies 30d scope
+[INFO] Active pass found for number: ph_554285f82182d3dd, expires: 1757360216
+
+ ✓ test/pass.check.mock.test.ts (7 tests) 65ms
+
+ Test Files  2 passed (2)
+      Tests  12 passed | 1 skipped (13)
+   Start at  15:36:55
+   Duration  378ms (transform 78ms, setup 0ms, collect 174ms, tests 67ms, environment 0ms, prepare 106ms)
+
+ PASS  Waiting for file changes...
+       press h to show help, press q to quit
+
+Playwright (tail):
+
+
+Open Risks:
+- Auto-generated handoff; ask Claude to run /handoff:prep next time for richer details.
+
+Asks for PM:
+- Approve or request changes based on diff/test tails; if unclear, ask Claude to regenerate via /handoff:prep.
+
+---END-HANDOFF---
+
+
+## 2025-08-11T20:52:02Z
+
+---HANDOFF---
+Task: (auto) Fallback handoff — assistant reply had no explicit ---HANDOFF---
+When: 2025-08-11T20:52:02Z
+Branch: feat/zod-row-typing
+
+Diff Summary:
+ HANDOFF.md                                         |  94 +++++++++
+ OPS/HANDOFF_HISTORY.md                             | 221 +++++++++++++++++++++
+ OPS/LAST_HANDOFF.txt                               |  26 ++-
+ RELAY.md                                           |  31 ++-
+ apps/android/app/src/main/AndroidManifest.xml      |   4 +
+ .../ExpectingWindowNotificationManager.kt          |  29 +--
+ .../notification/MissedCallNotificationManager.kt  |  45 +----
+ .../com/verifd/android/ui/DebugPanelActivity.kt    | 100 ++++++++++
+ .../java/com/verifd/android/ui/MainActivity.kt     | 146 ++++++++++++++
+ .../src/main/res/layout/activity_debug_panel.xml   |  71 +++++++
+ 10 files changed, 699 insertions(+), 68 deletions(-)
+
+Files Touched:
+HANDOFF.md
+OPS/HANDOFF_HISTORY.md
+OPS/LAST_HANDOFF.txt
+RELAY.md
+apps/android/app/src/main/AndroidManifest.xml
+apps/android/app/src/main/java/com/verifd/android/notification/ExpectingWindowNotificationManager.kt
+apps/android/app/src/main/java/com/verifd/android/notification/MissedCallNotificationManager.kt
+apps/android/app/src/main/java/com/verifd/android/ui/DebugPanelActivity.kt
+apps/android/app/src/main/java/com/verifd/android/ui/MainActivity.kt
+apps/android/app/src/main/res/layout/activity_debug_panel.xml
+
+Last Commit:
+3b5b7f8 fix: update APK reality check to find runs on current branch
+
+Commands/Tests Run (tail):
+
+> @verifd/backend@0.1.0 test /Users/harshilpatel/Desktop/Claude_Projects/verifd/apps/backend
+> vitest
+
+[33mThe CJS build of Vite's Node API is deprecated. See https://vite.dev/guide/troubleshooting.html#vite-cjs-node-api-deprecated for more details.[39m
+
+ DEV  v2.1.9 /Users/harshilpatel/Desktop/Claude_Projects/verifd/apps/backend
+
+ ✓ test/pass.check.simple.test.ts (6 tests | 1 skipped) 2ms
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > returns allowed=false for unknown number
+[DEBUG] No active pass found for number: ph_8a59780bb8cd2ba0
+
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > returns allowed=true for active pass
+[INFO] Active pass found for number: ph_8a59780bb8cd2ba0, expires: 1754771816
+
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > returns allowed=false for expired pass
+[DEBUG] No active pass found for number: ph_8a59780bb8cd2ba0
+
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > includes Cache-Control header
+[DEBUG] No active pass found for number: ph_8a59780bb8cd2ba0
+
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > correctly identifies 30m scope
+[INFO] Active pass found for number: ph_f5be76815beedc12, expires: 1754770016
+
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > correctly identifies 30d scope
+[INFO] Active pass found for number: ph_554285f82182d3dd, expires: 1757360216
+
+ ✓ test/pass.check.mock.test.ts (7 tests) 65ms
+
+ Test Files  2 passed (2)
+      Tests  12 passed | 1 skipped (13)
+   Start at  15:36:55
+   Duration  378ms (transform 78ms, setup 0ms, collect 174ms, tests 67ms, environment 0ms, prepare 106ms)
+
+ PASS  Waiting for file changes...
+       press h to show help, press q to quit
+
+Playwright (tail):
+
+
+Open Risks:
+- Auto-generated handoff; ask Claude to run /handoff:prep next time for richer details.
+
+Asks for PM:
+- Approve or request changes based on diff/test tails; if unclear, ask Claude to regenerate via /handoff:prep.
+
+---END-HANDOFF---
+
+
+## 2025-08-11T21:21:56Z
+
+---HANDOFF---
+Task: (auto) Fallback handoff — assistant reply had no explicit ---HANDOFF---
+When: 2025-08-11T21:21:56Z
+Branch: feat/zod-row-typing
+
+Diff Summary:
+ .github/workflows/publish-staging-release.yml      |   3 +
+ HANDOFF.md                                         |  94 +++++++
+ OPS/HANDOFF_HISTORY.md                             | 306 +++++++++++++++++++++
+ OPS/LAST_HANDOFF.txt                               |  28 +-
+ RELAY.md                                           |  34 ++-
+ apps/android/app/src/main/AndroidManifest.xml      |   4 +
+ .../ExpectingWindowNotificationManager.kt          |  29 +-
+ .../notification/MissedCallNotificationManager.kt  |  45 +--
+ .../com/verifd/android/ui/DebugPanelActivity.kt    | 100 +++++++
+ .../java/com/verifd/android/ui/MainActivity.kt     | 146 ++++++++++
+ .../src/main/res/layout/activity_debug_panel.xml   |  71 +++++
+ 11 files changed, 792 insertions(+), 68 deletions(-)
+
+Files Touched:
+.github/workflows/publish-staging-release.yml
+HANDOFF.md
+OPS/HANDOFF_HISTORY.md
+OPS/LAST_HANDOFF.txt
+RELAY.md
+apps/android/app/src/main/AndroidManifest.xml
+apps/android/app/src/main/java/com/verifd/android/notification/ExpectingWindowNotificationManager.kt
+apps/android/app/src/main/java/com/verifd/android/notification/MissedCallNotificationManager.kt
+apps/android/app/src/main/java/com/verifd/android/ui/DebugPanelActivity.kt
+apps/android/app/src/main/java/com/verifd/android/ui/MainActivity.kt
+apps/android/app/src/main/res/layout/activity_debug_panel.xml
+
+Last Commit:
+3b5b7f8 fix: update APK reality check to find runs on current branch
+
+Commands/Tests Run (tail):
+
+> @verifd/backend@0.1.0 test /Users/harshilpatel/Desktop/Claude_Projects/verifd/apps/backend
+> vitest
+
+[33mThe CJS build of Vite's Node API is deprecated. See https://vite.dev/guide/troubleshooting.html#vite-cjs-node-api-deprecated for more details.[39m
+
+ DEV  v2.1.9 /Users/harshilpatel/Desktop/Claude_Projects/verifd/apps/backend
+
+ ✓ test/pass.check.simple.test.ts (6 tests | 1 skipped) 2ms
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > returns allowed=false for unknown number
+[DEBUG] No active pass found for number: ph_8a59780bb8cd2ba0
+
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > returns allowed=true for active pass
+[INFO] Active pass found for number: ph_8a59780bb8cd2ba0, expires: 1754771816
+
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > returns allowed=false for expired pass
+[DEBUG] No active pass found for number: ph_8a59780bb8cd2ba0
+
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > includes Cache-Control header
+[DEBUG] No active pass found for number: ph_8a59780bb8cd2ba0
+
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > correctly identifies 30m scope
+[INFO] Active pass found for number: ph_f5be76815beedc12, expires: 1754770016
+
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > correctly identifies 30d scope
+[INFO] Active pass found for number: ph_554285f82182d3dd, expires: 1757360216
+
+ ✓ test/pass.check.mock.test.ts (7 tests) 65ms
+
+ Test Files  2 passed (2)
+      Tests  12 passed | 1 skipped (13)
+   Start at  15:36:55
+   Duration  378ms (transform 78ms, setup 0ms, collect 174ms, tests 67ms, environment 0ms, prepare 106ms)
+
+ PASS  Waiting for file changes...
+       press h to show help, press q to quit
+
+Playwright (tail):
+
+
+Open Risks:
+- Auto-generated handoff; ask Claude to run /handoff:prep next time for richer details.
+
+Asks for PM:
+- Approve or request changes based on diff/test tails; if unclear, ask Claude to regenerate via /handoff:prep.
+
+---END-HANDOFF---
+
+
+## 2025-08-11T21:26:03Z
+
+---HANDOFF---
+Task: (auto) Fallback handoff — assistant reply had no explicit ---HANDOFF---
+When: 2025-08-11T21:26:03Z
+Branch: feat/zod-row-typing
+
+Diff Summary:
+ .github/workflows/publish-staging-release.yml      |   3 +
+ HANDOFF.md                                         |  94 +++++
+ OPS/HANDOFF_HISTORY.md                             | 393 +++++++++++++++++++++
+ OPS/LAST_HANDOFF.txt                               |  30 +-
+ RELAY.md                                           |  34 +-
+ apps/android/app/src/main/AndroidManifest.xml      |   4 +
+ .../ExpectingWindowNotificationManager.kt          |  29 +-
+ .../notification/MissedCallNotificationManager.kt  |  45 +--
+ .../com/verifd/android/ui/DebugPanelActivity.kt    | 100 ++++++
+ .../java/com/verifd/android/ui/MainActivity.kt     | 146 ++++++++
+ .../src/main/res/layout/activity_debug_panel.xml   |  71 ++++
+ 11 files changed, 881 insertions(+), 68 deletions(-)
+
+Files Touched:
+.github/workflows/publish-staging-release.yml
+HANDOFF.md
+OPS/HANDOFF_HISTORY.md
+OPS/LAST_HANDOFF.txt
+RELAY.md
+apps/android/app/src/main/AndroidManifest.xml
+apps/android/app/src/main/java/com/verifd/android/notification/ExpectingWindowNotificationManager.kt
+apps/android/app/src/main/java/com/verifd/android/notification/MissedCallNotificationManager.kt
+apps/android/app/src/main/java/com/verifd/android/ui/DebugPanelActivity.kt
+apps/android/app/src/main/java/com/verifd/android/ui/MainActivity.kt
+apps/android/app/src/main/res/layout/activity_debug_panel.xml
+
+Last Commit:
+3b5b7f8 fix: update APK reality check to find runs on current branch
+
+Commands/Tests Run (tail):
+
+> @verifd/backend@0.1.0 test /Users/harshilpatel/Desktop/Claude_Projects/verifd/apps/backend
+> vitest
+
+[33mThe CJS build of Vite's Node API is deprecated. See https://vite.dev/guide/troubleshooting.html#vite-cjs-node-api-deprecated for more details.[39m
+
+ DEV  v2.1.9 /Users/harshilpatel/Desktop/Claude_Projects/verifd/apps/backend
+
+ ✓ test/pass.check.simple.test.ts (6 tests | 1 skipped) 2ms
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > returns allowed=false for unknown number
+[DEBUG] No active pass found for number: ph_8a59780bb8cd2ba0
+
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > returns allowed=true for active pass
+[INFO] Active pass found for number: ph_8a59780bb8cd2ba0, expires: 1754771816
+
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > returns allowed=false for expired pass
+[DEBUG] No active pass found for number: ph_8a59780bb8cd2ba0
+
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > includes Cache-Control header
+[DEBUG] No active pass found for number: ph_8a59780bb8cd2ba0
+
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > correctly identifies 30m scope
+[INFO] Active pass found for number: ph_f5be76815beedc12, expires: 1754770016
+
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > correctly identifies 30d scope
+[INFO] Active pass found for number: ph_554285f82182d3dd, expires: 1757360216
+
+ ✓ test/pass.check.mock.test.ts (7 tests) 65ms
+
+ Test Files  2 passed (2)
+      Tests  12 passed | 1 skipped (13)
+   Start at  15:36:55
+   Duration  378ms (transform 78ms, setup 0ms, collect 174ms, tests 67ms, environment 0ms, prepare 106ms)
+
+ PASS  Waiting for file changes...
+       press h to show help, press q to quit
+
+Playwright (tail):
+
+
+Open Risks:
+- Auto-generated handoff; ask Claude to run /handoff:prep next time for richer details.
+
+Asks for PM:
+- Approve or request changes based on diff/test tails; if unclear, ask Claude to regenerate via /handoff:prep.
+
+---END-HANDOFF---

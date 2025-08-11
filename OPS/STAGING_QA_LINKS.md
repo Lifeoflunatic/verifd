@@ -2,11 +2,12 @@
 
 ## 📱 Mobile Apps
 
-### Android APK
-- **Latest Build**: [Build #42 - Download](https://nightly.link/verifd/verifd/workflows/android-staging-apk/main/verifd-staging-apk.zip)
-- **Direct APK**: `verifd-staging-signed.apk`
-- **SHA256**: `a7f3d8b9e4c2f1a6d5e8b3c9f2a1d4e7b8c3f6a9d2e5b8c1f4a7d0e3b6c9f2a5`
-- **QR Code**: See [STAGING_BUILD_RESULTS.md](STAGING_BUILD_RESULTS.md#-qr-code-for-apk-download)
+### Android APK  
+- **Latest Build**: [Run #16892943430](https://github.com/Lifeoflunatic/verifd/actions/runs/16892943430)
+- **GitHub Release**: [v1.3.0-rc1-staging+5](https://github.com/Lifeoflunatic/verifd/releases/tag/v1.3.0-rc1-staging+5)
+- **Direct APK**: [verifd-staging.apk](https://github.com/Lifeoflunatic/verifd/releases/download/v1.3.0-rc1-staging+5/verifd-staging.apk)
+- **SHA256**: `ee94130bcf27bef9237ac894d9979111f1702717e8537c42524155aab943ed4c`
+- **QR Code**: [Download QR](https://github.com/Lifeoflunatic/verifd/releases/download/v1.3.0-rc1-staging+5/qr-verifd-staging.png)
 
 ### iOS TestFlight
 - **Public Link**: [Join Beta Testing](https://testflight.apple.com/join/PENDING)
@@ -123,6 +124,32 @@ override_users:
 
 ---
 
-**Last Updated**: 2025-01-11  
+---
+
+## 📦 GitHub Release (Stable URLs)
+
+**Release Tag**: v1.3.0-rc1-staging+5
+**Created**: 2025-08-11 21:46:11 UTC  
+**Build Run**: #16892943430
+
+### Direct Download Links
+- **APK**: [verifd-staging.apk](https://github.com/Lifeoflunatic/verifd/releases/download/v1.3.0-rc1-staging+5/verifd-staging.apk)
+- **SHA256**: [apk.sha256](https://github.com/Lifeoflunatic/verifd/releases/download/v1.3.0-rc1-staging+5/apk.sha256)
+- **Metadata**: [apk-metadata.json](https://github.com/Lifeoflunatic/verifd/releases/download/v1.3.0-rc1-staging+5/apk-metadata.json)
+- **QR Code**: [qr-verifd-staging.png](https://github.com/Lifeoflunatic/verifd/releases/download/v1.3.0-rc1-staging+5/qr-verifd-staging.png)
+
+### Verification
+```bash
+# Download and verify
+wget https://github.com/Lifeoflunatic/verifd/releases/download/v1.3.0-rc1-staging+5/verifd-staging.apk
+wget https://github.com/Lifeoflunatic/verifd/releases/download/v1.3.0-rc1-staging+5/apk.sha256
+sha256sum -c apk.sha256
+```
+
+**SHA256**: `ee94130bcf27bef9237ac894d9979111f1702717e8537c42524155aab943ed4c`
+
+---
+
+**Last Updated**: 2025-08-11  
 **Environment**: Staging  
 **Ready For**: QA Testing

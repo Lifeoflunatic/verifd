@@ -1,7 +1,12 @@
 package com.verifd.android.ui
 
+import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
+import android.provider.Settings
+import android.widget.Button
 import android.widget.TextView
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.verifd.android.BuildConfig
 import com.verifd.android.R
@@ -41,8 +46,103 @@ class DebugPanelActivity : AppCompatActivity() {
             Build: ${BuildConfig.VERSION_CODE}
         """.trimIndent()
         
+        // Setup quick action buttons
+        setupQuickActions()
+        
+        // Setup refresh button
+        findViewById<Button>(R.id.refresh_button).setOnClickListener {
+            fetchConfiguration()
+        }
+        
         // Fetch configuration
         fetchConfiguration()
+    }
+    
+    private fun setupQuickActions() {
+        // Notification Settings button
+        findViewById<Button>(R.id.btn_notification_settings).setOnClickListener {
+            openNotificationSettings()
+        }
+        
+        // Call Screening button
+        findViewById<Button>(R.id.btn_call_screening).setOnClickListener {
+            openCallScreeningSettings()
+        }
+        
+        // App Info button
+        findViewById<Button>(R.id.btn_app_settings).setOnClickListener {
+            openAppInfo()
+        }
+        
+        // Clear Cache button
+        findViewById<Button>(R.id.btn_clear_data).setOnClickListener {
+            clearAppCache()
+        }
+    }
+    
+    private fun openNotificationSettings() {
+        try {
+            val intent = Intent().apply {
+                action = Settings.ACTION_APP_NOTIFICATION_SETTINGS
+                putExtra(Settings.EXTRA_APP_PACKAGE, packageName)
+            }
+            startActivity(intent)
+        } catch (e: Exception) {
+            // Fallback to app settings
+            openAppInfo()
+        }
+    }
+    
+    private fun openCallScreeningSettings() {
+        try {
+            // Open phone app settings where call screening can be configured
+            val intent = Intent().apply {
+                action = Settings.ACTION_MANAGE_DEFAULT_APPS_SETTINGS
+            }
+            startActivity(intent)
+            Toast.makeText(this, "Select 'Phone app' and choose verifd", Toast.LENGTH_LONG).show()
+        } catch (e: Exception) {
+            Toast.makeText(this, "Unable to open call screening settings", Toast.LENGTH_SHORT).show()
+        }
+    }
+    
+    private fun openAppInfo() {
+        try {
+            val intent = Intent().apply {
+                action = Settings.ACTION_APPLICATION_DETAILS_SETTINGS
+                data = Uri.parse("package:$packageName")
+            }
+            startActivity(intent)
+        } catch (e: Exception) {
+            Toast.makeText(this, "Unable to open app settings", Toast.LENGTH_SHORT).show()
+        }
+    }
+    
+    private fun clearAppCache() {
+        try {
+            // Clear internal cache
+            cacheDir.deleteRecursively()
+            
+            // Clear external cache if available
+            externalCacheDir?.deleteRecursively()
+            
+            // Clear SharedPreferences cache (but keep essential data)
+            val prefs = getSharedPreferences("verifd", MODE_PRIVATE)
+            val phoneNumber = prefs.getString("user_phone", null)
+            prefs.edit().clear().apply()
+            
+            // Restore essential data
+            if (phoneNumber != null) {
+                prefs.edit().putString("user_phone", phoneNumber).apply()
+            }
+            
+            Toast.makeText(this, "Cache cleared successfully", Toast.LENGTH_SHORT).show()
+            
+            // Refresh configuration
+            fetchConfiguration()
+        } catch (e: Exception) {
+            Toast.makeText(this, "Error clearing cache: ${e.message}", Toast.LENGTH_SHORT).show()
+        }
     }
     
     private fun fetchConfiguration() {

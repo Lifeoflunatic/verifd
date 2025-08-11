@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    
+    <!-- QA Panel - only visible in staging builds -->
+    <item
+        android:id="@+id/action_qa_panel"
+        android:title="QA Panel"
+        android:orderInCategory="100"
+        app:showAsAction="never" />
+    
+    <!-- Settings - always visible -->
+    <item
+        android:id="@+id/action_settings"
+        android:title="Settings"
+        android:orderInCategory="101"
+        app:showAsAction="never" />
+    
+</menu>
