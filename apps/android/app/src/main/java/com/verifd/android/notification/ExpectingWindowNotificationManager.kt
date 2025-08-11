@@ -40,7 +40,10 @@ class ExpectingWindowNotificationManager private constructor(private val context
         }
         
         fun updateNotification(context: Context, phoneNumber: String) {
-            getInstance(context).showExpectingWindowNotification(phoneNumber)
+            // Note: phoneNumber parameter is currently unused but may be used for future features
+            kotlinx.coroutines.runBlocking {
+                getInstance(context).showExpectingNotification()
+            }
         }
         
         fun cancelNotification(context: Context, notificationId: Int) {

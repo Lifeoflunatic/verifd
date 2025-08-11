@@ -18,6 +18,7 @@ class ExpectingWindowActionReceiver : BroadcastReceiver() {
     companion object {
         const val ACTION_EXTEND = "com.verifd.android.ACTION_EXTEND_EXPECTING_WINDOW"
         const val ACTION_DISMISS = "com.verifd.android.ACTION_DISMISS_EXPECTING_WINDOW"
+        const val ACTION_STOP_EXPECTING = "com.verifd.android.ACTION_STOP_EXPECTING_WINDOW"
         const val EXTRA_PHONE_NUMBER = "phone_number"
         const val EXTRA_NOTIFICATION_ID = "notification_id"
         private const val TAG = "ExpectingWindowActionReceiver"
@@ -27,6 +28,18 @@ class ExpectingWindowActionReceiver : BroadcastReceiver() {
         val phoneNumber = intent.getStringExtra(EXTRA_PHONE_NUMBER)
         val notificationId = intent.getIntExtra(EXTRA_NOTIFICATION_ID, -1)
         
+        // ACTION_STOP_EXPECTING doesn't require phoneNumber or notificationId
+        if (intent.action == ACTION_STOP_EXPECTING) {
+            Log.d(TAG, "Stopping expecting window")
+            CoroutineScope(Dispatchers.IO).launch {
+                ExpectingWindowManager.getInstance(context).stopWindow()
+                // Cancel notification
+                ExpectingWindowNotificationManager.getInstance(context).cancelExpectingNotification()
+            }
+            return
+        }
+        
+        // Other actions require phoneNumber and notificationId
         if (phoneNumber == null || notificationId == -1) {
             Log.e(TAG, "Missing required extras")
             return
