@@ -61,11 +61,11 @@ class DebugPanelActivity : AppCompatActivity() {
                 
                 val response = withContext(Dispatchers.IO) {
                     // Make HTTP request (simplified for example)
-                    ApiService.getInstance().getConfiguration(phoneNumber)
+                    ApiService.getConfig("https://staging.api.verifd.com")
                 }
                 
                 // Parse response
-                val json = JSONObject(response)
+                val json = JSONObject(response as String)
                 
                 // Display configuration
                 displayConfiguration(json)

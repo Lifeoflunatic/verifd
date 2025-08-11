@@ -133,37 +133,37 @@ class RiskAssessment {
         // Extract STIR/SHAKEN verification status from call details
         // Note: This requires Android API level 30+ and carrier support
         // Check API level for CALLER_NUMBER_VERIFICATION support
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-            val verificationStatus = try {
-                // Access verification status if available
-                callDetails.callerNumberVerificationStatus
-            } catch (e: Exception) {
-                Log.w(TAG, "Unable to access caller verification status", e)
-                android.telecom.Call.Details.CALLER_NUMBER_VERIFICATION_NOT_VERIFIED
-            }
-            
-            return when (verificationStatus) {
-                android.telecom.Call.Details.CALLER_NUMBER_VERIFICATION_PASSED -> {
-                    reasons.add("Full STIR/SHAKEN attestation")
-                    0.0f // Low risk
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                val verificationStatus = try {
+                    // Access verification status if available
+                    callDetails.callerNumberVerificationStatus
+                } catch (e: Exception) {
+                    Log.w(TAG, "Unable to access caller verification status", e)
+                    0 // NOT_VERIFIED
                 }
-                android.telecom.Call.Details.CALLER_NUMBER_VERIFICATION_FAILED -> {
-                    reasons.add("Failed STIR/SHAKEN verification")
-                    0.8f // High risk
+                
+                when (verificationStatus) {
+                    1 -> { // PASSED
+                        reasons.add("Full STIR/SHAKEN attestation")
+                        0.0f // Low risk
+                    }
+                    2 -> { // FAILED
+                        reasons.add("Failed STIR/SHAKEN verification")
+                        0.8f // High risk
+                    }
+                    0 -> { // NOT_VERIFIED
+                        reasons.add("No STIR/SHAKEN attestation")
+                        0.4f // Medium risk
+                    }
+                    else -> {
+                        reasons.add("Unknown verification status")
+                        0.5f // Medium risk
+                    }
                 }
-                android.telecom.Call.Details.CALLER_NUMBER_VERIFICATION_NOT_VERIFIED -> {
-                    reasons.add("No STIR/SHAKEN attestation")
-                    0.4f // Medium risk
-                }
-                else -> {
-                    reasons.add("Unknown verification status")
-                    0.5f // Medium risk
-                }
-            }
         } else {
             // API < 30, skip STIR/SHAKEN check
             reasons.add("STIR/SHAKEN not available (API < 30)")
-            return 0.4f // Medium risk default
+            0.4f // Medium risk default
         }
     }
     
