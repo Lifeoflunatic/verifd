@@ -101,6 +101,7 @@ jobs:
           
       - name: Download all coverage artifacts
         uses: actions/download-artifact@v4
+        continue-on-error: true
         with:
           pattern: coverage-*
           path: coverage-reports
@@ -111,7 +112,12 @@ jobs:
       - name: Merge coverage reports
         run: |
           mkdir -p merged-coverage
-          find coverage-reports -name "lcov.info" -exec echo {} \; | xargs lcov-result-merger > merged-coverage/lcov.info
+          if [ -d "coverage-reports" ] && find coverage-reports -name "lcov.info" 2>/dev/null | grep -q .; then
+            find coverage-reports -name "lcov.info" -exec echo {} \; | xargs lcov-result-merger > merged-coverage/lcov.info
+          else
+            echo "No coverage reports found, creating empty report"
+            echo "" > merged-coverage/lcov.info
+          fi
           
       - name: Generate coverage summary
         run: |
@@ -274,7 +280,7 @@ jobs:
           # Look for the release configuration
           if grep -r "release" app/build.gradle | grep -q "buildConfigField"; then
             # Extract release URL from build.gradle
-            RELEASE_URL=$(grep -A5 "release" app/build.gradle | grep "BASE_URL" | sed 's/.*"\(https:[^"]*\)".*/\1/' | head -1 || echo "")
+            RELEASE_URL=$(grep -A5 "release" app/build.gradle | grep "BASE_URL" | sed 's/.*"\(https:[^"\\]*\).*/\1/' | head -1 || echo "")
             
             if [ "$RELEASE_URL" != "https://api.verifd.com" ]; then
               echo "❌ ERROR: Android Release URL is not https://api.verifd.com"
@@ -324,6 +330,7 @@ jobs:
 
       - name: Download all coverage artifacts
         uses: actions/download-artifact@v4
+        continue-on-error: true
         with:
           pattern: coverage-*
           path: coverage-reports
