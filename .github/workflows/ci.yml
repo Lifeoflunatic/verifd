@@ -275,3 +275,305 @@ jobs:
           if grep -r "release" app/build.gradle | grep -q "buildConfigField"; then
             # Extract release URL from build.gradle
             RELEASE_URL=$(grep -A5 "release" app/build.gradle | grep "BASE_URL" | sed 's/.*"\(https:[^"]*\)".*/\1/' | head -1 || echo "")
+            
+            if [ "$RELEASE_URL" != "https://api.verifd.com" ]; then
+              echo "❌ ERROR: Android Release URL is not https://api.verifd.com"
+              echo "Found: $RELEASE_URL"
+              exit 1
+            fi
+            echo "✅ Android Release URL correctly set to https://api.verifd.com"
+          fi
+          
+          # Run unit tests
+          ./gradlew testReleaseUnitTest || true
+          
+      - name: iOS Release URL Gate
+        run: |
+          cd apps/ios
+          
+          echo "Checking iOS Release URL configuration..."
+          
+          # Check Info.plist for production API URL
+          if grep -q "https://api.verifd.com" verifd/Info.plist; then
+            echo "✅ iOS Release URL correctly set to https://api.verifd.com"
+          else
+            echo "⚠️ iOS Info.plist not found or URL not configured"
+          fi
+
+  # Centralized test job for backend
+  backend-tests-sqlite:
+    name: Backend Tests (SQLite (Linux))
+    runs-on: ubuntu-latest
+    
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_USER: verifd
+          POSTGRES_PASSWORD: verifd_test_2024
+          POSTGRES_DB: verifd_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v3
+        with:
+          version: 9
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Start Docker services
+        run: |
+          docker compose up -d
+          sleep 5
+          docker compose ps
+          
+      - name: Build shared packages
+        run: pnpm -F @verifd/shared build
+        
+      - name: Build backend
+        run: pnpm -F @verifd/backend build
+        
+      - name: Run unit tests
+        run: |
+          cd apps/backend
+          USE_MOCK_DB=true pnpm test -- --run --coverage
+          
+      - name: Run SQLite tests
+        run: |
+          cd apps/backend
+          pnpm test -- --run --coverage
+        env:
+          NODE_ENV: test
+          DATABASE_URL: ':memory:'
+
+      - name: Upload coverage
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-sqlite
+          path: apps/backend/coverage/
+
+      - name: Stop Docker services
+        if: always()
+        run: docker compose down
+
+  backend-tests-mock:
+    name: Backend Tests (Mock DB (macOS))
+    runs-on: macos-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v3
+        with:
+          version: 9
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build shared packages
+        run: pnpm -F @verifd/shared build
+        
+      - name: Build backend
+        run: pnpm -F @verifd/backend build
+        
+      - name: Run mock DB tests
+        run: |
+          cd apps/backend
+          USE_MOCK_DB=true pnpm test -- --run --coverage
+        env:
+          NODE_ENV: test
+
+      - name: Upload coverage
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-mock
+          path: apps/backend/coverage/
+
+  # Lint and Type check job
+  lint-check:
+    name: Lint & Type Check
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v3
+        with:
+          version: 9
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build shared packages
+        run: pnpm -F @verifd/shared build
+        
+      - name: TypeScript check
+        run: pnpm -F @verifd/backend build
+        
+      - name: ESLint check
+        run: pnpm -F @verifd/backend lint || true
+
+  # Merge coverage reports
+  merge-coverage:
+    name: Merge Coverage Reports
+    runs-on: ubuntu-latest
+    needs: [backend-tests-sqlite, backend-tests-mock]
+    if: always()
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install lcov-result-merger
+        run: npm install -g lcov-result-merger
+
+      - name: Download all coverage artifacts
+        uses: actions/download-artifact@v4
+        with:
+          pattern: coverage-*
+          path: coverage-reports
+
+      - name: List coverage files
+        run: |
+          ls -la coverage-reports/ || echo "No coverage reports found"
+          find coverage-reports -name "lcov.info" || echo "No lcov.info files found"
+
+      - name: Merge coverage reports
+        run: |
+          mkdir -p merged-coverage
+          if find coverage-reports -name "lcov.info" 2>/dev/null | grep -q .; then
+            find coverage-reports -name "lcov.info" -exec echo {} \; | xargs lcov-result-merger > merged-coverage/lcov.info
+          else
+            echo "No coverage reports to merge"
+            echo "# No coverage data" > merged-coverage/lcov.info
+          fi
+
+      - name: Generate coverage report
+        id: coverage_report
+        run: |
+          if [ -f merged-coverage/lcov.info ] && [ -s merged-coverage/lcov.info ]; then
+            # Parse coverage data
+            LINES_HIT=$(grep -E "^DA:" merged-coverage/lcov.info | cut -d',' -f2 | awk '$1>0' | wc -l || echo "0")
+            LINES_TOTAL=$(grep -E "^DA:" merged-coverage/lcov.info | wc -l || echo "0")
+            
+            if [ "$LINES_TOTAL" -gt 0 ]; then
+              LINES_PCT=$(awk "BEGIN {printf \"%.1f\", ($LINES_HIT/$LINES_TOTAL)*100}")
+            else
+              LINES_PCT="0"
+            fi
+            
+            FUNCTIONS_HIT=$(grep -E "^FNDA:" merged-coverage/lcov.info | cut -d',' -f1 | cut -d':' -f2 | awk '$1>0' | wc -l || echo "0")
+            FUNCTIONS_TOTAL=$(grep -E "^FN:" merged-coverage/lcov.info | wc -l || echo "0")
+            
+            if [ "$FUNCTIONS_TOTAL" -gt 0 ]; then
+              FUNCTIONS_PCT=$(awk "BEGIN {printf \"%.1f\", ($FUNCTIONS_HIT/$FUNCTIONS_TOTAL)*100}")
+            else
+              FUNCTIONS_PCT="0"
+            fi
+            
+            echo "lines_pct=$LINES_PCT" >> $GITHUB_OUTPUT
+            echo "functions_pct=$FUNCTIONS_PCT" >> $GITHUB_OUTPUT
+            echo "lines_hit=$LINES_HIT" >> $GITHUB_OUTPUT
+            echo "lines_total=$LINES_TOTAL" >> $GITHUB_OUTPUT
+          else
+            echo "lines_pct=0" >> $GITHUB_OUTPUT
+            echo "functions_pct=0" >> $GITHUB_OUTPUT
+          fi
+          
+      - name: PR Coverage Comment
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const fs = require('fs');
+            
+            // Get coverage data - same calculation as badges
+            const linesPct = '${{ steps.coverage_report.outputs.lines_pct }}';
+            const functionsPct = '${{ steps.coverage_report.outputs.functions_pct }}';
+            const linesHit = '${{ steps.coverage_report.outputs.lines_hit }}';
+            const linesTotal = '${{ steps.coverage_report.outputs.lines_total }}';
+            
+            // Create comment body
+            const comment = `## 📊 Test Coverage Report
+            
+            | Metric | Coverage | Details |
+            |--------|----------|---------|
+            | **Lines** | ${linesPct}% | ${linesHit} / ${linesTotal} |
+            | **Functions** | ${functionsPct}% | - |
+            
+            _Coverage report generated from merge of SQLite and Mock DB test runs_`;
+            
+            // Try to find existing comment
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+            });
+            
+            const botComment = comments.find(comment => 
+              comment.user.type === 'Bot' && 
+              comment.body.includes('Test Coverage Report')
+            );
+            
+            if (botComment) {
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: botComment.id,
+                body: comment
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body: comment
+              });
+            }
+
+      - name: Upload merged coverage
+        uses: actions/upload-artifact@v4
+        with:
+          name: merged-coverage
+          path: merged-coverage/

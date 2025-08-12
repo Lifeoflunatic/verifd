@@ -1,5 +1,5 @@
 import { FastifyPluginAsync } from 'fastify';
-import { AggregatedMetrics } from '@verifd/shared/telemetry/PrivacyTelemetry';
+import { AggregatedMetrics } from '@verifd/shared';
 
 interface TelemetryBody {
   metrics: AggregatedMetrics[];

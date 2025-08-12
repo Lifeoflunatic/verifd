@@ -1,5 +1,5 @@
 import { FastifyPluginAsync } from 'fastify';
-import { RemoteFeatureFlags } from '@verifd/shared/config/FeatureFlags';
+import { RemoteFeatureFlags } from '@verifd/shared';
 import { getUserFeatureFlags, hasOverride, logOverrideUsage, getStagingOverrideNumbers, STAGING_GEO_GATE, STAGING_OVERRIDES } from '../config/overrides.js';
 import * as crypto from 'crypto';
 

@@ -230,7 +230,7 @@ export default async function canaryAdvanceRoutes(fastify: FastifyInstance) {
       : request.body;
     
     // Import and use controller
-    const { CanaryController } = await import('../services/canary-controller');
+    const { CanaryController } = await import('../services/canary-controller.js');
     const controller = new CanaryController();
     
     try {

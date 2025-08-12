@@ -160,6 +160,7 @@ jobs:
           echo "✅ Regular user config verified (no override)"
       
       - name: Merge Results
+        if: steps.health_check.outputs.api_available == 'true'
         run: |
           # Create combined results file
           jq -s '{
@@ -193,6 +194,7 @@ jobs:
           retention-days: 7
       
       - name: Generate Summary Table
+        if: steps.health_check.outputs.api_available == 'true'
         run: |
           echo "## 🎯 Staging Config Smoke Test Results" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
