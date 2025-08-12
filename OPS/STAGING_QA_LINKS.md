@@ -3,11 +3,12 @@
 ## 📱 Mobile Apps
 
 ### Android APK  
-- **Latest Build**: [Run #16892943430](https://github.com/Lifeoflunatic/verifd/actions/runs/16892943430)
-- **GitHub Release**: [v1.3.0-rc1-staging+5](https://github.com/Lifeoflunatic/verifd/releases/tag/v1.3.0-rc1-staging+5)
-- **Direct APK**: [verifd-staging.apk](https://github.com/Lifeoflunatic/verifd/releases/download/v1.3.0-rc1-staging+5/verifd-staging.apk)
-- **SHA256**: `ee94130bcf27bef9237ac894d9979111f1702717e8537c42524155aab943ed4c`
-- **QR Code**: [Download QR](https://github.com/Lifeoflunatic/verifd/releases/download/v1.3.0-rc1-staging+5/qr-verifd-staging.png)
+- **Latest Build**: [Run #16895518225](https://github.com/Lifeoflunatic/verifd/actions/runs/16895518225)
+- **GitHub Release**: [v1.3.0-rc1-staging+6](https://github.com/Lifeoflunatic/verifd/releases/tag/v1.3.0-rc1-staging+6)
+- **Direct APK**: [verifd-staging.apk](https://github.com/Lifeoflunatic/verifd/releases/download/v1.3.0-rc1-staging+6/verifd-staging.apk)
+- **SHA256**: `3965ce7ea9e432833b06b59f337b382361ce31e377036989bd682e036760be67`
+- **QR Code**: [Download QR](https://github.com/Lifeoflunatic/verifd/releases/download/v1.3.0-rc1-staging+6/qr-verifd-staging.png)
+- **Version**: 1.3.0+notiffix3 (Android 15 notification fixes)
 
 ### iOS TestFlight
 - **Public Link**: [Join Beta Testing](https://testflight.apple.com/join/PENDING)
@@ -128,25 +129,31 @@ override_users:
 
 ## 📦 GitHub Release (Stable URLs)
 
-**Release Tag**: v1.3.0-rc1-staging+5
-**Created**: 2025-08-11 21:46:11 UTC  
-**Build Run**: #16892943430
+**Release Tag**: v1.3.0-rc1-staging+6  
+**Created**: 2025-08-12 00:23:36 UTC  
+**Build Run**: #16895518225
 
 ### Direct Download Links
-- **APK**: [verifd-staging.apk](https://github.com/Lifeoflunatic/verifd/releases/download/v1.3.0-rc1-staging+5/verifd-staging.apk)
-- **SHA256**: [apk.sha256](https://github.com/Lifeoflunatic/verifd/releases/download/v1.3.0-rc1-staging+5/apk.sha256)
-- **Metadata**: [apk-metadata.json](https://github.com/Lifeoflunatic/verifd/releases/download/v1.3.0-rc1-staging+5/apk-metadata.json)
-- **QR Code**: [qr-verifd-staging.png](https://github.com/Lifeoflunatic/verifd/releases/download/v1.3.0-rc1-staging+5/qr-verifd-staging.png)
+- **APK**: [verifd-staging.apk](https://github.com/Lifeoflunatic/verifd/releases/download/v1.3.0-rc1-staging+6/verifd-staging.apk)
+- **SHA256**: [apk.sha256](https://github.com/Lifeoflunatic/verifd/releases/download/v1.3.0-rc1-staging+6/apk.sha256)
+- **Metadata**: [apk-metadata.json](https://github.com/Lifeoflunatic/verifd/releases/download/v1.3.0-rc1-staging+6/apk-metadata.json)
+- **QR Code**: [qr-verifd-staging.png](https://github.com/Lifeoflunatic/verifd/releases/download/v1.3.0-rc1-staging+6/qr-verifd-staging.png)
 
 ### Verification
 ```bash
 # Download and verify
-wget https://github.com/Lifeoflunatic/verifd/releases/download/v1.3.0-rc1-staging+5/verifd-staging.apk
-wget https://github.com/Lifeoflunatic/verifd/releases/download/v1.3.0-rc1-staging+5/apk.sha256
+wget https://github.com/Lifeoflunatic/verifd/releases/download/v1.3.0-rc1-staging+6/verifd-staging.apk
+wget https://github.com/Lifeoflunatic/verifd/releases/download/v1.3.0-rc1-staging+6/apk.sha256
 sha256sum -c apk.sha256
 ```
 
-**SHA256**: `ee94130bcf27bef9237ac894d9979111f1702717e8537c42524155aab943ed4c`
+**SHA256**: `3965ce7ea9e432833b06b59f337b382361ce31e377036989bd682e036760be67`
+
+### What's New in +notiffix3
+- ✅ **Forced notification permission prompt** on EVERY app launch for Android 15 compatibility
+- ✅ **QA button always visible** in toolbar (not hidden in overflow menu)
+- ✅ **Version stamp display** showing "verifd • 1.3.0+notiffix3" on home screen
+- ✅ **versionNameSuffix** added to staging builds for clear identification
 
 ---
 

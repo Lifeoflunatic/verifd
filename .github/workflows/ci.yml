@@ -52,9 +52,9 @@ jobs:
       - name: Start Docker services (Linux only)
         if: matrix.needs_docker
         run: |
-          docker-compose up -d
+          docker compose up -d
           sleep 5
-          docker-compose ps
+          docker compose ps
           
       - name: Run database probe (Linux only)
         if: matrix.needs_docker
@@ -82,7 +82,7 @@ jobs:
             
       - name: Stop Docker services
         if: always() && matrix.needs_docker
-        run: docker-compose down
+        run: docker compose down
 
   coverage-merge:
     name: Merge Coverage Reports
@@ -274,7 +274,7 @@ jobs:
           # Look for the release configuration
           if grep -r "release" app/build.gradle | grep -q "buildConfigField"; then
             # Extract release URL from build.gradle
-            RELEASE_URL=$(grep -A5 "release" app/build.gradle | grep "API_BASE_URL" | grep -oE 'https://[^"]+' || echo "")
+            RELEASE_URL=$(grep -A5 "release" app/build.gradle | grep "BASE_URL" | grep -oE 'https://[^"]+' || echo "")
             
             if [ "$RELEASE_URL" != "https://api.verifd.com" ]; then
               echo "❌ ERROR: Android Release URL is not https://api.verifd.com"

@@ -1,5 +1,5 @@
 import * as crypto from 'crypto';
-import { FeatureFlagConfig } from './FeatureFlags';
+import { FeatureFlagConfig } from './FeatureFlags.js';
 
 /**
  * Sticky Cohorts Manager
