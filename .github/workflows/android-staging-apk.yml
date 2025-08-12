@@ -11,6 +11,11 @@ on:
     paths:
       - 'apps/android/**'
   workflow_dispatch:
+    inputs:
+      release_tag:
+        description: 'Release tag (e.g., v1.3.0-rc1-staging+8)'
+        required: false
+        type: string
 
 jobs:
   build:
@@ -291,3 +296,43 @@ jobs:
             echo ""
             echo "Recommendation: Use GitHub Release URLs for stable distribution"
           fi
+
+      - name: Create GitHub Release
+        if: github.event_name == 'workflow_dispatch' && github.event.inputs.release_tag != ''
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ github.event.inputs.release_tag }}
+          name: Android Staging Release ${{ github.event.inputs.release_tag }}
+          draft: false
+          prerelease: true
+          files: |
+            apps/android/app/build/outputs/apk/*.apk
+            apps/android/apk-metadata.json
+            apps/android/INSTALL_STAGING_APK.md
+          body: |
+            ## 📱 Android Staging Release
+            
+            **Version:** ${{ github.event.inputs.release_tag }}
+            **Build:** #${{ github.run_number }}
+            **SHA256:** `${{ env.APK_SHA256 }}`
+            **Size:** ${{ env.APK_SIZE }}
+            
+            ### Features in this Release
+            - ✅ Missed call notification actions (SMS/WhatsApp)
+            - ✅ Reliability hardening with WakefulBroadcastReceiver
+            - ✅ Template caching (24h TTL)
+            - ✅ Dual-SIM support
+            - ✅ QA Panel V2 (staging builds only)
+            - ✅ First-run setup card
+            - ✅ Telemetry with backoff configuration
+            
+            ### Test Configuration
+            - **API Endpoint:** https://staging.api.verifd.com
+            - **Override Users:** +919233600392, +917575854485
+            - **KID:** staging-2025-001
+            
+            ### Installation
+            1. Download the APK from the assets below
+            2. Enable "Unknown sources" in Settings
+            3. Install and open the app
+            4. Access QA Panel V2 from menu (staging only)
