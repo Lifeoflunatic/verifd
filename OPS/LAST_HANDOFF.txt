@@ -1,37 +1,19 @@
 ---HANDOFF---
 Task: (auto) Fallback handoff — assistant reply had no explicit ---HANDOFF---
-When: 2025-08-11T21:26:03Z
+When: 2025-08-12T00:00:33Z
 Branch: feat/zod-row-typing
 
 Diff Summary:
- .github/workflows/publish-staging-release.yml      |   3 +
- HANDOFF.md                                         |  94 +++++
- OPS/HANDOFF_HISTORY.md                             | 393 +++++++++++++++++++++
- OPS/LAST_HANDOFF.txt                               |  30 +-
- RELAY.md                                           |  34 +-
- apps/android/app/src/main/AndroidManifest.xml      |   4 +
- .../ExpectingWindowNotificationManager.kt          |  29 +-
- .../notification/MissedCallNotificationManager.kt  |  45 +--
- .../com/verifd/android/ui/DebugPanelActivity.kt    | 100 ++++++
- .../java/com/verifd/android/ui/MainActivity.kt     | 146 ++++++++
- .../src/main/res/layout/activity_debug_panel.xml   |  71 ++++
- 11 files changed, 881 insertions(+), 68 deletions(-)
+ OPS/HANDOFF_HISTORY.md | 135 +++++++++++++++++++++++++++++++++++++++++++++++++
+ OPS/LAST_HANDOFF.txt   |  28 ++--------
+ 2 files changed, 140 insertions(+), 23 deletions(-)
 
 Files Touched:
-.github/workflows/publish-staging-release.yml
-HANDOFF.md
 OPS/HANDOFF_HISTORY.md
 OPS/LAST_HANDOFF.txt
-RELAY.md
-apps/android/app/src/main/AndroidManifest.xml
-apps/android/app/src/main/java/com/verifd/android/notification/ExpectingWindowNotificationManager.kt
-apps/android/app/src/main/java/com/verifd/android/notification/MissedCallNotificationManager.kt
-apps/android/app/src/main/java/com/verifd/android/ui/DebugPanelActivity.kt
-apps/android/app/src/main/java/com/verifd/android/ui/MainActivity.kt
-apps/android/app/src/main/res/layout/activity_debug_panel.xml
 
 Last Commit:
-3b5b7f8 fix: update APK reality check to find runs on current branch
+d2158bb docs: update staging release info with v1.3.0-rc1-staging+5
 
 Commands/Tests Run (tail):
 

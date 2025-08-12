@@ -37,6 +37,7 @@ android {
         staging {
             initWith debug
             applicationIdSuffix ".staging"
+            versionNameSuffix "+notiffix3"
             resValue "string", "app_name", "verifd Staging"
             buildConfigField "String", "BASE_URL", "\"https://staging.api.verifd.com\""
             buildConfigField "String", "BUILD_VARIANT", "\"staging\""

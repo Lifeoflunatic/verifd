@@ -85,9 +85,16 @@ class MainActivity : AppCompatActivity() {
     override fun onStart() {
         super.onStart()
         
-        // Check notification permission on Android 13+
+        // FORCE notification permission check on Android 13+ EVERY launch
+        // This ensures Samsung One UI 7.0 / Android 15 enables the toggle
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            checkNotificationPermission()
+            if (!areNotificationsEnabled()) {
+                // Always request if not enabled - critical for Android 15
+                Log.w(TAG, "Notifications disabled - requesting permission (Android 15 requirement)")
+                notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+                // Also show persistent banner
+                showNotificationPermissionBanner()
+            }
         }
     }
     
@@ -97,6 +104,9 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun setupUI() {
+        // Show app name with version
+        binding.appTitle.text = "verifd • ${BuildConfig.VERSION_NAME}"
+        
         // Setup RecyclerView for vPass list
         vPassAdapter = VPassAdapter { vPass ->
             // Handle vPass item click (e.g., show details or remove)
