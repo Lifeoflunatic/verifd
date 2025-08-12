@@ -127,7 +127,7 @@ jobs:
       - name: Upload merged coverage
         uses: actions/upload-artifact@v4
         with:
-          name: merged-coverage
+          name: merged-coverage-main
           path: merged-coverage/lcov.info
           
       - name: Generate coverage report
