@@ -652,7 +652,7 @@ class CallScreeningService : CallScreeningService() {
                 appendLine("• Build: ${BuildConfig.BUILD_TYPE}")
                 appendLine("")
                 appendLine("SYSTEM STATUS:")
-                appendLine("• Has Role: ${hasCallScreeningRole(this)}")
+                appendLine("• Has Role: ${hasCallScreeningRole(this@CallScreeningService)}")
                 appendLine("• QA Toggle: ${getSharedPreferences("verifd_prefs", MODE_PRIVATE).getBoolean("qa_reject_hide_ui", true)}")
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                     appendLine("• API 29+ Features: ✓")

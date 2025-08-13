@@ -24,6 +24,8 @@ class ContactRepository private constructor(
     private val vPassDao: VPassDao,
     private val prefs: SharedPreferences
 ) {
+    // In-memory cache for vPasses to reduce database lookups
+    private val vPassCache = mutableMapOf<String, com.verifd.android.data.model.VPass>()
     
     companion object {
         private const val TAG = "ContactRepository"
