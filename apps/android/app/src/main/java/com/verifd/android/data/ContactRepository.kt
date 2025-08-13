@@ -2,6 +2,9 @@ package com.verifd.android.data
 
 import android.content.Context
 import android.content.SharedPreferences
+import android.content.pm.PackageManager
+import androidx.core.app.ActivityCompat
+import com.verifd.android.BuildConfig
 import android.database.Cursor
 import android.provider.ContactsContract
 import android.util.Log
@@ -193,6 +196,65 @@ class ContactRepository private constructor(
                 Log.e(TAG, "Error cleaning up expired vPasses", e)
                 0
             }
+        }
+    }
+    
+    /**
+     * Synchronous version of isKnownContact for fast-path checking
+     * Task 2c: Fast-path contact check for staging unknowns
+     */
+    fun isKnownContactSync(phoneNumber: String): Boolean {
+        return try {
+            val normalizedNumber = PhoneNumberUtils.normalize(phoneNumber)
+            
+            // Quick check in vPass cache first
+            if (vPassCache.containsKey(normalizedNumber)) {
+                val entry = vPassCache[normalizedNumber]
+                if (entry != null && entry.expiresAt.after(Date())) {
+                    return true
+                }
+            }
+            
+            // Task 2d: Skip contact check in staging if no permission
+            if (BuildConfig.BUILD_TYPE == "staging") {
+                val hasContactsPermission = ActivityCompat.checkSelfPermission(
+                    context,
+                    android.Manifest.permission.READ_CONTACTS
+                ) == PackageManager.PERMISSION_GRANTED
+                
+                if (!hasContactsPermission) {
+                    Log.d(TAG, "Fast-path: No contacts permission in staging, skipping check")
+                    return false // Assume unknown in staging without permission
+                }
+            }
+            
+            // Fast contact check - limit results for speed
+            val cursor: Cursor? = context.contentResolver.query(
+                ContactsContract.CommonDataKinds.Phone.CONTENT_URI,
+                arrayOf(ContactsContract.CommonDataKinds.Phone.NUMBER),
+                null,
+                null,
+                "${ContactsContract.CommonDataKinds.Phone.NUMBER} LIMIT 100"
+            )
+            
+            cursor?.use { c ->
+                while (c.moveToNext()) {
+                    val contactNumber = c.getString(0)
+                    val normalizedContactNumber = PhoneNumberUtils.normalize(contactNumber)
+                    
+                    if (normalizedContactNumber == normalizedNumber) {
+                        Log.d(TAG, "Fast-path: Found contact match for $normalizedNumber")
+                        return true
+                    }
+                }
+            }
+            
+            Log.d(TAG, "Fast-path: No contact match for $normalizedNumber")
+            false
+            
+        } catch (e: Exception) {
+            Log.e(TAG, "Fast-path contact check failed for $phoneNumber", e)
+            false
         }
     }
     

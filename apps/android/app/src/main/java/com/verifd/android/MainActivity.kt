@@ -9,6 +9,7 @@ import android.widget.ProgressBar
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.RecyclerView
+import androidx.core.content.ContextCompat
 import com.verifd.android.ui.DebugPanelActivity
 
 class MainActivity : AppCompatActivity() {
@@ -49,12 +50,32 @@ class MainActivity : AppCompatActivity() {
             requestPermissions()
         }
         
-        // Check if this is staging build and show debug panel option
-        if (BuildConfig.BUILD_VARIANT == "staging") {
-            statusText.text = "verifd Staging - ${BuildConfig.BASE_URL}"
-            statusText.setOnClickListener {
-                startActivity(Intent(this, DebugPanelActivity::class.java))
+        // Task 2a: Show QA Panel button in staging
+        if (BuildConfig.BUILD_TYPE == "staging") {
+            // Show QA Panel button on header
+            findViewById<Button>(R.id.btnQaPanel)?.apply {
+                visibility = View.VISIBLE
+                setOnClickListener {
+                    startActivity(Intent(this@MainActivity, com.verifd.android.ui.QAPanelV2Activity::class.java))
+                }
             }
+            
+            // Show Floating Action Button for QA Panel
+            findViewById<com.google.android.material.floatingactionbutton.FloatingActionButton>(R.id.fabQaPanel)?.apply {
+                visibility = View.VISIBLE
+                setOnClickListener {
+                    startActivity(Intent(this@MainActivity, com.verifd.android.ui.QAPanelV2Activity::class.java))
+                }
+            }
+            
+            // Update app title with staging watermark
+            findViewById<TextView>(R.id.appTitle)?.apply {
+                text = "[STAGING] verifd"
+                setTextColor(ContextCompat.getColor(context, android.R.color.holo_orange_dark))
+            }
+            
+            statusText.text = "verifd Staging - ${BuildConfig.VERSION_NAME}"
+            statusText.setTextColor(ContextCompat.getColor(this, android.R.color.holo_orange_light))
         } else {
             statusText.text = "verifd - Ready"
         }

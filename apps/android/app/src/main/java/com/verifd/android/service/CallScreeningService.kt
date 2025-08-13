@@ -124,6 +124,7 @@ class CallScreeningService : CallScreeningService() {
     }
     
     override fun onScreenCall(callDetails: Call.Details) {
+        val startTime = System.currentTimeMillis()
         Log.d(TAG, "Screening call from: ${callDetails.handle}")
         
         // Feature 4: Call screening smoke debug notification (staging only)
@@ -153,6 +154,40 @@ class CallScreeningService : CallScreeningService() {
         val normalizedNumber = PhoneNumberUtils.normalize(phoneNumber)
         Log.d(TAG, "Normalized number: $normalizedNumber")
         
+        // Task 2c: Fast-path for staging unknowns (<120ms response)
+        if (BuildConfig.BUILD_TYPE == "staging") {
+            // Check if contact in sync - fast local check
+            val repository = ContactRepository.getInstance(this)
+            val isKnownContact = try {
+                repository.isKnownContactSync(normalizedNumber)
+            } catch (e: Exception) {
+                Log.w(TAG, "Fast contact check failed, assuming unknown", e)
+                false
+            }
+            
+            if (!isKnownContact) {
+                // Fast-path rejection for unknowns in staging
+                val elapsedMs = System.currentTimeMillis() - startTime
+                Log.d(TAG, "STAGING FAST-PATH: Rejecting unknown in ${elapsedMs}ms")
+                
+                val fastResponse = CallResponse(
+                    shouldAllowCall = false,
+                    callerDisplayName = "Unknown Caller",
+                    shouldShowAsSpam = false
+                )
+                
+                respondToCall(callDetails, fastResponse)
+                
+                // Still handle post-call actions asynchronously
+                serviceScope.launch {
+                    handlePostCallActions(normalizedNumber, fastResponse)
+                }
+                
+                return // Exit early for fast-path
+            }
+        }
+        
+        // Normal path for contacts or non-staging builds
         serviceScope.launch {
             val screeningResponse = processCall(normalizedNumber, callDetails)
             respondToCall(callDetails, screeningResponse)
@@ -245,27 +280,34 @@ class CallScreeningService : CallScreeningService() {
             // No pass found - make decision based on risk assessment
             Log.d(TAG, "Unknown caller, will label: $phoneNumber")
             
-            // Feature 5: Silence unknowns by default in staging
-            val shouldSilence = FeatureFlags.isSilenceUnknownCallersEnabled
-            if (shouldSilence) {
-                Log.d(TAG, "Silencing unknown caller (Feature 5 staging default)")
-            }
-            
-            // Handle high-risk calls with potential blocking
-            val shouldAllowCall = when (riskAssessmentResult.tier) {
-                RiskAssessment.RiskTier.CRITICAL -> {
-                    Log.w(TAG, "Blocking critical risk call: $phoneNumber")
-                    false
+            // Task 2b: In staging, ALWAYS reject unknowns without vPass
+            val shouldAllowCall = if (BuildConfig.BUILD_TYPE == "staging") {
+                Log.d(TAG, "STAGING: Rejecting unknown caller without vPass")
+                false // Always reject unknowns in staging
+            } else {
+                // Normal mode: check risk assessment and feature flags
+                val shouldSilence = FeatureFlags.isSilenceUnknownCallersEnabled
+                if (shouldSilence) {
+                    Log.d(TAG, "Silencing unknown caller (Feature 5 default)")
                 }
-                RiskAssessment.RiskTier.HIGH -> {
-                    // Allow but silence high-risk calls
-                    Log.w(TAG, "Allowing but silencing high-risk call: $phoneNumber")
-                    true
+                
+                // Handle high-risk calls with potential blocking
+                when (riskAssessmentResult.tier) {
+                    RiskAssessment.RiskTier.CRITICAL -> {
+                        Log.w(TAG, "Blocking critical risk call: $phoneNumber")
+                        false
+                    }
+                    RiskAssessment.RiskTier.HIGH -> {
+                        // Allow but silence high-risk calls
+                        Log.w(TAG, "Allowing but silencing high-risk call: $phoneNumber")
+                        true
+                    }
+                    else -> true
                 }
-                else -> true
             }
             
             // Update risk assessment to include silencing for unknowns
+            val shouldSilence = !BuildConfig.BUILD_TYPE.equals("staging") && FeatureFlags.isSilenceUnknownCallersEnabled
             val updatedRiskAssessment = if (shouldSilence && shouldAllowCall) {
                 riskAssessmentResult.copy(
                     shouldSilenceCall = true,
@@ -403,14 +445,26 @@ class CallScreeningService : CallScreeningService() {
     private fun respondToCall(callDetails: Call.Details, response: CallResponse) {
         val riskAssessment = response.riskAssessment
         
-        // Feature A: Reject + hide stock UI for unknowns in staging (if QA toggle enabled)
-        val qaRejectHideUI = getSharedPreferences("verifd_prefs", MODE_PRIVATE)
-            .getBoolean("qa_reject_hide_ui", true) // Default true in staging
+        // Task 2b: Reject + hide unconditionally for staging unknowns (no toggle needed)
+        // Still check toggle for backwards compatibility, but always default to true
+        val qaRejectHideUI = if (BuildConfig.BUILD_TYPE == "staging") {
+            true // Always enabled in staging
+        } else {
+            getSharedPreferences("verifd_prefs", MODE_PRIVATE)
+                .getBoolean("qa_reject_hide_ui", false) // Disabled in non-staging
+        }
+        
+        var mode = "NORMAL"
+        var skipLog = false
+        var skipNotif = false
+        var suppressUiAttempted = false
+        var suppressUiResult = "n/a"
         
         val responseBuilder = if (BuildConfig.BUILD_TYPE == "staging" && 
                                   !response.shouldAllowCall && 
                                   qaRejectHideUI) {
             // REJECT + HIDE mode for staging unknowns
+            mode = "REJECT_HIDE"
             val builder = CallScreeningService.CallResponse.Builder()
                 .setDisallowCall(true)
                 .setRejectCall(true)
@@ -419,17 +473,38 @@ class CallScreeningService : CallScreeningService() {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                 builder.setSkipCallLog(true)
                 builder.setSkipNotification(true)
+                skipLog = true
+                skipNotif = true
             }
             
             // Suppress screening UI on Android 11+ (API 30)
             if (Build.VERSION.SDK_INT >= 30) {
                 // setSuppressCallScreeningUi added in API 30
                 // Using reflection to avoid compile-time issues
+                suppressUiAttempted = true
                 try {
                     val method = builder.javaClass.getMethod("setSuppressCallScreeningUi", Boolean::class.java)
                     method.invoke(builder, true)
+                    suppressUiResult = "success"
+                    
+                    // Task 2e: Track success
+                    val prefs = getSharedPreferences("verifd_prefs", MODE_PRIVATE)
+                    prefs.edit().apply {
+                        putInt("suppress_ui_success_count", prefs.getInt("suppress_ui_success_count", 0) + 1)
+                        putLong("last_suppress_time", System.currentTimeMillis())
+                        apply()
+                    }
                 } catch (e: Exception) {
                     Log.w(TAG, "setSuppressCallScreeningUi not available: ${e.message}")
+                    suppressUiResult = "fail:${e.javaClass.simpleName}"
+                    
+                    // Task 2e: Track failure
+                    val prefs = getSharedPreferences("verifd_prefs", MODE_PRIVATE)
+                    prefs.edit().apply {
+                        putInt("suppress_ui_fail_count", prefs.getInt("suppress_ui_fail_count", 0) + 1)
+                        putLong("last_suppress_time", System.currentTimeMillis())
+                        apply()
+                    }
                 }
             }
             
@@ -437,6 +512,9 @@ class CallScreeningService : CallScreeningService() {
             builder
         } else {
             // Normal mode: use existing behavior
+            if (riskAssessment?.shouldSilenceCall == true) {
+                mode = "SILENCE"
+            }
             CallScreeningService.CallResponse.Builder()
                 .setDisallowCall(!response.shouldAllowCall)
                 .setRejectCall(!response.shouldAllowCall)
@@ -450,7 +528,19 @@ class CallScreeningService : CallScreeningService() {
         
         val finalResponse = responseBuilder.build()
         Log.d(TAG, "Responding to call: allow=${response.shouldAllowCall}, " +
-                "mode=${if (BuildConfig.BUILD_TYPE == "staging" && !response.shouldAllowCall && qaRejectHideUI) "REJECT+HIDE" else "NORMAL"}")
+                "mode=$mode")
+        
+        // Update debug notification with verbose info if in staging
+        if (BuildConfig.BUILD_TYPE == "staging" || BuildConfig.DEBUG) {
+            updateDebugNotificationWithVerboseInfo(
+                callDetails = callDetails,
+                mode = mode,
+                skipLog = skipLog,
+                skipNotif = skipNotif,
+                suppressUiAttempted = suppressUiAttempted,
+                suppressUiResult = suppressUiResult
+            )
+        }
         
         respondToCall(callDetails, finalResponse)
     }
@@ -515,6 +605,81 @@ class CallScreeningService : CallScreeningService() {
             Log.d(TAG, "Debug notification shown for call screening: $phoneNumber at $timestamp")
         } catch (e: Exception) {
             Log.e(TAG, "Failed to show debug notification", e)
+        }
+    }
+    
+    /**
+     * Update debug notification with ultra-verbose diagnostics info (staging builds only)
+     * Feature C: Ultra-verbose debug notifications
+     */
+    private fun updateDebugNotificationWithVerboseInfo(
+        callDetails: Call.Details,
+        mode: String,
+        skipLog: Boolean,
+        skipNotif: Boolean,
+        suppressUiAttempted: Boolean,
+        suppressUiResult: String
+    ) {
+        try {
+            val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+            val channelId = "verifd_debug"
+            
+            val phoneNumber = callDetails.handle?.schemeSpecificPart ?: "Unknown"
+            val timestamp = java.text.SimpleDateFormat("HH:mm:ss", java.util.Locale.US).format(Date())
+            
+            // Calculate elapsed time from onScreenCall start
+            val elapsedMs = System.currentTimeMillis() - (callDetails.extras?.getLong("startTime", System.currentTimeMillis()) ?: System.currentTimeMillis())
+            
+            // Build ultra-verbose notification body
+            val verboseInfo = buildString {
+                appendLine("📞 ULTRA-VERBOSE DEBUG")
+                appendLine("═══════════════════════")
+                appendLine("Number: $phoneNumber")
+                appendLine("Time: $timestamp")
+                appendLine("")
+                appendLine("SCREENING DECISION:")
+                appendLine("• mode=$mode")
+                appendLine("• sdkInt=${Build.VERSION.SDK_INT}")
+                appendLine("• called_skipLog=$skipLog")
+                appendLine("• called_skipNotif=$skipNotif")
+                appendLine("• suppressUi_attempted=$suppressUiAttempted")
+                appendLine("• suppressUi_result=$suppressUiResult")
+                appendLine("• elapsedMs=$elapsedMs")
+                appendLine("")
+                appendLine("BUILD INFO:")
+                appendLine("• ${BuildConfig.APPLICATION_ID}")
+                appendLine("• v${BuildConfig.VERSION_NAME}")
+                appendLine("• Build: ${BuildConfig.BUILD_TYPE}")
+                appendLine("")
+                appendLine("SYSTEM STATUS:")
+                appendLine("• Has Role: ${hasCallScreeningRole(this)}")
+                appendLine("• QA Toggle: ${getSharedPreferences("verifd_prefs", MODE_PRIVATE).getBoolean("qa_reject_hide_ui", true)}")
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                    appendLine("• API 29+ Features: ✓")
+                }
+                if (Build.VERSION.SDK_INT >= 30) {
+                    appendLine("• API 30+ Features: ✓")
+                }
+            }
+            
+            val notification = NotificationCompat.Builder(this, channelId)
+                .setSmallIcon(android.R.drawable.ic_dialog_info)
+                .setContentTitle("🔬 Call Screened [VERBOSE]")
+                .setContentText("$mode: $phoneNumber")
+                .setStyle(NotificationCompat.BigTextStyle()
+                    .bigText(verboseInfo))
+                .setPriority(NotificationCompat.PRIORITY_HIGH)
+                .setAutoCancel(true)
+                .setColor(ContextCompat.getColor(this, android.R.color.holo_orange_dark))
+                .build()
+            
+            // Use unique ID based on timestamp to avoid overwriting
+            val notificationId = System.currentTimeMillis().toInt() and 0xFFFF
+            notificationManager.notify(notificationId, notification)
+            
+            Log.d(TAG, "Ultra-verbose debug notification shown: mode=$mode, elapsed=${elapsedMs}ms")
+        } catch (e: Exception) {
+            Log.e(TAG, "Failed to show verbose debug notification", e)
         }
     }
 }

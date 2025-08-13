@@ -384,10 +384,15 @@ class QAPanelV2Activity : AppCompatActivity() {
             try {
                 val status = StringBuilder()
                 
-                // Feature D: Enhanced QA header with detailed info
-                status.append("📱 Build Info\n")
-                status.append("Version: ${BuildConfig.VERSION_NAME} (${BuildConfig.VERSION_CODE})\n")
-                status.append("Build Type: ${BuildConfig.BUILD_TYPE}\n")
+                // Task 2e: Enhanced QA header with live branch and suppression results
+                status.append("📱 Build Info
+")
+                status.append("Version: ${BuildConfig.VERSION_NAME} (${BuildConfig.VERSION_CODE})
+")
+                status.append("Build Type: ${BuildConfig.BUILD_TYPE}
+")
+                status.append("Branch: feat/zod-row-typing
+") // Hardcoded for now, would be injected at build time
                 status.append("Application ID: ${BuildConfig.APPLICATION_ID}\n")
                 status.append("SDK: ${Build.VERSION.SDK_INT} (Android ${Build.VERSION.RELEASE})\n")
                 status.append("Debug: ${BuildConfig.DEBUG}\n")
@@ -430,9 +435,35 @@ class QAPanelV2Activity : AppCompatActivity() {
                 val notificationsEnabled = NotificationManagerCompat.from(this@QAPanelV2Activity).areNotificationsEnabled()
                 status.append("🔔 Notifications: ${if (notificationsEnabled) "ON" else "OFF"}\n")
                 
-                // QA Reject+Hide mode status
+                // QA Reject+Hide mode status & live results
                 val qaRejectHideUI = prefs.getBoolean("qa_reject_hide_ui", true)
-                status.append("🚫 QA Reject+Hide Mode: ${if (qaRejectHideUI) "ENABLED" else "DISABLED"}\n")
+                status.append("🚫 QA Reject+Hide Mode: ${if (qaRejectHideUI) "ENABLED" else "DISABLED"}
+")
+                
+                // Task 2e: Live suppression results
+                val suppressCount = prefs.getInt("suppress_ui_success_count", 0)
+                val suppressFails = prefs.getInt("suppress_ui_fail_count", 0)
+                val lastSuppressTime = prefs.getLong("last_suppress_time", 0)
+                
+                status.append("
+📊 Live Suppression Results
+")
+                status.append("✅ Successful: $suppressCount
+")
+                status.append("❌ Failed: $suppressFails
+")
+                if (lastSuppressTime > 0) {
+                    val timeSince = System.currentTimeMillis() - lastSuppressTime
+                    val seconds = timeSince / 1000
+                    val minutes = seconds / 60
+                    if (minutes > 0) {
+                        status.append("⏱ Last: ${minutes}m ago
+")
+                    } else {
+                        status.append("⏱ Last: ${seconds}s ago
+")
+                    }
+                }
                 
                 // Feature flags summary
                 status.append("\n🚩 Feature Flags\n")

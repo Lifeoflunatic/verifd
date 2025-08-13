@@ -132,6 +132,19 @@
             android:padding="8dp"
             android:background="@android:color/background_light" />
 
-    </LinearLayout>
+        </LinearLayout>
+
+    <!-- Task 2a: Floating Action Button for QA Panel (staging only) -->
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/fabQaPanel"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|end"
+        android:layout_margin="16dp"
+        android:src="@android:drawable/ic_menu_manage"
+        android:backgroundTint="@android:color/holo_purple"
+        android:tint="@android:color/white"
+        android:visibility="gone"
+        android:contentDescription="Open QA Panel" />
 
 </LinearLayout>
