@@ -57,6 +57,7 @@ class QAPanelV2Activity : AppCompatActivity() {
     
     companion object {
         private const val TAG = "QAPanelV2"
+        private const val REQUEST_CODE_CALL_SCREENING = 1001
         private const val PREFS_NAME = "qa_panel_prefs"
         private const val TEST_NOTIFICATION_ID = 9999
     }
@@ -557,7 +558,7 @@ class QAPanelV2Activity : AppCompatActivity() {
     private fun loadVPasses() {
         coroutineScope.launch {
             val passes = withContext(Dispatchers.IO) {
-                repository.getAllVPasses()
+                repository.getAllValidVPasses()
             }
             
             val adapter = VPassAdapter(passes)
@@ -572,7 +573,11 @@ class QAPanelV2Activity : AppCompatActivity() {
             .setPositiveButton("Clear") { _, _ ->
                 coroutineScope.launch {
                     withContext(Dispatchers.IO) {
-                        repository.deleteAllVPasses()
+                        // Get all passes and delete them one by one
+                        val passes = repository.getAllValidVPasses()
+                        passes.forEach { pass ->
+                            repository.removeVPass(pass.phoneNumber)
+                        }
                     }
                     loadVPasses()
                     Toast.makeText(this@QAPanelV2Activity, "vPasses cleared", Toast.LENGTH_SHORT).show()
@@ -665,7 +670,10 @@ class QAPanelV2Activity : AppCompatActivity() {
     
     private fun openCallScreeningSettings() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            CallScreeningService.requestCallScreeningRole(this)
+            // Request call screening role for Android 10+
+            val roleManager = getSystemService(Context.ROLE_SERVICE) as android.app.role.RoleManager
+            val intent = roleManager.createRequestRoleIntent(android.app.role.RoleManager.ROLE_CALL_SCREENING)
+            startActivityForResult(intent, REQUEST_CODE_CALL_SCREENING)
         } else {
             openAppInfo()
         }

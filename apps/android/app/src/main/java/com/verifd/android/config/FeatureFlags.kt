@@ -39,9 +39,12 @@ object FeatureFlags {
     /**
      * Enable missed call notification actions (Approve 30m/24h/30d + Block buttons)
      */
-    val isMissedCallActionsEnabled: Boolean
+    var isMissedCallActionsEnabled: Boolean
         get() = prefs?.getBoolean(FLAG_MISSED_CALL_ACTIONS, DEFAULT_MISSED_CALL_ACTIONS) 
             ?: DEFAULT_MISSED_CALL_ACTIONS
+        set(value) {
+            prefs?.edit()?.putBoolean(FLAG_MISSED_CALL_ACTIONS, value)?.apply()
+        }
     
     /**
      * Enable risk tier assessment using STIR/SHAKEN attestation and burst heuristics
