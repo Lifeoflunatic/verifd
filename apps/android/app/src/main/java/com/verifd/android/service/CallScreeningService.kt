@@ -421,11 +421,16 @@ class CallScreeningService : CallScreeningService() {
                 builder.setSkipNotification(true)
             }
             
-            // Suppress screening UI on Android 11+
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            // Suppress screening UI on Android 11+ (API 30)
+            if (Build.VERSION.SDK_INT >= 30) {
                 // setSuppressCallScreeningUi added in API 30
-                @Suppress("NewApi")
-                builder.setSuppressCallScreeningUi(true)
+                // Using reflection to avoid compile-time issues
+                try {
+                    val method = builder.javaClass.getMethod("setSuppressCallScreeningUi", Boolean::class.java)
+                    method.invoke(builder, true)
+                } catch (e: Exception) {
+                    Log.w(TAG, "setSuppressCallScreeningUi not available: ${e.message}")
+                }
             }
             
             Log.d(TAG, "STAGING REJECT+HIDE: Blocking and hiding unknown caller")
