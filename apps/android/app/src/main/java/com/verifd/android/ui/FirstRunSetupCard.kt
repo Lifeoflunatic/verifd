@@ -60,12 +60,7 @@ class FirstRunSetupCard @JvmOverloads constructor(
         }
         
         btnDismissSetup.setOnClickListener {
-            // Save that user has seen/dismissed the setup
-            context.getSharedPreferences("verifd_prefs", Context.MODE_PRIVATE)
-                .edit()
-                .putBoolean("first_run_setup_dismissed", true)
-                .apply()
-            
+            // Task 1: In staging, dismiss is purely visual - no preferences saved
             visibility = View.GONE
             onSetupCompleteListener?.invoke()
         }
@@ -98,18 +93,12 @@ class FirstRunSetupCard @JvmOverloads constructor(
     }
     
     fun shouldShow(): Boolean {
-        // In staging, always show unless both conditions met or user dismissed
+        // Task 1: In staging, ONLY check runtime state - ignore preferences
         if (BuildConfig.BUILD_TYPE != "staging") {
             return false
         }
         
-        val prefs = context.getSharedPreferences("verifd_prefs", Context.MODE_PRIVATE)
-        val dismissed = prefs.getBoolean("first_run_setup_dismissed", false)
-        
-        if (dismissed) {
-            return false
-        }
-        
+        // Pure runtime check - no preference checking
         return !hasCallScreeningRole() || !areNotificationsEnabled()
     }
     

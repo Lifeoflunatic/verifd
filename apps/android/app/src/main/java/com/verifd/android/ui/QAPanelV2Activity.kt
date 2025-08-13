@@ -433,7 +433,25 @@ class QAPanelV2Activity : AppCompatActivity() {
                 
                 // QA Reject+Hide mode status & live results
                 val qaRejectHideUI = prefs.getBoolean("qa_reject_hide_ui", true)
-                status.append("🚫 QA Reject+Hide Mode: ${if (qaRejectHideUI) "ENABLED" else "DISABLED"}\n")
+                status.append("🚫 QA Reject+Hide Mode: ${if (qaRejectHideUI) "ENABLED" else "DISABLED"}
+")
+                
+                // Task 5: Add QA Setup Status row
+                status.append("
+📱 SETUP STATUS
+")
+                val hasRole = CallScreeningService.hasCallScreeningRole(this@QAPanelV2Activity)
+                val hasNotifications = notificationsEnabled
+                val needsSetup = !hasRole || !hasNotifications
+                
+                status.append("• Call Screening Role: ${if (hasRole) "✅" else "❌"}
+")
+                status.append("• Notifications: ${if (hasNotifications) "✅" else "❌"}
+")
+                status.append("• Setup Card Should Show: ${if (needsSetup) "YES" else "NO"}
+")
+                status.append("• Runtime Gate Active: ${if (needsSetup) "BLOCKING" else "PASSED"}
+")
                 
                 // Task 2e: Live suppression results
                 val suppressCount = prefs.getInt("suppress_ui_success_count", 0)

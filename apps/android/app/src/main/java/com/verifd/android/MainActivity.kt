@@ -11,6 +11,9 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.RecyclerView
 import androidx.core.content.ContextCompat
 import com.verifd.android.ui.DebugPanelActivity
+import com.verifd.android.ui.FirstRunSetupCard
+import com.verifd.android.service.CallScreeningService
+import androidx.core.app.NotificationManagerCompat
 
 class MainActivity : AppCompatActivity() {
     
@@ -22,6 +25,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var refreshButton: Button
     private lateinit var cleanupButton: Button
     private lateinit var grantPermissionsButton: Button
+    private lateinit var firstRunSetupCard: FirstRunSetupCard
     
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -36,6 +40,7 @@ class MainActivity : AppCompatActivity() {
         refreshButton = findViewById(R.id.refreshButton)
         cleanupButton = findViewById(R.id.cleanupButton)
         grantPermissionsButton = findViewById(R.id.grantPermissionsButton)
+        firstRunSetupCard = findViewById(R.id.firstRunSetupCard)
         
         // Set up click listeners
         refreshButton.setOnClickListener {
@@ -82,6 +87,49 @@ class MainActivity : AppCompatActivity() {
         
         // Initialize UI state
         checkPermissionsAndInitialize()
+        
+        // Task 1: Runtime-driven First-Run setup check for staging
+        if (BuildConfig.BUILD_TYPE == "staging") {
+            checkAndShowFirstRunSetup()
+        }
+    }
+    
+    override fun onResume() {
+        super.onResume()
+        
+        // Task 4: Setup watcher - refresh gate on resume
+        if (BuildConfig.BUILD_TYPE == "staging") {
+            checkAndShowFirstRunSetup()
+        }
+    }
+    
+    private fun checkAndShowFirstRunSetup() {
+        // Task 1: Make First-Run purely runtime-driven in staging
+        // Ignore any stored preferences - only check runtime state
+        val needsSetup = !hasCallScreeningRole() || !areNotificationsEnabled()
+        
+        if (needsSetup) {
+            // Task 2: Show FirstRunSetupCard on the real PassList home screen
+            firstRunSetupCard.visibility = View.VISIBLE
+            firstRunSetupCard.updateStatus()
+            
+            // Set callback for when setup is complete
+            firstRunSetupCard.onSetupCompleteListener = {
+                // Re-check status after setup action
+                checkAndShowFirstRunSetup()
+            }
+        } else {
+            // Hide setup card when both conditions are met
+            firstRunSetupCard.visibility = View.GONE
+        }
+    }
+    
+    private fun hasCallScreeningRole(): Boolean {
+        return CallScreeningService.hasCallScreeningRole(this)
+    }
+    
+    private fun areNotificationsEnabled(): Boolean {
+        return NotificationManagerCompat.from(this).areNotificationsEnabled()
     }
     
     private fun checkPermissionsAndInitialize() {
