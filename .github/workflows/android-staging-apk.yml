@@ -17,6 +17,10 @@ on:
         required: false
         type: string
 
+permissions:
+  contents: write
+  actions: read
+
 jobs:
   build:
     name: Build Staging APK
@@ -413,9 +417,34 @@ jobs:
           
           echo "✅ QR code generated for release URL: $RELEASE_URL"
 
+      - name: Token Sanity Check
+        if: github.event_name == 'workflow_dispatch' || github.ref == 'refs/heads/staging'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          echo "Checking GitHub token permissions..."
+          gh auth status || true
+          
+          # Test write access
+          echo "Testing repository write access..."
+          if gh api repos/${{ github.repository }} -X GET > /dev/null 2>&1; then
+            echo "✅ Token has read access to repository"
+          else
+            echo "❌ Token lacks read access to repository"
+            exit 1
+          fi
+          
+          echo ""
+          echo "ℹ️ If release creation fails with 403, check:"
+          echo "   Settings → Actions → General → Workflow permissions"
+          echo "   Should be: 'Read and write permissions'"
+          echo ""
+
       - name: Create GitHub Release
         if: github.event_name == 'workflow_dispatch' || github.ref == 'refs/heads/staging'
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           tag_name: ${{ env.RELEASE_TAG }}
           name: Android Staging Release ${{ env.RELEASE_TAG }}
