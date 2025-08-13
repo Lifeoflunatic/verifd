@@ -20,6 +20,7 @@ import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.app.NotificationCompat
+import androidx.core.app.NotificationManagerCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.chip.Chip
@@ -204,6 +205,18 @@ class QAPanelV2Activity : AppCompatActivity() {
         }
         featureChips.addView(postCallChip)
         
+        // QA Reject+Hide UI toggle (Feature A)
+        val rejectHideChip = Chip(this).apply {
+            text = "Reject+Hide Unknowns"
+            isCheckable = true
+            isChecked = prefs.getBoolean("qa_reject_hide_ui", true)
+            setOnCheckedChangeListener { _, isChecked ->
+                prefs.edit().putBoolean("qa_reject_hide_ui", isChecked).apply()
+                Log.d(TAG, "QA Reject+Hide UI mode: ${if (isChecked) "ENABLED" else "DISABLED"}")
+            }
+        }
+        featureChips.addView(rejectHideChip)
+        
         // Refresh button
         findViewById<Button>(R.id.btn_refresh_status).setOnClickListener {
             refreshStatus()
@@ -371,13 +384,21 @@ class QAPanelV2Activity : AppCompatActivity() {
             try {
                 val status = StringBuilder()
                 
-                // Feature 6: Enhanced QA header with BuildConfig + KID + API base + screener status
-                status.append("📱 Build Info\n")
-                status.append("Version: ${BuildConfig.VERSION_NAME} (${BuildConfig.VERSION_CODE})\n")
-                status.append("Build Type: ${BuildConfig.BUILD_TYPE}\n")
-                status.append("Variant: ${BuildConfig.BUILD_VARIANT}\n")
-                status.append("Debug: ${BuildConfig.DEBUG}\n")
-                status.append("\n")
+                // Feature D: Enhanced QA header with detailed info
+                status.append("📱 Build Info
+")
+                status.append("Version: ${BuildConfig.VERSION_NAME} (${BuildConfig.VERSION_CODE})
+")
+                status.append("Build Type: ${BuildConfig.BUILD_TYPE}
+")
+                status.append("Application ID: ${BuildConfig.APPLICATION_ID}
+")
+                status.append("SDK: ${Build.VERSION.SDK_INT} (Android ${Build.VERSION.RELEASE})
+")
+                status.append("Debug: ${BuildConfig.DEBUG}
+")
+                status.append("
+")
                 
                 // API Configuration
                 status.append("🌐 API Configuration\n")
@@ -404,14 +425,26 @@ class QAPanelV2Activity : AppCompatActivity() {
                 }
                 status.append("\n")
                 
-                // Call screening role
+                // Call screening role & notifications
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                     val hasRole = CallScreeningService.hasCallScreeningRole(this@QAPanelV2Activity)
-                    status.append("📞 Call Screening: ${if (hasRole) "✅ Active" else "❌ Inactive"}\n")
-                    status.append("Screener Status: ${if (hasRole) "ROLE_GRANTED" else "ROLE_NOT_GRANTED"}\n")
+                    status.append("📞 Call Screening: ${if (hasRole) "✅ Active" else "❌ Inactive"}
+")
+                    status.append("Role Holder: ${if (hasRole) "true" else "false"}
+")
                 } else {
-                    status.append("📞 Call Screening: Pre-Android 10\n")
+                    status.append("📞 Call Screening: Pre-Android 10
+")
                 }
+                
+                val notificationsEnabled = NotificationManagerCompat.from(this@QAPanelV2Activity).areNotificationsEnabled()
+                status.append("🔔 Notifications: ${if (notificationsEnabled) "ON" else "OFF"}
+")
+                
+                // QA Reject+Hide mode status
+                val qaRejectHideUI = prefs.getBoolean("qa_reject_hide_ui", true)
+                status.append("🚫 QA Reject+Hide Mode: ${if (qaRejectHideUI) "ENABLED" else "DISABLED"}
+")
                 
                 // Feature flags summary
                 status.append("\n🚩 Feature Flags\n")
@@ -794,6 +827,7 @@ class QAPanelV2Activity : AppCompatActivity() {
                 val setupPrefs = getSharedPreferences("verifd_prefs", Context.MODE_PRIVATE)
                 setupPrefs.edit()
                     .putBoolean("first_run_setup_complete", false)
+                    .remove("first_run_setup_dismissed")  // Feature C: Clear dismissed flag
                     .remove("user_name")
                     .remove("setup_complete_time")
                     .apply()

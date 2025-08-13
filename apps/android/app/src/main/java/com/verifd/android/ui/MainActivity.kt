@@ -108,6 +108,14 @@ class MainActivity : AppCompatActivity() {
         super.onResume()
         loadVPasses()
         
+        // Feature C: Update First-Run setup card status
+        if (BuildConfig.BUILD_TYPE == "staging") {
+            binding.firstRunSetupCard.updateStatus()
+            if (binding.firstRunSetupCard.shouldShow()) {
+                binding.firstRunSetupCard.visibility = View.VISIBLE
+            }
+        }
+        
         // Runtime POST_NOTIFICATIONS prompt on Android 13+ (Feature 3)
         // Check on EVERY resume, not just once
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
@@ -135,10 +143,10 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun setupUI() {
-        // Feature 7: Staging watermark - toolbar subtitle = version
+        // Feature D: Enhanced staging watermark with version
         if (BuildConfig.BUILD_TYPE == "staging") {
             // Enhanced watermark for staging builds
-            binding.appTitle.text = "verifd [STAGING]"
+            binding.appTitle.text = "[STAGING] verifd"
             binding.appTitle.setTextColor(ContextCompat.getColor(this, android.R.color.holo_orange_dark))
             
             // Add version as subtitle text
@@ -149,9 +157,15 @@ class MainActivity : AppCompatActivity() {
             binding.appTitle.text = "verifd • ${BuildConfig.VERSION_NAME}"
         }
         
-        // Add FAB for QA Panel in staging builds (fallback for OEM overflow quirks)
+        // Feature B: Add FAB and button for QA Panel in staging builds
         if (BuildConfig.BUILD_TYPE == "staging") {
             addQAPanelFAB()
+            
+            // Make QA Panel button visible and wire click
+            binding.btnQaPanel.visibility = View.VISIBLE
+            binding.btnQaPanel.setOnClickListener {
+                openQAPanel()
+            }
         }
         
         // Setup RecyclerView for vPass list

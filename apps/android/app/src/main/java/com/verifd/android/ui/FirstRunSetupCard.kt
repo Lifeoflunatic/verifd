@@ -1,9 +1,9 @@
 package com.verifd.android.ui
 
 import android.Manifest
+import android.app.role.RoleManager
 import android.content.Context
 import android.content.Intent
-import android.content.SharedPreferences
 import android.content.pm.PackageManager
 import android.os.Build
 import android.provider.Settings
@@ -11,378 +11,161 @@ import android.util.AttributeSet
 import android.view.LayoutInflater
 import android.view.View
 import android.widget.Button
-import android.widget.CheckBox
-import android.widget.ImageView
-import android.widget.LinearLayout
 import android.widget.TextView
-import androidx.core.app.ActivityCompat
+import androidx.cardview.widget.CardView
+import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
-import com.google.android.material.card.MaterialCardView
-import com.google.android.material.textfield.TextInputEditText
-import com.google.android.material.textfield.TextInputLayout
 import com.verifd.android.BuildConfig
 import com.verifd.android.R
 import com.verifd.android.service.CallScreeningService
 
 /**
- * First-run setup card that guides users through initial configuration.
- * Shows only on first launch or when setup is incomplete.
- * 
- * Setup steps:
- * 1. Enter your name (for templates)
- * 2. Grant permissions (Phone, SMS, Notifications)
- * 3. Enable call screening role
- * 4. Optional: Configure expecting window default
+ * First-Run setup card shown in staging builds until role + notifications are enabled
+ * Feature C: Guides users to enable call screening role and notifications
  */
 class FirstRunSetupCard @JvmOverloads constructor(
     context: Context,
     attrs: AttributeSet? = null,
     defStyleAttr: Int = 0
-) : MaterialCardView(context, attrs, defStyleAttr) {
+) : CardView(context, attrs, defStyleAttr) {
     
-    companion object {
-        private const val PREFS_NAME = "verifd_prefs"
-        private const val KEY_SETUP_COMPLETE = "first_run_setup_complete"
-        private const val KEY_USER_NAME = "user_name"
-        private const val KEY_EXPECTING_DEFAULT = "expecting_default_minutes"
-        
-        const val REQUEST_CODE_PERMISSIONS = 1001
-        const val REQUEST_CODE_CALL_SCREENING = 1002
-    }
+    private val roleStatusText: TextView
+    private val notificationStatusText: TextView
+    private val btnSetCallScreener: Button
+    private val btnEnableNotifications: Button
+    private val btnDismissSetup: Button
     
-    private lateinit var prefs: SharedPreferences
-    private var setupListener: SetupListener? = null
-    
-    // UI elements
-    private lateinit var stepIndicator: LinearLayout
-    private lateinit var nameInput: TextInputEditText
-    private lateinit var nameInputLayout: TextInputLayout
-    private lateinit var permissionsStatus: TextView
-    private lateinit var permissionsButton: Button
-    private lateinit var callScreeningStatus: TextView
-    private lateinit var callScreeningButton: Button
-    private lateinit var expectingCheckbox: CheckBox
-    private lateinit var completeButton: Button
-    private lateinit var skipButton: Button
-    
-    private var currentStep = 1
-    
-    interface SetupListener {
-        fun onSetupComplete(userName: String)
-        fun onSetupSkipped()
-        fun onRequestPermissions(permissions: Array<String>, requestCode: Int)
-        fun onRequestCallScreeningRole()
-    }
+    var onSetupCompleteListener: (() -> Unit)? = null
     
     init {
-        initializeView()
-    }
-    
-    private fun initializeView() {
-        prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-        
-        // Inflate the card content
         LayoutInflater.from(context).inflate(R.layout.first_run_setup_card, this, true)
         
-        // Set card properties
-        radius = 16f
-        elevation = 8f
-        setCardBackgroundColor(ContextCompat.getColor(context, android.R.color.white))
-        useCompatPadding = true
+        roleStatusText = findViewById(R.id.roleStatusText)
+        notificationStatusText = findViewById(R.id.notificationStatusText)
+        btnSetCallScreener = findViewById(R.id.btnSetCallScreener)
+        btnEnableNotifications = findViewById(R.id.btnEnableNotifications)
+        btnDismissSetup = findViewById(R.id.btnDismissSetup)
         
-        // Find views
-        stepIndicator = findViewById(R.id.step_indicator)
-        nameInput = findViewById(R.id.name_input)
-        nameInputLayout = findViewById(R.id.name_input_layout)
-        permissionsStatus = findViewById(R.id.permissions_status)
-        permissionsButton = findViewById(R.id.permissions_button)
-        callScreeningStatus = findViewById(R.id.call_screening_status)
-        callScreeningButton = findViewById(R.id.call_screening_button)
-        expectingCheckbox = findViewById(R.id.expecting_checkbox)
-        completeButton = findViewById(R.id.complete_button)
-        skipButton = findViewById(R.id.skip_button)
-        
-        // Setup click listeners
-        setupClickListeners()
-        
-        // Update initial state
-        updateUI()
+        setupButtons()
+        updateStatus()
     }
     
-    private fun setupClickListeners() {
-        nameInput.setOnFocusChangeListener { _, hasFocus ->
-            if (!hasFocus) {
-                val name = nameInput.text?.toString()?.trim()
-                if (!name.isNullOrEmpty()) {
-                    prefs.edit().putString(KEY_USER_NAME, name).apply()
-                    moveToStep(2)
-                }
-            }
+    private fun setupButtons() {
+        btnSetCallScreener.setOnClickListener {
+            openCallScreeningRoleSettings()
         }
         
-        permissionsButton.setOnClickListener {
-            requestPermissions()
+        btnEnableNotifications.setOnClickListener {
+            openNotificationSettings()
         }
         
-        callScreeningButton.setOnClickListener {
-            requestCallScreeningRole()
-        }
-        
-        expectingCheckbox.setOnCheckedChangeListener { _, isChecked ->
-            prefs.edit().putInt(KEY_EXPECTING_DEFAULT, if (isChecked) 30 else 0).apply()
-        }
-        
-        completeButton.setOnClickListener {
-            completeSetup()
-        }
-        
-        skipButton.setOnClickListener {
-            skipSetup()
+        btnDismissSetup.setOnClickListener {
+            // Save that user has seen/dismissed the setup
+            context.getSharedPreferences("verifd_prefs", Context.MODE_PRIVATE)
+                .edit()
+                .putBoolean("first_run_setup_dismissed", true)
+                .apply()
+            
+            visibility = View.GONE
+            onSetupCompleteListener?.invoke()
         }
     }
     
-    fun setSetupListener(listener: SetupListener) {
-        this.setupListener = listener
+    fun updateStatus() {
+        val hasRole = hasCallScreeningRole()
+        val hasNotifications = areNotificationsEnabled()
+        
+        // Update role status
+        if (hasRole) {
+            roleStatusText.text = "✓ Default call screener set"
+            btnSetCallScreener.visibility = View.GONE
+        } else {
+            roleStatusText.text = "Set as default call screener"
+            btnSetCallScreener.visibility = View.VISIBLE
+        }
+        
+        // Update notification status
+        if (hasNotifications) {
+            notificationStatusText.text = "✓ Notifications enabled"
+            btnEnableNotifications.visibility = View.GONE
+        } else {
+            notificationStatusText.text = "Enable notifications"
+            btnEnableNotifications.visibility = View.VISIBLE
+        }
+        
+        // Show dismiss button only when both are complete
+        btnDismissSetup.visibility = if (hasRole && hasNotifications) View.VISIBLE else View.GONE
     }
     
     fun shouldShow(): Boolean {
-        // FORCE show in staging builds (ignore any restored 'onboarding_complete')
-        if (BuildConfig.VERSION_NAME.contains("staging", ignoreCase = true)) {
-            return !isSetupComplete() || !hasRequiredPermissions()
+        // In staging, always show unless both conditions met or user dismissed
+        if (BuildConfig.BUILD_TYPE != "staging") {
+            return false
         }
-        // Show if setup not complete or critical permissions missing
-        return !isSetupComplete() || !hasRequiredPermissions()
+        
+        val prefs = context.getSharedPreferences("verifd_prefs", Context.MODE_PRIVATE)
+        val dismissed = prefs.getBoolean("first_run_setup_dismissed", false)
+        
+        if (dismissed) {
+            return false
+        }
+        
+        return !hasCallScreeningRole() || !areNotificationsEnabled()
     }
     
-    private fun isSetupComplete(): Boolean {
-        // In staging, ignore saved state and always require fresh setup
-        if (BuildConfig.VERSION_NAME.contains("staging", ignoreCase = true)) {
-            // Only consider complete if completed in this session
-            return prefs.getBoolean(KEY_SETUP_COMPLETE, false) && 
-                   prefs.getLong("setup_complete_time", 0) > System.currentTimeMillis() - 3600000 // 1 hour
-        }
-        return prefs.getBoolean(KEY_SETUP_COMPLETE, false)
-    }
-    
-    private fun hasRequiredPermissions(): Boolean {
-        val phonePermission = ActivityCompat.checkSelfPermission(
-            context, 
-            Manifest.permission.READ_PHONE_STATE
-        ) == PackageManager.PERMISSION_GRANTED
+    fun reset() {
+        // Reset the dismissed flag (for QA Panel reset)
+        context.getSharedPreferences("verifd_prefs", Context.MODE_PRIVATE)
+            .edit()
+            .remove("first_run_setup_dismissed")
+            .apply()
         
-        val smsPermission = ActivityCompat.checkSelfPermission(
-            context,
-            Manifest.permission.SEND_SMS
-        ) == PackageManager.PERMISSION_GRANTED
-        
-        // Notification permission only required on Android 13+
-        val notificationPermission = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            ActivityCompat.checkSelfPermission(
-                context,
-                Manifest.permission.POST_NOTIFICATIONS
-            ) == PackageManager.PERMISSION_GRANTED
-        } else {
-            true
-        }
-        
-        return phonePermission && smsPermission && notificationPermission
+        updateStatus()
+        visibility = if (shouldShow()) View.VISIBLE else View.GONE
     }
     
     private fun hasCallScreeningRole(): Boolean {
-        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            CallScreeningService.hasCallScreeningRole(context)
-        } else {
-            true // Not applicable for older versions
-        }
+        return CallScreeningService.hasCallScreeningRole(context)
     }
     
-    private fun updateUI() {
-        // Update step indicators
-        updateStepIndicators()
-        
-        // Step 1: Name
-        val savedName = prefs.getString(KEY_USER_NAME, "")
-        if (!savedName.isNullOrEmpty()) {
-            nameInput.setText(savedName)
-            nameInputLayout.helperText = "✓ Name saved"
-        }
-        
-        // Step 2: Permissions
-        updatePermissionsStatus()
-        
-        // Step 3: Call Screening
-        updateCallScreeningStatus()
-        
-        // Step 4: Optional settings
-        val expectingDefault = prefs.getInt(KEY_EXPECTING_DEFAULT, 0)
-        expectingCheckbox.isChecked = expectingDefault > 0
-        
-        // Complete button
-        val canComplete = !prefs.getString(KEY_USER_NAME, "").isNullOrEmpty() &&
-                         hasRequiredPermissions() &&
-                         hasCallScreeningRole()
-        
-        completeButton.isEnabled = canComplete
-        completeButton.text = if (canComplete) "Complete Setup" else "Finish Required Steps"
+    private fun areNotificationsEnabled(): Boolean {
+        return NotificationManagerCompat.from(context).areNotificationsEnabled()
     }
     
-    private fun updateStepIndicators() {
-        stepIndicator.removeAllViews()
-        
-        for (i in 1..4) {
-            val dot = View(context).apply {
-                layoutParams = LinearLayout.LayoutParams(24, 24).apply {
-                    marginEnd = 8
-                }
-                background = ContextCompat.getDrawable(
-                    context,
-                    if (i <= currentStep) {
-                        android.R.drawable.presence_online
-                    } else {
-                        android.R.drawable.presence_invisible
-                    }
-                )
-            }
-            stepIndicator.addView(dot)
-        }
-    }
-    
-    private fun updatePermissionsStatus() {
-        val hasPhone = ActivityCompat.checkSelfPermission(
-            context,
-            Manifest.permission.READ_PHONE_STATE
-        ) == PackageManager.PERMISSION_GRANTED
-        
-        val hasSms = ActivityCompat.checkSelfPermission(
-            context,
-            Manifest.permission.SEND_SMS
-        ) == PackageManager.PERMISSION_GRANTED
-        
-        val hasNotifications = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            ActivityCompat.checkSelfPermission(
-                context,
-                Manifest.permission.POST_NOTIFICATIONS
-            ) == PackageManager.PERMISSION_GRANTED
-        } else {
-            true
-        }
-        
-        val statusText = buildString {
-            append("Phone: ${if (hasPhone) "✓" else "✗"} ")
-            append("SMS: ${if (hasSms) "✓" else "✗"} ")
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                append("Notif: ${if (hasNotifications) "✓" else "✗"}")
-            }
-        }
-        
-        permissionsStatus.text = statusText
-        
-        val allGranted = hasPhone && hasSms && hasNotifications
-        permissionsButton.isEnabled = !allGranted
-        permissionsButton.text = if (allGranted) "All Granted" else "Grant Permissions"
-        
-        if (allGranted && currentStep == 2) {
-            moveToStep(3)
-        }
-    }
-    
-    private fun updateCallScreeningStatus() {
-        val hasRole = hasCallScreeningRole()
-        
-        callScreeningStatus.text = if (hasRole) {
-            "✓ Call screening enabled"
-        } else {
-            "✗ Call screening not enabled"
-        }
-        
-        callScreeningButton.isEnabled = !hasRole
-        callScreeningButton.text = if (hasRole) "Enabled" else "Enable Call Screening"
-        
-        if (hasRole && currentStep == 3) {
-            moveToStep(4)
-        }
-    }
-    
-    private fun moveToStep(step: Int) {
-        currentStep = step
-        updateUI()
-    }
-    
-    private fun requestPermissions() {
-        val permissions = mutableListOf<String>()
-        
-        if (ActivityCompat.checkSelfPermission(context, Manifest.permission.READ_PHONE_STATE) 
-            != PackageManager.PERMISSION_GRANTED) {
-            permissions.add(Manifest.permission.READ_PHONE_STATE)
-        }
-        
-        if (ActivityCompat.checkSelfPermission(context, Manifest.permission.SEND_SMS)
-            != PackageManager.PERMISSION_GRANTED) {
-            permissions.add(Manifest.permission.SEND_SMS)
-        }
-        
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            if (ActivityCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS)
-                != PackageManager.PERMISSION_GRANTED) {
-                permissions.add(Manifest.permission.POST_NOTIFICATIONS)
-            }
-        }
-        
-        if (permissions.isNotEmpty()) {
-            setupListener?.onRequestPermissions(permissions.toTypedArray(), REQUEST_CODE_PERMISSIONS)
-        }
-    }
-    
-    private fun requestCallScreeningRole() {
+    private fun openCallScreeningRoleSettings() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            setupListener?.onRequestCallScreeningRole()
+            val roleManager = context.getSystemService(Context.ROLE_SERVICE) as? RoleManager
+            val intent = roleManager?.createRequestRoleIntent(RoleManager.ROLE_CALL_SCREENING)
+            if (intent != null) {
+                (context as? MainActivity)?.startActivity(intent)
+            }
+        } else {
+            // Pre-Android 10: Open app settings
+            openAppSettings()
         }
     }
     
-    private fun completeSetup() {
-        val userName = nameInput.text?.toString()?.trim() ?: "User"
-        prefs.edit()
-            .putBoolean(KEY_SETUP_COMPLETE, true)
-            .putString(KEY_USER_NAME, userName)
-            .putLong("setup_complete_time", System.currentTimeMillis())
-            .apply()
-        
-        setupListener?.onSetupComplete(userName)
-        visibility = View.GONE
-    }
-    
-    private fun skipSetup() {
-        prefs.edit().putBoolean(KEY_SETUP_COMPLETE, true).apply()
-        setupListener?.onSetupSkipped()
-        visibility = View.GONE
-    }
-    
-    fun onPermissionsResult(requestCode: Int, permissions: Array<String>, grantResults: IntArray) {
-        if (requestCode == REQUEST_CODE_PERMISSIONS) {
-            updatePermissionsStatus()
+    private fun openNotificationSettings() {
+        val intent = Intent().apply {
+            when {
+                Build.VERSION.SDK_INT >= Build.VERSION_CODES.O -> {
+                    action = Settings.ACTION_APP_NOTIFICATION_SETTINGS
+                    putExtra(Settings.EXTRA_APP_PACKAGE, context.packageName)
+                }
+                else -> {
+                    action = Settings.ACTION_APPLICATION_DETAILS_SETTINGS
+                    data = android.net.Uri.parse("package:${context.packageName}")
+                }
+            }
         }
+        (context as? MainActivity)?.startActivity(intent)
     }
     
-    fun onCallScreeningRoleResult(granted: Boolean) {
-        updateCallScreeningStatus()
-    }
-    
-    /**
-     * Reset the setup state - used in QA Panel for staging builds
-     * Clears the onboarding complete flag and user name
-     */
-    fun resetSetup() {
-        prefs.edit()
-            .putBoolean(KEY_SETUP_COMPLETE, false)
-            .remove(KEY_USER_NAME)
-            .remove("setup_complete_time")
-            .apply()
-        
-        // Reset UI to initial state
-        currentStep = 1
-        nameInput.setText("")
-        expectingCheckbox.isChecked = false
-        visibility = View.VISIBLE
-        updateUI()
+    private fun openAppSettings() {
+        val intent = Intent().apply {
+            action = Settings.ACTION_APPLICATION_DETAILS_SETTINGS
+            data = android.net.Uri.parse("package:${context.packageName}")
+        }
+        (context as? MainActivity)?.startActivity(intent)
     }
 }

@@ -403,22 +403,51 @@ class CallScreeningService : CallScreeningService() {
     private fun respondToCall(callDetails: Call.Details, response: CallResponse) {
         val riskAssessment = response.riskAssessment
         
-        val responseBuilder = CallScreeningService.CallResponse.Builder()
-            .setDisallowCall(!response.shouldAllowCall)
-            .setRejectCall(!response.shouldAllowCall)
-            .setSkipCallLog(riskAssessment?.shouldSkipCallLog ?: false)
-            .setSkipNotification(riskAssessment?.shouldSkipNotification ?: false)
-            .setSilenceCall(riskAssessment?.shouldSilenceCall ?: false)
+        // Feature A: Reject + hide stock UI for unknowns in staging (if QA toggle enabled)
+        val qaRejectHideUI = getSharedPreferences("verifd_prefs", MODE_PRIVATE)
+            .getBoolean("qa_reject_hide_ui", true) // Default true in staging
+        
+        val responseBuilder = if (BuildConfig.BUILD_TYPE == "staging" && 
+                                  !response.shouldAllowCall && 
+                                  qaRejectHideUI) {
+            // REJECT + HIDE mode for staging unknowns
+            val builder = CallScreeningService.CallResponse.Builder()
+                .setDisallowCall(true)
+                .setRejectCall(true)
+            
+            // Hide from call log and notifications on Android 10+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                builder.setSkipCallLog(true)
+                builder.setSkipNotification(true)
+            }
+            
+            // Suppress screening UI on Android 11+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                // setSuppressCallScreeningUi added in API 30
+                @Suppress("NewApi")
+                builder.setSuppressCallScreeningUi(true)
+            }
+            
+            Log.d(TAG, "STAGING REJECT+HIDE: Blocking and hiding unknown caller")
+            builder
+        } else {
+            // Normal mode: use existing behavior
+            CallScreeningService.CallResponse.Builder()
+                .setDisallowCall(!response.shouldAllowCall)
+                .setRejectCall(!response.shouldAllowCall)
+                .setSkipCallLog(riskAssessment?.shouldSkipCallLog ?: false)
+                .setSkipNotification(riskAssessment?.shouldSkipNotification ?: false)
+                .setSilenceCall(riskAssessment?.shouldSilenceCall ?: false)
+        }
         
         // Note: Display name cannot be set via CallScreeningService API
         // It's only shown in our UI, not in system call log
         
+        val finalResponse = responseBuilder.build()
         Log.d(TAG, "Responding to call: allow=${response.shouldAllowCall}, " +
-                "skipLog=${riskAssessment?.shouldSkipCallLog}, " +
-                "skipNotification=${riskAssessment?.shouldSkipNotification}, " +
-                "silence=${riskAssessment?.shouldSilenceCall}")
+                "mode=${if (BuildConfig.BUILD_TYPE == "staging" && !response.shouldAllowCall && qaRejectHideUI) "REJECT+HIDE" else "NORMAL"}")
         
-        respondToCall(callDetails, responseBuilder.build())
+        respondToCall(callDetails, finalResponse)
     }
 
     /**

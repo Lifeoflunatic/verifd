@@ -45,6 +45,13 @@
         android:layout_height="match_parent"
         android:orientation="vertical">
 
+        <!-- Feature C: First-Run Setup Card (staging only) -->
+        <com.verifd.android.ui.FirstRunSetupCard
+            android:id="@+id/firstRunSetupCard"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:visibility="gone" />
+
         <!-- Header -->
         <LinearLayout
             android:layout_width="match_parent"
@@ -74,6 +81,17 @@
                 android:layout_height="wrap_content"
                 android:text="Cleanup"
                 android:layout_marginStart="8dp"
+                style="?android:attr/buttonStyleSmall" />
+
+            <!-- Feature B: QA Panel button visible in staging -->
+            <Button
+                android:id="@+id/btnQaPanel"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="QA PANEL"
+                android:layout_marginStart="8dp"
+                android:textColor="@android:color/holo_purple"
+                android:visibility="gone"
                 style="?android:attr/buttonStyleSmall" />
 
         </LinearLayout>
