@@ -1,19 +1,16 @@
 ---HANDOFF---
 Task: (auto) Fallback handoff — assistant reply had no explicit ---HANDOFF---
-When: 2025-08-13T17:19:22Z
-Branch: feat/zod-row-typing
+When: 2025-08-13T19:55:20Z
+Branch: release/staging-17
 
 Diff Summary:
- OPS/HANDOFF_HISTORY.md | 64 ++++++++++++++++++++++++++++++++++++++++++++++++++
- OPS/LAST_HANDOFF.txt   | 11 ++++-----
- 2 files changed, 68 insertions(+), 7 deletions(-)
+
 
 Files Touched:
-OPS/HANDOFF_HISTORY.md
-OPS/LAST_HANDOFF.txt
+
 
 Last Commit:
-9e286a1 fix(android): use reflection for setSuppressCallScreeningUi API 30+ method
+73b0328 feat(ops): add branch protection and tag policy documentation
 
 Commands/Tests Run (tail):
 

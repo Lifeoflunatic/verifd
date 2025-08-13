@@ -433,31 +433,24 @@ class QAPanelV2Activity : AppCompatActivity() {
                 
                 // QA Reject+Hide mode status & live results
                 val qaRejectHideUI = prefs.getBoolean("qa_reject_hide_ui", true)
-                status.append("🚫 QA Reject+Hide Mode: ${if (qaRejectHideUI) "ENABLED" else "DISABLED"}
-")
+                status.append("🚫 QA Reject+Hide Mode: ${if (qaRejectHideUI) "ENABLED" else "DISABLED"}\n")
                 
                 // Task 2e: Live suppression results
                 val suppressCount = prefs.getInt("suppress_ui_success_count", 0)
                 val suppressFails = prefs.getInt("suppress_ui_fail_count", 0)
                 val lastSuppressTime = prefs.getLong("last_suppress_time", 0)
                 
-                status.append("
-📊 Live Suppression Results
-")
-                status.append("✅ Successful: $suppressCount
-")
-                status.append("❌ Failed: $suppressFails
-")
+                status.append("\n📊 Live Suppression Results\n")
+                status.append("✅ Successful: $suppressCount\n")
+                status.append("❌ Failed: $suppressFails\n")
                 if (lastSuppressTime > 0) {
                     val timeSince = System.currentTimeMillis() - lastSuppressTime
                     val seconds = timeSince / 1000
                     val minutes = seconds / 60
                     if (minutes > 0) {
-                        status.append("⏱ Last: ${minutes}m ago
-")
+                        status.append("⏱ Last: ${minutes}m ago\n")
                     } else {
-                        status.append("⏱ Last: ${seconds}s ago
-")
+                        status.append("⏱ Last: ${seconds}s ago\n")
                     }
                 }
                 
