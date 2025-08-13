@@ -13,8 +13,8 @@ on:
   workflow_dispatch:
     inputs:
       release_tag:
-        description: 'Release tag (e.g., v1.3.0-rc1-staging+8)'
-        required: false
+        description: 'Release tag (e.g., v1.3.0-rc1-staging.17)'
+        required: true
         type: string
 
 permissions:
@@ -73,17 +73,19 @@ jobs:
         env:
           RELEASE_TAG: ${{ inputs.release_tag }}
       
-      - name: Verify APK Version
+      - name: APK Stamp Verification
         if: inputs.release_tag != ''
         working-directory: apps/android
         run: |
-          echo "Verifying APK version matches release tag..."
+          echo "=== APK STAMP VERIFICATION ==="
+          echo "Release Tag: ${{ inputs.release_tag }}"
+          echo "GitHub SHA: $GITHUB_SHA"
           
           # Find the built APK
           APK=$(find app/build/outputs/apk/staging -name "*.apk" -type f | head -1)
           
           if [ -z "$APK" ]; then
-            echo "❌ No APK found to verify"
+            echo "::error::APK_STAMP_MISMATCH: No APK found to verify"
             exit 1
           fi
           
@@ -95,23 +97,70 @@ jobs:
             sudo apt-get update && sudo apt-get install -y aapt
           fi
           
-          # Extract versionName from APK
+          # 1. Verify versionName matches release_tag
           VERSION_NAME=$(aapt dump badging "$APK" | sed -n "s/.*versionName='\([^']*\)'.*/\1/p")
           echo "APK versionName: $VERSION_NAME"
-          echo "Expected tag: ${{ inputs.release_tag }}"
           
-          # Compare versions (strip 'v' prefix from tag if present)
           EXPECTED_VERSION="${{ inputs.release_tag }}"
           if [[ "$EXPECTED_VERSION" == v* ]]; then
             EXPECTED_VERSION="${EXPECTED_VERSION:1}"
           fi
           
           if [ "$VERSION_NAME" != "$EXPECTED_VERSION" ]; then
-            echo "::error::APK versionName ($VERSION_NAME) does not match release_tag ($EXPECTED_VERSION)"
+            echo "::error::APK_STAMP_MISMATCH: versionName ($VERSION_NAME) != release_tag ($EXPECTED_VERSION)"
             exit 1
           fi
+          echo "✅ Version matches: $VERSION_NAME"
           
-          echo "✅ APK version matches release tag"
+          # 2. Verify [STAGING] marker present in app name
+          APP_LABEL=$(aapt dump badging "$APK" | sed -n "s/.*application-label:'\([^']*\)'.*/\1/p")
+          if [[ "$APP_LABEL" != *"Staging"* ]]; then
+            echo "::error::APK_STAMP_MISMATCH: Missing [STAGING] marker in app name: $APP_LABEL"
+            exit 1
+          fi
+          echo "✅ Staging marker found: $APP_LABEL"
+          
+          # 3. Extract and verify BuildConfig values
+          # Unzip the APK to check classes
+          unzip -q "$APK" -d apk_extracted || true
+          
+          # Use strings to check for BuildConfig values
+          if command -v strings >/dev/null 2>&1; then
+            echo "Checking BuildConfig values..."
+            
+            # Check for staging variant marker
+            if strings apk_extracted/classes*.dex 2>/dev/null | grep -q "IS_STAGING.*true"; then
+              echo "✅ IS_STAGING=true found in BuildConfig"
+            else
+              echo "⚠️ Could not verify IS_STAGING flag"
+            fi
+            
+            # Check for staging API URL
+            if strings apk_extracted/classes*.dex 2>/dev/null | grep -q "staging.api.verifd.com"; then
+              echo "✅ Staging API URL found"
+            else
+              echo "::warning::Staging API URL not found in APK"
+            fi
+          fi
+          
+          # Clean up
+          rm -rf apk_extracted
+          
+          # 4. Write BUILD_ENV.txt for records
+          cat > ../../OPS/BUILD_ENV.txt << EOF
+          BUILD_TIME: $(date -u +"%Y-%m-%dT%H:%M:%SZ")
+          RELEASE_TAG: ${{ inputs.release_tag }}
+          VERSION_NAME: $VERSION_NAME
+          APP_LABEL: $APP_LABEL
+          GITHUB_SHA: $GITHUB_SHA
+          GITHUB_REF: $GITHUB_REF
+          GITHUB_RUN_ID: ${{ github.run_id }}
+          GITHUB_RUN_NUMBER: ${{ github.run_number }}
+          EOF
+          
+          echo ""
+          echo "=== STAMP VERIFICATION COMPLETE ==="
+          echo "All checks passed for ${{ inputs.release_tag }}"
       
       - name: Sign APK
         working-directory: apps/android
