@@ -385,20 +385,13 @@ class QAPanelV2Activity : AppCompatActivity() {
                 val status = StringBuilder()
                 
                 // Feature D: Enhanced QA header with detailed info
-                status.append("📱 Build Info
-")
-                status.append("Version: ${BuildConfig.VERSION_NAME} (${BuildConfig.VERSION_CODE})
-")
-                status.append("Build Type: ${BuildConfig.BUILD_TYPE}
-")
-                status.append("Application ID: ${BuildConfig.APPLICATION_ID}
-")
-                status.append("SDK: ${Build.VERSION.SDK_INT} (Android ${Build.VERSION.RELEASE})
-")
-                status.append("Debug: ${BuildConfig.DEBUG}
-")
-                status.append("
-")
+                status.append("📱 Build Info\n")
+                status.append("Version: ${BuildConfig.VERSION_NAME} (${BuildConfig.VERSION_CODE})\n")
+                status.append("Build Type: ${BuildConfig.BUILD_TYPE}\n")
+                status.append("Application ID: ${BuildConfig.APPLICATION_ID}\n")
+                status.append("SDK: ${Build.VERSION.SDK_INT} (Android ${Build.VERSION.RELEASE})\n")
+                status.append("Debug: ${BuildConfig.DEBUG}\n")
+                status.append("\n")
                 
                 // API Configuration
                 status.append("🌐 API Configuration\n")
@@ -428,23 +421,18 @@ class QAPanelV2Activity : AppCompatActivity() {
                 // Call screening role & notifications
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                     val hasRole = CallScreeningService.hasCallScreeningRole(this@QAPanelV2Activity)
-                    status.append("📞 Call Screening: ${if (hasRole) "✅ Active" else "❌ Inactive"}
-")
-                    status.append("Role Holder: ${if (hasRole) "true" else "false"}
-")
+                    status.append("📞 Call Screening: ${if (hasRole) "✅ Active" else "❌ Inactive"}\n")
+                    status.append("Role Holder: ${if (hasRole) "true" else "false"}\n")
                 } else {
-                    status.append("📞 Call Screening: Pre-Android 10
-")
+                    status.append("📞 Call Screening: Pre-Android 10\n")
                 }
                 
                 val notificationsEnabled = NotificationManagerCompat.from(this@QAPanelV2Activity).areNotificationsEnabled()
-                status.append("🔔 Notifications: ${if (notificationsEnabled) "ON" else "OFF"}
-")
+                status.append("🔔 Notifications: ${if (notificationsEnabled) "ON" else "OFF"}\n")
                 
                 // QA Reject+Hide mode status
                 val qaRejectHideUI = prefs.getBoolean("qa_reject_hide_ui", true)
-                status.append("🚫 QA Reject+Hide Mode: ${if (qaRejectHideUI) "ENABLED" else "DISABLED"}
-")
+                status.append("🚫 QA Reject+Hide Mode: ${if (qaRejectHideUI) "ENABLED" else "DISABLED"}\n")
                 
                 // Feature flags summary
                 status.append("\n🚩 Feature Flags\n")
