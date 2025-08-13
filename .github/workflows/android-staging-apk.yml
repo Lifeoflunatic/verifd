@@ -100,7 +100,7 @@ jobs:
           fi
           
           if [ "$VERSION_NAME" != "$EXPECTED_VERSION" ]; then
-            echo "::error::APK versionName ($VERSION_NAME) does not match release_tag (${{ inputs.release_tag }})"
+            echo "::error::APK versionName ($VERSION_NAME) does not match release_tag ($EXPECTED_VERSION)"
             exit 1
           fi
           
@@ -202,19 +202,26 @@ jobs:
       - name: Count and Standardize APKs
         working-directory: apps/android
         run: |
-          # Count APKs to ensure only one is built
-          APK_COUNT=$(find app/build/outputs/apk/staging -name "*.apk" -type f | wc -l)
-          echo "Found $APK_COUNT APK(s)"
-          
-          if [ "$APK_COUNT" -ne 1 ]; then
-            echo "::error::Expected exactly 1 APK, found $APK_COUNT"
-            exit 1
+          # First check if we have the signed APK from the previous step
+          if [ -f "app/build/outputs/apk/verifd-staging-signed.apk" ]; then
+            # Use the signed APK
+            cp "app/build/outputs/apk/verifd-staging-signed.apk" "verifd-staging.apk"
+            echo "✅ Using signed APK"
+          else
+            # Fall back to staging directory APK
+            APK_COUNT=$(find app/build/outputs/apk/staging -name "*.apk" -type f 2>/dev/null | wc -l)
+            echo "Found $APK_COUNT APK(s) in staging directory"
+            
+            if [ "$APK_COUNT" -ne 1 ]; then
+              echo "::error::Expected exactly 1 APK, found $APK_COUNT"
+              exit 1
+            fi
+            
+            # Standardize APK name for upload
+            APK=$(find app/build/outputs/apk/staging -name "*.apk" -type f | head -1)
+            cp "$APK" "verifd-staging.apk"
+            echo "✅ Standardized APK for upload"
           fi
-          
-          # Standardize APK name for upload
-          APK=$(find app/build/outputs/apk/staging -name "*.apk" -type f | head -1)
-          cp "$APK" app/build/outputs/apk/verifd-staging.apk
-          echo "✅ Standardized APK for upload"
       
       - name: Upload APK Artifact
         uses: actions/upload-artifact@v4

@@ -1,85 +1,21 @@
 ---HANDOFF---
 Task: (auto) Fallback handoff — assistant reply had no explicit ---HANDOFF---
-When: 2025-08-13T01:00:42Z
+When: 2025-08-13T01:43:58Z
 Branch: feat/zod-row-typing
 
 Diff Summary:
- .github/workflows/android-staging-apk.yml          |  149 +-
- .github/workflows/ci.yml                           |    3 +
- .github/workflows/nightly-smoke.yml                |    2 +
- .github/workflows/staging-smoke.yml                |    2 +
- .github/workflows/update-badges.yml                |    2 +
- .../document_symbols_cache_v23-06-25.pkl           |  Bin 153508 -> 923046 bytes
- OPS/ANDROID_NOTIFICATIONS.md                       |   28 +-
- OPS/HANDOFF_HISTORY.md                             | 2004 ++++++++++++++++++++
- OPS/LAST_HANDOFF.txt                               |   77 +-
- OPS/RELEASE_TRAIN.md                               |   31 +-
- OPS/STAGING_QA_LINKS.md                            |  228 +--
- OPS/STAGING_RESULTS.md                             |  343 +---
- apps/android/app/build.gradle                      |   22 +-
- apps/android/app/src/main/AndroidManifest.xml      |   40 +
- .../java/com/verifd/android/data/BackendClient.kt  |   90 +
- .../notification/MissedCallNotificationManager.kt  |  388 ++--
- .../verifd/android/service/CallScreeningService.kt |   67 +-
- .../com/verifd/android/util/PhoneNumberUtils.kt    |  101 +
- apps/android/app/src/main/res/values/strings.xml   |    4 +
- apps/backend/package.json                          |   12 +-
- apps/backend/src/db/index.ts                       |   12 +-
- apps/backend/src/middleware/device-auth.ts         |    3 +-
- apps/backend/src/routes/canary-advance.ts          |    6 +-
- apps/backend/src/routes/canary.ts                  |  176 +-
- apps/backend/src/routes/config-admin.ts            |   24 +-
- apps/backend/src/routes/config.ts                  |   20 +-
- apps/backend/src/routes/device.ts                  |    4 +-
- apps/backend/src/routes/index.ts                   |    6 +-
- apps/backend/src/routes/jwks.ts                    |  130 +-
- apps/backend/src/routes/pass.ts                    |   16 +-
- apps/backend/src/routes/telemetry.ts               |   12 +-
- apps/backend/src/routes/verify.ts                  |    6 +-
- apps/backend/src/routes/voice-ping.ts              |    4 +-
- apps/backend/src/services/canary-rollout.ts        |    4 +-
- pnpm-lock.yaml                                     |  164 +-
- 35 files changed, 3407 insertions(+), 773 deletions(-)
+ .github/workflows/android-staging-apk.yml | 33 ++++++++------
+ OPS/HANDOFF_HISTORY.md                    | 67 +++++++++++++++++++++++++++
+ OPS/LAST_HANDOFF.txt                      | 76 ++-----------------------------
+ 3 files changed, 91 insertions(+), 85 deletions(-)
 
 Files Touched:
 .github/workflows/android-staging-apk.yml
-.github/workflows/ci.yml
-.github/workflows/nightly-smoke.yml
-.github/workflows/staging-smoke.yml
-.github/workflows/update-badges.yml
-.serena/cache/typescript/document_symbols_cache_v23-06-25.pkl
-OPS/ANDROID_NOTIFICATIONS.md
 OPS/HANDOFF_HISTORY.md
 OPS/LAST_HANDOFF.txt
-OPS/RELEASE_TRAIN.md
-OPS/STAGING_QA_LINKS.md
-OPS/STAGING_RESULTS.md
-apps/android/app/build.gradle
-apps/android/app/src/main/AndroidManifest.xml
-apps/android/app/src/main/java/com/verifd/android/data/BackendClient.kt
-apps/android/app/src/main/java/com/verifd/android/notification/MissedCallNotificationManager.kt
-apps/android/app/src/main/java/com/verifd/android/service/CallScreeningService.kt
-apps/android/app/src/main/java/com/verifd/android/util/PhoneNumberUtils.kt
-apps/android/app/src/main/res/values/strings.xml
-apps/backend/package.json
-apps/backend/src/db/index.ts
-apps/backend/src/middleware/device-auth.ts
-apps/backend/src/routes/canary-advance.ts
-apps/backend/src/routes/canary.ts
-apps/backend/src/routes/config-admin.ts
-apps/backend/src/routes/config.ts
-apps/backend/src/routes/device.ts
-apps/backend/src/routes/index.ts
-apps/backend/src/routes/jwks.ts
-apps/backend/src/routes/pass.ts
-apps/backend/src/routes/telemetry.ts
-apps/backend/src/routes/verify.ts
-apps/backend/src/routes/voice-ping.ts
-apps/backend/src/services/canary-rollout.ts
-pnpm-lock.yaml
 
 Last Commit:
-d4bb89a feat(workflow): add release_tag input to Android staging APK workflow
+d150a8f fix(android): resolve remaining Kotlin compilation errors for .12 build
 
 Commands/Tests Run (tail):
 
