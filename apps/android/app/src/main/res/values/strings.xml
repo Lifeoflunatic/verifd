@@ -45,4 +45,8 @@
     <string name="tile_expecting_30m">Expecting 30m</string>
     <string name="tile_expecting_active">Expecting (%1$dm)</string>
     <string name="tile_expecting_disabled">Expecting (Disabled)</string>
+    
+    <!-- Permission descriptions -->
+    <string name="permission_notification_action_label">Handle notification actions</string>
+    <string name="permission_notification_action_description">Allows the app to handle notification action buttons securely</string>
 </resources>

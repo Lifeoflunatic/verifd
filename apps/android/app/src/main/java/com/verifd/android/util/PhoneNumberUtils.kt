@@ -1,10 +1,13 @@
 package com.verifd.android.util
 
+import android.telephony.PhoneNumberUtils as AndroidPhoneNumberUtils
 import android.util.Log
+import java.util.Locale
 import java.util.regex.Pattern
 
 /**
  * Utility class for phone number operations
+ * Handles E.164 formatting, normalization, and privacy-safe display
  */
 object PhoneNumberUtils {
     
@@ -13,6 +16,7 @@ object PhoneNumberUtils {
     // Regex for phone number normalization
     private val PHONE_PATTERN = Pattern.compile("[^0-9+]")
     private val LEADING_ONE_PATTERN = Pattern.compile("^1([0-9]{10})$")
+    private val E164_PATTERN = Pattern.compile("^\\+[1-9]\\d{1,14}$")
     
     /**
      * Normalize phone number for consistent comparison
@@ -126,5 +130,102 @@ object PhoneNumberUtils {
         val normalized2 = normalize(number2)
         
         return normalized1 == normalized2
+    }
+    
+    /**
+     * Convert a phone number to E.164 format
+     * @param phoneNumber The raw phone number
+     * @param defaultCountryIso Optional country ISO code (e.g., "US", "IN")
+     * @return E.164 formatted number (e.g., "+15551234567") or null if invalid
+     */
+    fun toE164(phoneNumber: String, defaultCountryIso: String? = null): String? {
+        return try {
+            val cleaned = phoneNumber.replace(Regex("[^0-9+]"), "")
+            
+            // Already in E.164 format
+            if (cleaned.startsWith("+") && isValidE164(cleaned)) {
+                return cleaned
+            }
+            
+            // Try to format with Android's utility
+            val countryIso = defaultCountryIso ?: Locale.getDefault().country
+            val formatted = AndroidPhoneNumberUtils.formatNumberToE164(cleaned, countryIso)
+            
+            if (formatted != null && formatted.startsWith("+")) {
+                formatted
+            } else {
+                // Fallback: assume US if no country code and starts with valid US number
+                if (cleaned.length == 10 && cleaned[0] in '2'..'9') {
+                    "+1$cleaned"
+                } else if (cleaned.length == 11 && cleaned.startsWith("1")) {
+                    "+$cleaned"
+                } else {
+                    null
+                }
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "Failed to convert to E.164: $phoneNumber", e)
+            null
+        }
+    }
+    
+    /**
+     * Check if a number is valid E.164
+     * @param phoneNumber The number to check
+     * @return true if valid E.164 format
+     */
+    fun isValidE164(phoneNumber: String): Boolean {
+        return E164_PATTERN.matcher(phoneNumber).matches()
+    }
+    
+    /**
+     * Format E.164 number for display with privacy
+     * @param e164Number E.164 formatted number
+     * @return Display format like "+1 (555) 123-****"
+     */
+    fun formatForPrivacyDisplay(e164Number: String): String {
+        return try {
+            if (!e164Number.startsWith("+")) return e164Number
+            
+            when {
+                // US/Canada numbers
+                e164Number.startsWith("+1") && e164Number.length == 12 -> {
+                    val areaCode = e164Number.substring(2, 5)
+                    val prefix = e164Number.substring(5, 8)
+                    "+1 ($areaCode) $prefix-****"
+                }
+                // India numbers  
+                e164Number.startsWith("+91") && e164Number.length == 13 -> {
+                    val firstPart = e164Number.substring(3, 8)
+                    "+91 $firstPart *****"
+                }
+                // Generic international
+                else -> {
+                    if (e164Number.length > 7) {
+                        val visible = e164Number.substring(0, e164Number.length - 4)
+                        "$visible****"
+                    } else {
+                        e164Number
+                    }
+                }
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "Failed to format for privacy: $e164Number", e)
+            e164Number
+        }
+    }
+    
+    /**
+     * Hash a phone number for privacy logging
+     * @param phoneNumber The number to hash
+     * @return Hashed format like "ph_abc123..."
+     */
+    fun hashForLogging(phoneNumber: String): String {
+        return try {
+            val hash = phoneNumber.hashCode().toString(16)
+            "ph_${hash.take(8)}"
+        } catch (e: Exception) {
+            "ph_unknown"
+        }
     }
 }

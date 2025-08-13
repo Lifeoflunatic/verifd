@@ -50,13 +50,61 @@ jobs:
       - name: Build Staging APK
         working-directory: apps/android
         run: |
-          # Build staging variant explicitly
+          # Build staging variant explicitly with release tag
           echo "Building staging variant..."
-          ./gradlew clean :app:assembleStaging --stacktrace --no-daemon
+          if [ -n "${{ inputs.release_tag }}" ]; then
+            echo "Using release tag: ${{ inputs.release_tag }}"
+            ./gradlew clean :app:assembleStaging --stacktrace --no-daemon -PreleaseTag=${{ inputs.release_tag }}
+          else
+            echo "Building without release tag (dev mode)"
+            ./gradlew clean :app:assembleStaging --stacktrace --no-daemon
+          fi
           
           # List APK output
           echo "APK build outputs:"
           ls -lah app/build/outputs/apk/staging/ || true
+        env:
+          RELEASE_TAG: ${{ inputs.release_tag }}
+      
+      - name: Verify APK Version
+        if: inputs.release_tag != ''
+        working-directory: apps/android
+        run: |
+          echo "Verifying APK version matches release tag..."
+          
+          # Find the built APK
+          APK=$(find app/build/outputs/apk/staging -name "*.apk" -type f | head -1)
+          
+          if [ -z "$APK" ]; then
+            echo "❌ No APK found to verify"
+            exit 1
+          fi
+          
+          echo "Found APK: $APK"
+          
+          # Install aapt if not available
+          if ! command -v aapt >/dev/null 2>&1; then
+            echo "Installing aapt..."
+            sudo apt-get update && sudo apt-get install -y aapt
+          fi
+          
+          # Extract versionName from APK
+          VERSION_NAME=$(aapt dump badging "$APK" | sed -n "s/.*versionName='\([^']*\)'.*/\1/p")
+          echo "APK versionName: $VERSION_NAME"
+          echo "Expected tag: ${{ inputs.release_tag }}"
+          
+          # Compare versions (strip 'v' prefix from tag if present)
+          EXPECTED_VERSION="${{ inputs.release_tag }}"
+          if [[ "$EXPECTED_VERSION" == v* ]]; then
+            EXPECTED_VERSION="${EXPECTED_VERSION:1}"
+          fi
+          
+          if [ "$VERSION_NAME" != "$EXPECTED_VERSION" ]; then
+            echo "::error::APK versionName ($VERSION_NAME) does not match release_tag (${{ inputs.release_tag }})"
+            exit 1
+          fi
+          
+          echo "✅ APK version matches release tag"
       
       - name: Sign APK
         working-directory: apps/android
@@ -151,13 +199,31 @@ jobs:
           echo "APK_SHA256=$SHA256" >> $GITHUB_ENV
           echo "APK_SIZE=$SIZE" >> $GITHUB_ENV
       
+      - name: Count and Standardize APKs
+        working-directory: apps/android
+        run: |
+          # Count APKs to ensure only one is built
+          APK_COUNT=$(find app/build/outputs/apk/staging -name "*.apk" -type f | wc -l)
+          echo "Found $APK_COUNT APK(s)"
+          
+          if [ "$APK_COUNT" -ne 1 ]; then
+            echo "::error::Expected exactly 1 APK, found $APK_COUNT"
+            exit 1
+          fi
+          
+          # Standardize APK name for upload
+          APK=$(find app/build/outputs/apk/staging -name "*.apk" -type f | head -1)
+          cp "$APK" app/build/outputs/apk/verifd-staging.apk
+          echo "✅ Standardized APK for upload"
+      
       - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
         with:
           name: verifd-staging-apk
           path: |
-            apps/android/app/build/outputs/apk/*.apk
+            apps/android/app/build/outputs/apk/verifd-staging.apk
             apps/android/apk-metadata.json
+          if-no-files-found: error
           retention-days: 30
       
       - name: Generate QR Code for APK
@@ -297,16 +363,61 @@ jobs:
             echo "Recommendation: Use GitHub Release URLs for stable distribution"
           fi
 
+      - name: Prepare Release Files
+        if: github.event_name == 'workflow_dispatch' || github.ref == 'refs/heads/staging'
+        working-directory: apps/android
+        run: |
+          # Standardize APK name for release
+          APK_PATH="app/build/outputs/apk/verifd-staging-signed.apk"
+          if [ ! -f "$APK_PATH" ]; then
+            APK_PATH=$(find app/build/outputs/apk -name "*.apk" -type f | head -1)
+          fi
+          
+          if [ -f "$APK_PATH" ]; then
+            cp "$APK_PATH" verifd-staging.apk
+            echo "✅ Standardized APK name for release"
+            
+            # Generate SHA256 for release
+            sha256sum verifd-staging.apk > apk.sha256
+          fi
+
+      - name: Generate Release QR Code
+        if: github.event_name == 'workflow_dispatch' || github.ref == 'refs/heads/staging'
+        run: |
+          # Determine release tag
+          if [ -n "${{ github.event.inputs.release_tag }}" ]; then
+            TAG="${{ github.event.inputs.release_tag }}"
+          else
+            TAG="v1.3.0-staging-$(date +%Y%m%d-%H%M%S)"
+          fi
+          
+          echo "RELEASE_TAG=$TAG" >> $GITHUB_ENV
+          
+          # Generate QR code for release URL
+          RELEASE_URL="https://github.com/${{ github.repository }}/releases/download/$TAG/verifd-staging.apk"
+          
+          # Use qrencode if available, otherwise npm qrcode
+          if command -v qrencode >/dev/null 2>&1; then
+            qrencode -o qr-verifd-staging.png -s 10 "$RELEASE_URL"
+          else
+            npm install -g qrcode >/dev/null 2>&1 || true
+            qrcode -o qr-verifd-staging.png "$RELEASE_URL"
+          fi
+          
+          echo "✅ QR code generated for release URL: $RELEASE_URL"
+
       - name: Create GitHub Release
-        if: github.event_name == 'workflow_dispatch' && github.event.inputs.release_tag != ''
+        if: github.event_name == 'workflow_dispatch' || github.ref == 'refs/heads/staging'
         uses: softprops/action-gh-release@v1
         with:
-          tag_name: ${{ github.event.inputs.release_tag }}
-          name: Android Staging Release ${{ github.event.inputs.release_tag }}
+          tag_name: ${{ env.RELEASE_TAG }}
+          name: Android Staging Release ${{ env.RELEASE_TAG }}
           draft: false
           prerelease: true
           files: |
-            apps/android/app/build/outputs/apk/*.apk
+            apps/android/verifd-staging.apk
+            apps/android/apk.sha256
+            qr-verifd-staging.png
             apps/android/apk-metadata.json
             apps/android/INSTALL_STAGING_APK.md
           body: |
@@ -336,3 +447,25 @@ jobs:
             2. Enable "Unknown sources" in Settings
             3. Install and open the app
             4. Access QA Panel V2 from menu (staging only)
+      
+      - name: Verify Release Asset
+        if: github.event_name == 'workflow_dispatch' || github.ref == 'refs/heads/staging'
+        continue-on-error: true
+        run: |
+          echo "🔍 Verifying release asset is accessible..."
+          
+          # Wait for release to propagate
+          sleep 10
+          
+          # Test release asset URL
+          ASSET_URL="https://github.com/${{ github.repository }}/releases/download/${{ env.RELEASE_TAG }}/verifd-staging.apk"
+          HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" -I "$ASSET_URL")
+          
+          if [ "$HTTP_STATUS" == "200" ] || [ "$HTTP_STATUS" == "302" ]; then
+            echo "✅ Release asset is accessible: $ASSET_URL"
+            echo "HTTP Status: $HTTP_STATUS"
+          else
+            echo "::warning::Release asset not accessible (HTTP $HTTP_STATUS)"
+            echo "URL tested: $ASSET_URL"
+            echo "This may be a timing issue - please verify manually"
+          fi

@@ -24,6 +24,15 @@
     
     <!-- Notifications (Android 13+) -->
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    
+    <!-- Custom permission to protect notification actions -->
+    <permission
+        android:name="com.verifd.android.permission.NOTIFICATION_ACTION"
+        android:protectionLevel="signature"
+        android:label="@string/permission_notification_action_label"
+        android:description="@string/permission_notification_action_description" />
+    
+    <uses-permission android:name="com.verifd.android.permission.NOTIFICATION_ACTION" />
 
     <application
         android:name=".App"
@@ -73,6 +82,37 @@
             android:theme="@style/Theme.Verifd.Dialog"
             android:taskAffinity=""
             android:excludeFromRecents="true" />
+
+        <!-- QA Panel V2 (Staging only) -->
+        <activity
+            android:name=".ui.QAPanelV2Activity"
+            android:exported="true"
+            android:theme="@style/Theme.MaterialComponents.Light.DarkActionBar"
+            android:label="QA Panel V2"
+            android:launchMode="singleTop">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data
+                    android:scheme="verifd"
+                    android:host="qa" />
+            </intent-filter>
+        </activity>
+
+        <!-- Notification Action Receiver -->
+        <!-- Exported for reliability: system can wake up app to handle actions -->
+        <receiver
+            android:name=".notification.NotifActionReceiver"
+            android:exported="true"
+            android:enabled="true"
+            android:permission="com.verifd.android.permission.NOTIFICATION_ACTION">
+            <intent-filter>
+                <action android:name="com.verifd.android.ACTION_SEND_SMS" />
+                <action android:name="com.verifd.android.ACTION_SEND_WHATSAPP" />
+                <action android:name="com.verifd.android.ACTION_COPY_LINK" />
+            </intent-filter>
+        </receiver>
 
         <!-- Quick Settings Tile -->
         <service

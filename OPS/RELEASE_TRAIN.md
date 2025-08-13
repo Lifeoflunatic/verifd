@@ -1,7 +1,36 @@
 # Release Train Documentation
 
 ## Overview
-This document describes the automated release train process for verifd, including reproducible builds, SBOM generation, artifact signing, and attestation.
+This document describes the automated release train process for verifd, including reproducible builds, version pinning enforcement, and artifact validation.
+
+## Version Pinning System (Added v1.3.0-rc1-staging+10)
+
+### Automatic Version Enforcement
+The build system now enforces that APK versionName MUST match the release tag to prevent stale artifacts.
+
+#### Gradle Configuration (`apps/android/app/build.gradle`)
+- Reads `releaseTag` property or `RELEASE_TAG` environment variable
+- Strips 'v' prefix from tags (e.g., `v1.3.0` → `1.3.0`)
+- Uses date-based `versionCode`: `YYYYMMDDHH` format
+- **All buildTypes explicitly set `versionNameSuffix = ""` to prevent overrides**
+- **Fails build if no tag provided for release builds**
+
+#### Workflow Verification (`.github/workflows/android-staging-apk.yml`)
+- Passes release tag via `-PreleaseTag` to Gradle
+- Runs `aapt dump badging` to verify APK version matches tag
+- **Fails workflow if versions don't match**
+- Only uploads artifacts from staging build directory
+
+#### GitHub Release Strategy
+- Release asset URLs are primary distribution method
+- QR codes point to stable release URLs, not workflow artifacts
+- SHA256 verification ensures correct APK deployment
+
+#### CI Guardrails (Added v1.3.0-rc1-staging.11)
+- **Single APK enforcement**: Build fails if multiple APKs found
+- **Standardized naming**: APK renamed to `verifd-staging.apk` before upload
+- **Post-release verification**: HTTP check confirms asset accessibility
+- **Version in release notes**: APK version echoed in GitHub release body
 
 ## Release Workflow
 

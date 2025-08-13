@@ -3,270 +3,274 @@ package com.verifd.android.notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
+import android.content.ClipData
+import android.content.ClipboardManager
 import android.content.Context
+import android.content.Intent
+import android.content.pm.PackageManager
+import android.net.Uri
 import android.os.Build
-import android.util.Log
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
-import androidx.core.content.ContextCompat
 import com.verifd.android.R
-import com.verifd.android.config.FeatureFlags
-import com.verifd.android.receiver.NotificationActionReceiver
 import com.verifd.android.util.PhoneNumberUtils
-import com.verifd.android.util.RiskAssessment
-import java.security.SecureRandom
+import java.net.URLEncoder
+import kotlin.random.Random
 
 /**
- * Manages missed call notifications with action buttons for vPass approval and blocking.
- * Provides risk-aware notification handling and idempotent PendingIntents.
+ * Manages missed call notifications with post-call actions
+ * Supports SMS, WhatsApp, and Copy link actions
  */
-class MissedCallNotificationManager private constructor(private val context: Context) {
+class MissedCallNotificationManager(private val context: Context) {
     
     companion object {
-        private const val TAG = "MissedCallNotificationManager"
+        const val CHANNEL_ID = "verifd_actions"
+        const val CHANNEL_NAME = "Missed Call Actions"
+        const val NOTIFICATION_ID = 1001
         
-        // Notification channels - using App channels
-        private const val CHANNEL_MISSED_CALLS = "verifd_actions"
-        private const val CHANNEL_HIGH_RISK_CALLS = "verifd_persistent"
+        // Action types for telemetry
+        const val ACTION_SMS = "sms"
+        const val ACTION_WHATSAPP = "wa"
+        const val ACTION_COPY = "copy"
         
-        // Notification IDs base
-        private const val NOTIFICATION_ID_BASE = 2000
+        // Intent actions
+        const val ACTION_SEND_SMS = "com.verifd.android.ACTION_SEND_SMS"
+        const val ACTION_SEND_WHATSAPP = "com.verifd.android.ACTION_SEND_WHATSAPP"
+        const val ACTION_COPY_LINK = "com.verifd.android.ACTION_COPY_LINK"
+    }
+    
+    init {
+        createNotificationChannel()
+    }
+    
+    private fun createNotificationChannel() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val channel = NotificationChannel(
+                CHANNEL_ID,
+                CHANNEL_NAME,
+                NotificationManager.IMPORTANCE_HIGH
+            ).apply {
+                description = "Notifications for missed call actions"
+                enableLights(true)
+                enableVibration(true)
+            }
+            
+            val notificationManager = context.getSystemService(NotificationManager::class.java)
+            notificationManager?.createNotificationChannel(channel)
+        }
+    }
+    
+    /**
+     * Show missed call notification with action buttons
+     */
+    fun showMissedCallNotification(
+        phoneNumber: String,
+        verifyLink: String,
+        smsTemplate: String,
+        whatsAppTemplate: String
+    ) {
+        val e164Number = PhoneNumberUtils.toE164(phoneNumber, null) ?: phoneNumber
+        val timestamp = System.currentTimeMillis()
         
-        @Volatile
-        private var INSTANCE: MissedCallNotificationManager? = null
+        // Create unique request codes for each action
+        val smsRequestCode = generateRequestCode(e164Number, ACTION_SMS, timestamp)
+        val whatsAppRequestCode = generateRequestCode(e164Number, ACTION_WHATSAPP, timestamp)
+        val copyRequestCode = generateRequestCode(e164Number, ACTION_COPY, timestamp)
         
-        fun getInstance(context: Context): MissedCallNotificationManager {
-            return INSTANCE ?: synchronized(this) {
-                INSTANCE ?: MissedCallNotificationManager(context.applicationContext).also { 
-                    INSTANCE = it 
-                }
+        // Build notification with actions
+        val notification = NotificationCompat.Builder(context, CHANNEL_ID)
+            .setSmallIcon(R.drawable.ic_notification)
+            .setContentTitle("Missed Call")
+            .setContentText("From: Unknown Caller • Send verification link")
+            .setPriority(NotificationCompat.PRIORITY_HIGH)
+            .setCategory(NotificationCompat.CATEGORY_CALL)
+            .setAutoCancel(true)
+            .addAction(
+                R.drawable.ic_sms,
+                "SMS",
+                createSmsAction(e164Number, smsTemplate, smsRequestCode)
+            )
+            .addAction(
+                R.drawable.ic_whatsapp,
+                "WhatsApp",
+                createWhatsAppAction(e164Number, whatsAppTemplate, whatsAppRequestCode)
+            )
+            .addAction(
+                R.drawable.ic_copy,
+                "Copy Link",
+                createCopyAction(verifyLink, copyRequestCode)
+            )
+            .build()
+        
+        // Show notification
+        if (NotificationManagerCompat.from(context).areNotificationsEnabled()) {
+            NotificationManagerCompat.from(context).notify(NOTIFICATION_ID, notification)
+        }
+    }
+    
+    /**
+     * Create SMS action PendingIntent
+     */
+    private fun createSmsAction(
+        phoneNumber: String,
+        smsBody: String,
+        requestCode: Int
+    ): PendingIntent {
+        val intent = Intent(ACTION_SEND_SMS).apply {
+            setClass(context, NotifActionReceiver::class.java)
+            putExtra("phone_number", phoneNumber)
+            putExtra("sms_body", smsBody)
+            putExtra("action_type", ACTION_SMS)
+        }
+        
+        return PendingIntent.getBroadcast(
+            context,
+            requestCode,
+            intent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_MUTABLE
+        )
+    }
+    
+    /**
+     * Create WhatsApp action PendingIntent
+     */
+    private fun createWhatsAppAction(
+        phoneNumber: String,
+        message: String,
+        requestCode: Int
+    ): PendingIntent {
+        val intent = Intent(ACTION_SEND_WHATSAPP).apply {
+            setClass(context, NotifActionReceiver::class.java)
+            putExtra("phone_number", phoneNumber)
+            putExtra("message", message)
+            putExtra("action_type", ACTION_WHATSAPP)
+        }
+        
+        return PendingIntent.getBroadcast(
+            context,
+            requestCode,
+            intent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_MUTABLE
+        )
+    }
+    
+    /**
+     * Create Copy Link action PendingIntent
+     */
+    private fun createCopyAction(
+        link: String,
+        requestCode: Int
+    ): PendingIntent {
+        val intent = Intent(ACTION_COPY_LINK).apply {
+            setClass(context, NotifActionReceiver::class.java)
+            putExtra("link", link)
+            putExtra("action_type", ACTION_COPY)
+        }
+        
+        return PendingIntent.getBroadcast(
+            context,
+            requestCode,
+            intent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_MUTABLE
+        )
+    }
+    
+    /**
+     * Generate unique request code for PendingIntent
+     */
+    private fun generateRequestCode(
+        phoneNumber: String,
+        action: String,
+        timestamp: Long
+    ): Int {
+        val combined = "$phoneNumber$action$timestamp"
+        return combined.hashCode() and 0x7FFFFFFF // Ensure positive
+    }
+    
+    /**
+     * Handle SMS action - opens SMS composer
+     */
+    fun handleSmsAction(phoneNumber: String, smsBody: String) {
+        val smsUri = Uri.parse("smsto:$phoneNumber")
+        val smsIntent = Intent(Intent.ACTION_SENDTO, smsUri).apply {
+            putExtra("sms_body", smsBody)
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK
+            
+            // Dual-SIM support
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP_MR1) {
+                // Try to set default SIM if available
+                putExtra("com.android.phone.force.slot", true)
+                putExtra("subscription", 0) // Default to first SIM
+            }
+        }
+        
+        try {
+            context.startActivity(smsIntent)
+        } catch (e: Exception) {
+            // Handle case where no SMS app is available
+            showToast("No SMS app available")
+        }
+    }
+    
+    /**
+     * Handle WhatsApp action - opens WhatsApp with pre-filled message
+     */
+    fun handleWhatsAppAction(phoneNumber: String, message: String) {
+        // Remove '+' from E164 for WhatsApp
+        val whatsAppNumber = phoneNumber.removePrefix("+")
+        val encodedMessage = URLEncoder.encode(message, "UTF-8")
+        val whatsAppUri = Uri.parse("https://wa.me/$whatsAppNumber?text=$encodedMessage")
+        
+        val whatsAppIntent = Intent(Intent.ACTION_VIEW, whatsAppUri).apply {
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK
+        }
+        
+        // Check if WhatsApp is installed
+        if (isWhatsAppInstalled()) {
+            whatsAppIntent.setPackage("com.whatsapp")
+        }
+        
+        try {
+            context.startActivity(whatsAppIntent)
+        } catch (e: Exception) {
+            // Fallback to browser or chooser
+            try {
+                val chooserIntent = Intent.createChooser(whatsAppIntent, "Send via")
+                chooserIntent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
+                context.startActivity(chooserIntent)
+                showToast("Choose WhatsApp to send message")
+            } catch (e2: Exception) {
+                showToast("WhatsApp not available")
             }
         }
     }
     
-    private val notificationManager: NotificationManagerCompat = NotificationManagerCompat.from(context)
-    private val secureRandom = SecureRandom()
-    
-    init {
-        createNotificationChannels()
+    /**
+     * Handle Copy Link action - copies link to clipboard
+     */
+    fun handleCopyAction(link: String) {
+        val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+        val clip = ClipData.newPlainText("Verification Link", link)
+        clipboard.setPrimaryClip(clip)
+        showToast("Link copied to clipboard")
     }
     
     /**
-     * Show missed call notification with action buttons (if enabled)
+     * Check if WhatsApp is installed
      */
-    fun showMissedCallNotification(
-        phoneNumber: String,
-        callerName: String? = null,
-        riskAssessment: RiskAssessment.RiskAssessmentResult? = null
-    ) {
-        Log.d(TAG, "Showing missed call notification for $phoneNumber")
-        
-        // Check if we should skip notification based on risk assessment
-        if (riskAssessment?.shouldSkipNotification == true) {
-            Log.d(TAG, "Skipping notification for high-risk caller: $phoneNumber")
-            return
-        }
-        
-        val displayName = callerName ?: PhoneNumberUtils.format(phoneNumber)
-        val notificationId = generateNotificationId(phoneNumber)
-        
-        val builder = createBaseNotification(phoneNumber, displayName, riskAssessment)
-        
-        // Add action buttons if feature is enabled and not high-risk
-        if (FeatureFlags.isMissedCallActionsEnabled && 
-            riskAssessment?.tier != RiskAssessment.RiskTier.CRITICAL) {
-            addActionButtons(builder, phoneNumber, notificationId, callerName)
-        }
-        
-        // Show the notification
-        try {
-            notificationManager.notify(notificationId, builder.build())
-            Log.d(TAG, "Notification shown with ID: $notificationId")
-        } catch (e: SecurityException) {
-            Log.e(TAG, "Failed to show notification - permission denied", e)
-        } catch (e: Exception) {
-            Log.e(TAG, "Failed to show notification", e)
+    private fun isWhatsAppInstalled(): Boolean {
+        return try {
+            context.packageManager.getPackageInfo("com.whatsapp", PackageManager.GET_ACTIVITIES)
+            true
+        } catch (e: PackageManager.NameNotFoundException) {
+            false
         }
     }
     
     /**
-     * Create base notification without action buttons
+     * Show toast message
      */
-    private fun createBaseNotification(
-        phoneNumber: String,
-        displayName: String,
-        riskAssessment: RiskAssessment.RiskAssessmentResult?
-    ): NotificationCompat.Builder {
-        val channelId = if (riskAssessment?.tier == RiskAssessment.RiskTier.HIGH || 
-                           riskAssessment?.tier == RiskAssessment.RiskTier.CRITICAL) {
-            CHANNEL_HIGH_RISK_CALLS
-        } else {
-            CHANNEL_MISSED_CALLS
-        }
-        
-        val title = "Missed call"
-        val content = buildNotificationContent(displayName, riskAssessment)
-        
-        return NotificationCompat.Builder(context, channelId)
-            .setSmallIcon(R.drawable.ic_phone_missed) // You'll need to add this icon
-            .setContentTitle(title)
-            .setContentText(content)
-            .setStyle(NotificationCompat.BigTextStyle().bigText(content))
-            .setPriority(getNotificationPriority(riskAssessment))
-            .setCategory(NotificationCompat.CATEGORY_CALL)
-            .setAutoCancel(true)
-            .setShowWhen(true)
-            .setDefaults(getNotificationDefaults(riskAssessment))
-    }
-    
-    /**
-     * Build notification content text with risk information
-     */
-    private fun buildNotificationContent(
-        displayName: String,
-        riskAssessment: RiskAssessment.RiskAssessmentResult?
-    ): String {
-        val baseText = "From: $displayName"
-        
-        return when (riskAssessment?.tier) {
-            RiskAssessment.RiskTier.HIGH -> "$baseText • High risk call"
-            RiskAssessment.RiskTier.CRITICAL -> "$baseText • Likely spam/fraud"
-            RiskAssessment.RiskTier.LOW -> "$baseText • Verified caller"
-            else -> baseText
-        }
-    }
-    
-    /**
-     * Add action buttons to notification
-     */
-    private fun addActionButtons(
-        builder: NotificationCompat.Builder,
-        phoneNumber: String,
-        notificationId: Int,
-        callerName: String?
-    ) {
-        // Create PendingIntents for each action (with unique request codes for idempotency)
-        val approve30mIntent = createPendingIntent(
-            NotificationActionReceiver.createApprove30mIntent(context, phoneNumber, notificationId, callerName),
-            generateRequestCode(phoneNumber, "30m")
-        )
-        
-        val approve24hIntent = createPendingIntent(
-            NotificationActionReceiver.createApprove24hIntent(context, phoneNumber, notificationId, callerName),
-            generateRequestCode(phoneNumber, "24h")
-        )
-        
-        val approve30dIntent = createPendingIntent(
-            NotificationActionReceiver.createApprove30dIntent(context, phoneNumber, notificationId, callerName),
-            generateRequestCode(phoneNumber, "30d")
-        )
-        
-        val blockIntent = createPendingIntent(
-            NotificationActionReceiver.createBlockIntent(context, phoneNumber, notificationId, callerName),
-            generateRequestCode(phoneNumber, "block")
-        )
-        
-        // Add action buttons
-        builder
-            .addAction(
-                R.drawable.ic_check, // You'll need to add this icon
-                "30m",
-                approve30mIntent
-            )
-            .addAction(
-                R.drawable.ic_check, // You'll need to add this icon  
-                "24h",
-                approve24hIntent
-            )
-            .addAction(
-                R.drawable.ic_check, // You'll need to add this icon
-                "30d", 
-                approve30dIntent
-            )
-            .addAction(
-                R.drawable.ic_block, // You'll need to add this icon
-                "Block",
-                blockIntent
-            )
-    }
-    
-    /**
-     * Create PendingIntent with proper flags for idempotency
-     */
-    private fun createPendingIntent(intent: android.content.Intent, requestCode: Int): PendingIntent {
-        val flags = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
-        } else {
-            PendingIntent.FLAG_UPDATE_CURRENT
-        }
-        
-        return PendingIntent.getBroadcast(context, requestCode, intent, flags)
-    }
-    
-    /**
-     * Generate unique notification ID based on phone number
-     */
-    private fun generateNotificationId(phoneNumber: String): Int {
-        val normalized = PhoneNumberUtils.normalize(phoneNumber)
-        // Use hash of phone number to generate consistent but unique ID
-        return NOTIFICATION_ID_BASE + (normalized.hashCode() and 0x7FFFFFFF) % 10000
-    }
-    
-    /**
-     * Generate unique request code for PendingIntent idempotency
-     */
-    private fun generateRequestCode(phoneNumber: String, action: String): Int {
-        val key = "${PhoneNumberUtils.normalize(phoneNumber)}:$action"
-        return key.hashCode() and 0x7FFFFFFF
-    }
-    
-    /**
-     * Get notification priority based on risk assessment
-     */
-    private fun getNotificationPriority(riskAssessment: RiskAssessment.RiskAssessmentResult?): Int {
-        return when (riskAssessment?.tier) {
-            RiskAssessment.RiskTier.CRITICAL -> NotificationCompat.PRIORITY_LOW
-            RiskAssessment.RiskTier.HIGH -> NotificationCompat.PRIORITY_LOW
-            RiskAssessment.RiskTier.LOW -> NotificationCompat.PRIORITY_DEFAULT
-            else -> NotificationCompat.PRIORITY_DEFAULT
-        }
-    }
-    
-    /**
-     * Get notification defaults (sound, vibration) based on risk assessment
-     */
-    private fun getNotificationDefaults(riskAssessment: RiskAssessment.RiskAssessmentResult?): Int {
-        return when (riskAssessment?.tier) {
-            RiskAssessment.RiskTier.CRITICAL -> 0 // No sound/vibration for spam
-            RiskAssessment.RiskTier.HIGH -> 0 // No sound/vibration for high risk
-            else -> NotificationCompat.DEFAULT_ALL
-        }
-    }
-    
-    /**
-     * Create notification channels for different call types
-     * Note: Channels are now created in App.kt, this is kept for compatibility
-     */
-    private fun createNotificationChannels() {
-        // Channels are created in App.kt application class
-        // This method is kept for compatibility but doesn't create channels anymore
-        Log.d(TAG, "Notification channels managed by App class")
-    }
-    
-    /**
-     * Cancel notification by phone number
-     */
-    fun cancelNotification(phoneNumber: String) {
-        val notificationId = generateNotificationId(phoneNumber)
-        notificationManager.cancel(notificationId)
-        Log.d(TAG, "Cancelled notification for $phoneNumber (ID: $notificationId)")
-    }
-    
-    /**
-     * Cancel all missed call notifications
-     */
-    fun cancelAllNotifications() {
-        // Note: This requires tracking active notifications or using NotificationManager.getActiveNotifications() on API 23+
-        Log.d(TAG, "Cancelled all missed call notifications")
+    private fun showToast(message: String) {
+        android.widget.Toast.makeText(context, message, android.widget.Toast.LENGTH_SHORT).show()
     }
 }

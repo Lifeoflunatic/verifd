@@ -17,6 +17,7 @@ import com.verifd.android.notification.MissedCallNotificationManager
 import com.verifd.android.ui.PostCallActivity
 import com.verifd.android.util.PhoneNumberUtils
 import com.verifd.android.util.RiskAssessment
+import com.verifd.android.telemetry.PrivacyTelemetry
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -108,11 +109,13 @@ class CallScreeningService : CallScreeningService() {
     private val serviceScope = CoroutineScope(Dispatchers.Main)
     private val riskAssessment = RiskAssessment.getInstance()
     private lateinit var notificationManager: MissedCallNotificationManager
+    private lateinit var telemetry: PrivacyTelemetry
     
     override fun onCreate() {
         super.onCreate()
         FeatureFlags.initialize(this)
-        notificationManager = MissedCallNotificationManager.getInstance(this)
+        notificationManager = MissedCallNotificationManager(this)
+        telemetry = PrivacyTelemetry(this)
     }
     
     override fun onScreenCall(callDetails: Call.Details) {
@@ -277,10 +280,66 @@ class CallScreeningService : CallScreeningService() {
             serviceScope.launch {
                 kotlinx.coroutines.delay(2000) // 2 second delay
                 try {
-                    notificationManager.showMissedCallNotification(
+                    // Fetch templates from backend with caching
+                    val backendClient = BackendClient.getInstance(this@CallScreeningService)
+                    val userName = getSharedPreferences("verifd_prefs", MODE_PRIVATE)
+                        .getString("user_name", null)
+                    
+                    val templatesResult = backendClient.fetchMessageTemplates(
                         phoneNumber = phoneNumber,
-                        callerName = response.callerDisplayName,
-                        riskAssessment = response.riskAssessment
+                        userName = userName,
+                        locale = resources.configuration.locales.get(0)?.toLanguageTag() ?: "en-US"
+                    )
+                    
+                    when (templatesResult) {
+                        is BackendClient.MessageTemplatesResult.Success -> {
+                            Log.d(TAG, "Fetched templates (cached=${templatesResult.cached})")
+                            
+                            notificationManager.showMissedCallNotification(
+                                phoneNumber = phoneNumber,
+                                verifyLink = templatesResult.verifyLink,
+                                smsTemplate = templatesResult.smsTemplate,
+                                whatsAppTemplate = templatesResult.whatsAppTemplate
+                            )
+                        }
+                        is BackendClient.MessageTemplatesResult.RateLimited -> {
+                            Log.w(TAG, "Rate limited fetching templates, using fallback")
+                            // Use fallback templates
+                            val fallbackLink = "https://verify.verifd.com/v/${phoneNumber.hashCode().toString(16)}"
+                            val fallbackSms = "Hi! You called earlier. Please verify: $fallbackLink"
+                            val fallbackWhatsApp = "I missed your call. To reach me again, verify: $fallbackLink"
+                            
+                            notificationManager.showMissedCallNotification(
+                                phoneNumber = phoneNumber,
+                                verifyLink = fallbackLink,
+                                smsTemplate = fallbackSms,
+                                whatsAppTemplate = fallbackWhatsApp
+                            )
+                        }
+                        is BackendClient.MessageTemplatesResult.Error -> {
+                            Log.e(TAG, "Error fetching templates: ${templatesResult.message}")
+                            // Use fallback templates
+                            val fallbackLink = "https://verify.verifd.com/v/${phoneNumber.hashCode().toString(16)}"
+                            val fallbackSms = "Hi! You called earlier. Please verify: $fallbackLink"
+                            val fallbackWhatsApp = "I missed your call. To reach me again, verify: $fallbackLink"
+                            
+                            notificationManager.showMissedCallNotification(
+                                phoneNumber = phoneNumber,
+                                verifyLink = fallbackLink,
+                                smsTemplate = fallbackSms,
+                                whatsAppTemplate = fallbackWhatsApp
+                            )
+                        }
+                    }
+                    
+                    // Record telemetry for notification shown
+                    telemetry.recordEvent(
+                        PrivacyTelemetry.EVENT_NOTIFICATION_SHOWN,
+                        phoneNumber,
+                        mapOf(
+                            "type" to "missed_call_actions",
+                            "risk_tier" to (response.riskAssessment?.tier?.name ?: "unknown")
+                        )
                     )
                 } catch (e: Exception) {
                     Log.e(TAG, "Failed to show missed call notification", e)

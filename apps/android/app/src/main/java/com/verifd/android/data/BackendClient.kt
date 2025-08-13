@@ -350,6 +350,96 @@ class BackendClient private constructor(context: Context) {
         data class Error(val message: String) : PassCheckResult()
     }
     
+    /**
+     * Fetch message templates for notification actions.
+     * Uses caching on the backend (24h TTL per number).
+     */
+    suspend fun fetchMessageTemplates(
+        phoneNumber: String,
+        userName: String? = null,
+        locale: String = "en-US"
+    ): MessageTemplatesResult = withContext(Dispatchers.IO) {
+        ensureDeviceRegistered()
+        
+        try {
+            RetryPolicy.withRetry {
+                val url = URL("${getBackendUrl()}/v1/verify/link?" +
+                    "phone_number=${phoneNumber.urlEncode()}" +
+                    "&device_id=${getOrCreateDeviceId()}" +
+                    "&locale=$locale" +
+                    (userName?.let { "&user_name=${it.urlEncode()}" } ?: ""))
+                
+                val connection = url.openConnection() as HttpURLConnection
+                connection.apply {
+                    requestMethod = "GET"
+                    connectTimeout = 5000
+                    readTimeout = 5000
+                }
+                
+                val responseCode = connection.responseCode
+                
+                when {
+                    responseCode == 200 -> {
+                        val response = connection.inputStream.bufferedReader().use { it.readText() }
+                        val json = JSONObject(response)
+                        
+                        MessageTemplatesResult.Success(
+                            smsTemplate = json.getString("sms_template"),
+                            whatsAppTemplate = json.getString("whatsapp_template"),
+                            verifyLink = json.getString("verify_link"),
+                            cached = json.getBoolean("cached"),
+                            ttlSeconds = json.getInt("ttl_seconds")
+                        )
+                    }
+                    responseCode == 429 -> {
+                        val response = connection.errorStream?.bufferedReader()?.use { it.readText() }
+                        val json = response?.let { JSONObject(it) }
+                        val retryAfter = json?.optInt("retry_after", 60) ?: 60
+                        
+                        MessageTemplatesResult.RateLimited(retryAfter)
+                    }
+                    responseCode == 400 -> {
+                        MessageTemplatesResult.Error("Invalid phone number")
+                    }
+                    responseCode in 500..599 -> {
+                        // Server error - will be retried
+                        throw NetworkException.fromHttpResponse(connection)
+                    }
+                    else -> {
+                        MessageTemplatesResult.Error("Failed to fetch templates: $responseCode")
+                    }
+                }
+            }
+        } catch (e: NetworkException) {
+            if (e.statusCode == 429) {
+                Log.w(TAG, "Rate limited fetching templates")
+                MessageTemplatesResult.RateLimited(60)
+            } else {
+                Log.e(TAG, "Failed to fetch templates", e)
+                MessageTemplatesResult.Error(e.message ?: "Network error")
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "Failed to fetch templates", e)
+            MessageTemplatesResult.Error(e.message ?: "Unknown error")
+        }
+    }
+    
+    private fun String.urlEncode(): String {
+        return java.net.URLEncoder.encode(this, "UTF-8")
+    }
+    
+    sealed class MessageTemplatesResult {
+        data class Success(
+            val smsTemplate: String,
+            val whatsAppTemplate: String,
+            val verifyLink: String,
+            val cached: Boolean,
+            val ttlSeconds: Int
+        ) : MessageTemplatesResult()
+        data class RateLimited(val retryAfterSeconds: Int) : MessageTemplatesResult()
+        data class Error(val message: String) : MessageTemplatesResult()
+    }
+    
     sealed class GrantPassResult {
         data class Success(
             val passId: String,

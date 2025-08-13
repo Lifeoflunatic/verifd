@@ -10,9 +10,13 @@ verifd Android app uses a two-channel notification system to provide timely call
 - **Purpose**: Time-sensitive missed call notifications with quick approval actions
 - **Features**:
   - Sound and vibration enabled by default
-  - Shows action buttons for quick vPass approval (30m, 24h, 30d)
+  - Shows action buttons for verification link sharing:
+    - **SMS**: Opens SMS composer with pre-filled verification link
+    - **WhatsApp**: Opens WhatsApp with pre-filled message
+    - **Copy Link**: Copies verification link to clipboard
   - Auto-dismisses when action taken
   - Risk-aware (suppressed for high-risk/spam calls)
+  - E.164 phone number formatting for international support
 
 ### 2. Persistent Notifications (`verifd_persistent`)
 - **Importance**: LOW
@@ -110,12 +114,34 @@ verifd Android app uses a two-channel notification system to provide timely call
 - Clear notification manually
 - Check for expecting window expiry
 
+## Missed Call Action Implementation
+
+### Components
+1. **MissedCallNotificationManager**: Main notification builder and action handler
+2. **NotifActionReceiver**: BroadcastReceiver for handling notification actions
+3. **PhoneNumberUtils**: E.164 formatting and privacy utilities
+4. **PrivacyTelemetry**: Anonymized event tracking
+
+### Action Flow
+1. Missed call triggers notification with 3 action buttons
+2. User taps action → NotifActionReceiver handles intent
+3. Action performed (SMS/WhatsApp/Copy) with telemetry
+4. Notification auto-dismissed after action
+
+### Backend Integration
+- `/v1/verify/link` endpoint provides templated messages
+- Returns SMS text, WhatsApp text, and shareable link
+- Rate limited: 60 requests/hour per device
+- TTL-based link expiration
+
 ## Privacy & Security
 
 - No PII in notification content (phone numbers sanitized)
+- Phone numbers hashed for telemetry (ph_abc123... format)
 - Actions use secure PendingIntents with immutable flags
 - Request codes prevent intent hijacking
 - Notification IDs hashed to prevent enumeration
+- E.164 formatting ensures international compatibility
 
 ## Performance Considerations
 
