@@ -385,14 +385,10 @@ class QAPanelV2Activity : AppCompatActivity() {
                 val status = StringBuilder()
                 
                 // Task 2e: Enhanced QA header with live branch and suppression results
-                status.append("📱 Build Info
-")
-                status.append("Version: ${BuildConfig.VERSION_NAME} (${BuildConfig.VERSION_CODE})
-")
-                status.append("Build Type: ${BuildConfig.BUILD_TYPE}
-")
-                status.append("Branch: feat/zod-row-typing
-") // Hardcoded for now, would be injected at build time
+                status.append("📱 Build Info\n")
+                status.append("Version: ${BuildConfig.VERSION_NAME} (${BuildConfig.VERSION_CODE})\n")
+                status.append("Build Type: ${BuildConfig.BUILD_TYPE}\n")
+                status.append("Branch: feat/zod-row-typing\n") // Hardcoded for now, would be injected at build time
                 status.append("Application ID: ${BuildConfig.APPLICATION_ID}\n")
                 status.append("SDK: ${Build.VERSION.SDK_INT} (Android ${Build.VERSION.RELEASE})\n")
                 status.append("Debug: ${BuildConfig.DEBUG}\n")
