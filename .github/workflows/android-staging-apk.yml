@@ -228,7 +228,7 @@ jobs:
         with:
           name: verifd-staging-apk
           path: |
-            apps/android/app/build/outputs/apk/verifd-staging.apk
+            apps/android/verifd-staging.apk
             apps/android/apk-metadata.json
           if-no-files-found: error
           retention-days: 30
