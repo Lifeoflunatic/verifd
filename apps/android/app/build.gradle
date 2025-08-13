@@ -7,7 +7,7 @@ plugins {
 
 // Read release tag from Gradle property or environment variable
 def relTag = (project.findProperty("releaseTag") ?: System.getenv("RELEASE_TAG")) ?: ""
-def isReleaseBuild = gradle.startParameter.taskNames.join(' ').contains("assemble") || gradle.startParameter.taskNames.join(' ').contains("bundle")
+def isReleaseBuild = gradle.startParameter.taskNames.join(' ').contains("assembleRelease") || gradle.startParameter.taskNames.join(' ').contains("bundleRelease")
 
 android {
     namespace 'com.verifd.android'
