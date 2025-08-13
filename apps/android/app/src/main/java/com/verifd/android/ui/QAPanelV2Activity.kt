@@ -212,7 +212,7 @@ class QAPanelV2Activity : AppCompatActivity() {
             isChecked = prefs.getBoolean("qa_reject_hide_ui", true)
             setOnCheckedChangeListener { _, isChecked ->
                 prefs.edit().putBoolean("qa_reject_hide_ui", isChecked).apply()
-                Log.d(TAG, "QA Reject+Hide UI mode: ${if (isChecked) "ENABLED" else "DISABLED"}")
+                android.util.Log.d(TAG, "QA Reject+Hide UI mode: ${if (isChecked) "ENABLED" else "DISABLED"}")
             }
         }
         featureChips.addView(rejectHideChip)
