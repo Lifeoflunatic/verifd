@@ -221,6 +221,11 @@ class QAPanelV2Activity : AppCompatActivity() {
         findViewById<Button>(R.id.btn_refresh_status).setOnClickListener {
             refreshStatus()
         }
+        
+        // Copy build fingerprint button
+        findViewById<Button>(R.id.btn_copy_fingerprint).setOnClickListener {
+            copyBuildFingerprint()
+        }
     }
     
     private fun setupNotificationTab() {
@@ -388,10 +393,27 @@ class QAPanelV2Activity : AppCompatActivity() {
                 status.append("📱 Build Info\n")
                 status.append("Version: ${BuildConfig.VERSION_NAME} (${BuildConfig.VERSION_CODE})\n")
                 status.append("Build Type: ${BuildConfig.BUILD_TYPE}\n")
-                status.append("Branch: feat/zod-row-typing\n") // Hardcoded for now, would be injected at build time
+                status.append("Branch: ${BuildConfig.GIT_BRANCH}\n")
+                status.append("SHA: ${BuildConfig.GIT_SHA.take(7)}\n")
+                status.append("Tag: ${if (BuildConfig.BUILD_TAG.isEmpty()) "(none)" else BuildConfig.BUILD_TAG}\n")
+                status.append("Build Time: ${BuildConfig.BUILD_TIME}\n")
+                status.append("CI Build: ${BuildConfig.IS_CI}\n")
                 status.append("Application ID: ${BuildConfig.APPLICATION_ID}\n")
                 status.append("SDK: ${Build.VERSION.SDK_INT} (Android ${Build.VERSION.RELEASE})\n")
                 status.append("Debug: ${BuildConfig.DEBUG}\n")
+                
+                // Drift detection badge
+                val isInSync = (BuildConfig.VERSION_NAME == BuildConfig.BUILD_TAG.removePrefix("v") || BuildConfig.BUILD_TAG.isEmpty()) &&
+                               BuildConfig.GIT_SHA != "local" && BuildConfig.GIT_SHA.length >= 7
+                if (isInSync) {
+                    status.append("✅ IN SYNC\n")
+                } else {
+                    status.append("🔴 DRIFT DETECTED\n")
+                    status.append("  Version: ${BuildConfig.VERSION_NAME}\n")
+                    status.append("  Tag: ${BuildConfig.BUILD_TAG}\n")
+                    status.append("  SHA: ${BuildConfig.GIT_SHA}\n")
+                    status.append("  Branch: ${BuildConfig.GIT_BRANCH}\n")
+                }
                 status.append("\n")
                 
                 // API Configuration
@@ -828,6 +850,30 @@ class QAPanelV2Activity : AppCompatActivity() {
         val data: String,
         val timestamp: Date
     )
+    
+    /**
+     * Copy build fingerprint to clipboard
+     */
+    private fun copyBuildFingerprint() {
+        val fingerprint = buildString {
+            append("verifd Build Fingerprint\n")
+            append("========================\n")
+            append("Version: ${BuildConfig.VERSION_NAME}\n")
+            append("Code: ${BuildConfig.VERSION_CODE}\n")
+            append("SHA: ${BuildConfig.GIT_SHA}\n")
+            append("Branch: ${BuildConfig.GIT_BRANCH}\n")
+            append("Tag: ${BuildConfig.BUILD_TAG}\n")
+            append("Time: ${BuildConfig.BUILD_TIME}\n")
+            append("CI: ${BuildConfig.IS_CI}\n")
+            append("Type: ${BuildConfig.BUILD_TYPE}\n")
+            append("ID: ${BuildConfig.APPLICATION_ID}\n")
+        }
+        
+        val clipboard = getSystemService(Context.CLIPBOARD_SERVICE) as android.content.ClipboardManager
+        val clip = android.content.ClipData.newPlainText("Build Fingerprint", fingerprint)
+        clipboard.setPrimaryClip(clip)
+        Toast.makeText(this, "Build fingerprint copied", Toast.LENGTH_SHORT).show()
+    }
     
     /**
      * Reset first-run setup state - clears onboarding flag

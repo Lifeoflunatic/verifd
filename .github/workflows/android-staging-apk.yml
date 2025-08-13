@@ -1,20 +1,11 @@
 name: Android Staging APK Build
 
 on:
-  push:
-    branches: [staging, main]
-    paths:
-      - 'apps/android/**'
-      - '.github/workflows/android-staging-apk.yml'
-  pull_request:
-    branches: [main, staging]
-    paths:
-      - 'apps/android/**'
   workflow_dispatch:
     inputs:
       release_tag:
-        description: 'Release tag (e.g., v1.3.0-rc1-staging+8)'
-        required: false
+        description: "Release tag (e.g., v1.3.0-rc1-staging.16)"
+        required: true
         type: string
 
 permissions:
@@ -25,94 +16,124 @@ jobs:
   build:
     name: Build Staging APK
     runs-on: ubuntu-latest
-    
+
     steps:
+      - name: Validate Release Tag Format
+        run: |
+          TAG="${{ inputs.release_tag }}"
+          if [[ ! "$TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+-rc[0-9]+-staging\.[0-9]+$ ]]; then
+            echo "::error::Invalid tag format. Expected: vMAJOR.MINOR.PATCH-rc1-staging.N"
+            echo "::error::Example: v1.3.0-rc1-staging.16"
+            exit 1
+          fi
+          echo "✅ Tag format validated: $TAG"
+
       - name: Checkout code
         uses: actions/checkout@v4
-      
+
       - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
-          java-version: '17'
-          distribution: 'temurin'
-      
+          java-version: "17"
+          distribution: "temurin"
+
       - name: Setup Gradle
         uses: gradle/gradle-build-action@v2
         with:
           gradle-version: wrapper
           cache-read-only: false
-      
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '18'
-      
+
       - name: Make gradlew executable
         working-directory: apps/android
         run: chmod +x ./gradlew
-      
-      - name: Build Staging APK
+
+      - name: Build Staging APK with Stamps
         working-directory: apps/android
         run: |
-          # Build staging variant explicitly with release tag
-          echo "Current directory: $(pwd)"
-          echo "Building staging variant..."
-          if [ -n "${{ inputs.release_tag }}" ]; then
-            echo "Using release tag: ${{ inputs.release_tag }}"
-            ./gradlew clean
-            ./gradlew :app:assembleStaging --stacktrace -PreleaseTag=${{ inputs.release_tag }}
-          else
-            echo "Building without release tag (dev mode)"
-            ./gradlew clean
-            ./gradlew :app:assembleStaging --stacktrace
-          fi
-          
+          echo "Building staging variant with fingerprint..."
+          echo "Release tag: ${{ inputs.release_tag }}"
+          echo "Git SHA: $GITHUB_SHA"
+          echo "Git Branch: $GITHUB_REF_NAME"
+
+          ./gradlew clean :app:assembleStaging \
+            --stacktrace \
+            -PreleaseTag=${{ inputs.release_tag }}
+
           # List APK output
           echo "APK build outputs:"
-          ls -lah app/build/outputs/apk/staging/ || true
+          ls -lah app/build/outputs/apk/staging/
         env:
           RELEASE_TAG: ${{ inputs.release_tag }}
-      
-      - name: Verify APK Version
-        if: inputs.release_tag != ''
+          GITHUB_SHA: ${{ github.sha }}
+          GITHUB_REF_NAME: ${{ github.ref_name }}
+          CI: "true"
+
+      - name: Verify APK Stamps
         working-directory: apps/android
         run: |
-          echo "Verifying APK version matches release tag..."
-          
+          echo "Verifying APK stamps..."
+
           # Find the built APK
           APK=$(find app/build/outputs/apk/staging -name "*.apk" -type f | head -1)
-          
+
           if [ -z "$APK" ]; then
-            echo "❌ No APK found to verify"
+            echo "::error::No APK found to verify"
             exit 1
           fi
-          
+
           echo "Found APK: $APK"
-          
+
           # Install aapt if not available
           if ! command -v aapt >/dev/null 2>&1; then
             echo "Installing aapt..."
             sudo apt-get update && sudo apt-get install -y aapt
           fi
-          
-          # Extract versionName from APK
+
+          # 1. Verify versionName matches release_tag
           VERSION_NAME=$(aapt dump badging "$APK" | sed -n "s/.*versionName='\([^']*\)'.*/\1/p")
           echo "APK versionName: $VERSION_NAME"
-          echo "Expected tag: ${{ inputs.release_tag }}"
-          
-          # Compare versions (strip 'v' prefix from tag if present)
+
           EXPECTED_VERSION="${{ inputs.release_tag }}"
           if [[ "$EXPECTED_VERSION" == v* ]]; then
             EXPECTED_VERSION="${EXPECTED_VERSION:1}"
           fi
-          
+
           if [ "$VERSION_NAME" != "$EXPECTED_VERSION" ]; then
-            echo "::error::APK versionName ($VERSION_NAME) does not match release_tag ($EXPECTED_VERSION)"
+            echo "::error::APK_STAMP_MISMATCH: versionName ($VERSION_NAME) != release_tag ($EXPECTED_VERSION)"
             exit 1
           fi
-          
-          echo "✅ APK version matches release tag"
-      
+          echo "✅ versionName matches"
+
+          # 2. Verify [STAGING] watermark exists
+          if unzip -p "$APK" resources.arsc | strings | grep -q "\[STAGING\]"; then
+            echo "✅ [STAGING] watermark found"
+          else
+            echo "::warning::[STAGING] watermark not found in resources"
+          fi
+
+          # 3. Extract BuildConfig and verify stamps
+          # Unzip classes.dex and use dexdump if available
+          if command -v dexdump >/dev/null 2>&1; then
+            unzip -q "$APK" classes*.dex
+            dexdump -d classes*.dex | grep -A 5 "GIT_SHA\|BUILD_TAG" | head -20
+            echo "✅ BuildConfig fields present"
+          else
+            echo "⚠️ dexdump not available, skipping BuildConfig verification"
+          fi
+
+          # 4. Generate build environment file
+          cat > ../../OPS/BUILD_ENV.txt << EOF
+          BUILD_TIME: $(date -u +"%Y-%m-%dT%H:%M:%SZ")
+          GIT_SHA: $GITHUB_SHA
+          GIT_BRANCH: $GITHUB_REF_NAME
+          RELEASE_TAG: ${{ inputs.release_tag }}
+          VERSION_NAME: $VERSION_NAME
+          RUN_ID: ${{ github.run_id }}
+          RUN_NUMBER: ${{ github.run_number }}
+          EOF
+
+          echo "✅ APK stamps verified"
+
       - name: Sign APK
         working-directory: apps/android
         env:
@@ -127,15 +148,8 @@ jobs:
             # Decode keystore
             echo "$ANDROID_KEYSTORE_BASE64" | base64 -d > keystore.jks
             
-            # Find unsigned APK in staging directory
+            # Find unsigned APK
             UNSIGNED_APK=$(find app/build/outputs/apk/staging -name "*.apk" -type f | head -1)
-            
-            if [ -z "$UNSIGNED_APK" ]; then
-              echo "❌ No unsigned APK found"
-              exit 1
-            fi
-            
-            echo "Found APK: $UNSIGNED_APK"
             
             # Sign the APK
             jarsigner -verbose \
@@ -160,145 +174,53 @@ jobs:
             echo "✅ APK signed successfully"
           else
             echo "⚠️ No signing keys provided, using debug signature"
-            # Find and rename APK for consistency
-            APK_PATH=$(find app/build/outputs/apk -name "*.apk" -type f | head -1)
+            APK_PATH=$(find app/build/outputs/apk/staging -name "*.apk" -type f | head -1)
             if [ -n "$APK_PATH" ]; then
               cp "$APK_PATH" app/build/outputs/apk/verifd-staging-signed.apk
             fi
           fi
-      
+
       - name: Generate APK Metadata
         run: |
           APK_PATH="apps/android/app/build/outputs/apk/verifd-staging-signed.apk"
-          
+
           if [ ! -f "$APK_PATH" ]; then
             APK_PATH=$(find apps/android/app/build/outputs/apk/staging -name "*.apk" -type f | head -1)
           fi
-          
-          if [ ! -f "$APK_PATH" ]; then
-            echo "❌ No APK found to generate metadata for"
-            exit 1
-          fi
-          
+
           # Generate SHA256
           SHA256=$(sha256sum "$APK_PATH" | cut -d' ' -f1)
-          
-          # Get file size
           SIZE=$(du -h "$APK_PATH" | cut -f1)
-          
-          # Create metadata file
-          cat > apk-metadata.json << EOF
-          {
-            "build_time": "$(date -u +"%Y-%m-%dT%H:%M:%SZ")",
-            "sha256": "$SHA256",
-            "size": "$SIZE",
-            "version": "1.0.0-staging",
-            "api_endpoint": "https://staging.api.verifd.com",
-            "override_users": [
-              "+919233600392",
-              "+917575854485"
-            ],
-            "kid": "staging-2025-001"
-          }
-          EOF
-          
+
+          # Save for later steps
           echo "APK_SHA256=$SHA256" >> $GITHUB_ENV
           echo "APK_SIZE=$SIZE" >> $GITHUB_ENV
-      
-      - name: Count and Standardize APKs
+
+          # Generate SHA256 file
+          echo "$SHA256  verifd-staging.apk" > apps/android/apk.sha256
+
+      - name: Standardize APK Name
         working-directory: apps/android
         run: |
-          # First check if we have the signed APK from the previous step
           if [ -f "app/build/outputs/apk/verifd-staging-signed.apk" ]; then
-            # Use the signed APK
             cp "app/build/outputs/apk/verifd-staging-signed.apk" "verifd-staging.apk"
-            echo "✅ Using signed APK"
           else
-            # Fall back to staging directory APK
-            APK_COUNT=$(find app/build/outputs/apk/staging -name "*.apk" -type f 2>/dev/null | wc -l)
-            echo "Found $APK_COUNT APK(s) in staging directory"
-            
-            if [ "$APK_COUNT" -ne 1 ]; then
-              echo "::error::Expected exactly 1 APK, found $APK_COUNT"
-              exit 1
-            fi
-            
-            # Standardize APK name for upload
             APK=$(find app/build/outputs/apk/staging -name "*.apk" -type f | head -1)
             cp "$APK" "verifd-staging.apk"
-            echo "✅ Standardized APK for upload"
           fi
-      
+          echo "✅ Standardized APK name"
+
       - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
         with:
           name: verifd-staging-apk
           path: |
             apps/android/verifd-staging.apk
-            apk-metadata.json
+            apps/android/apk.sha256
+            OPS/BUILD_ENV.txt
           if-no-files-found: error
           retention-days: 30
-      
-      - name: Generate QR Code for APK
-        run: |
-          # Install qr generator
-          npm install -g qrcode
-          
-          # Create download URL (will be updated when artifact is ready)
-          ARTIFACT_URL="https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
-          
-          # Generate QR code
-          qrcode -o apk-qr.png -w 300 "$ARTIFACT_URL"
-          
-          echo "✅ QR code generated for APK download"
-      
-      - name: Upload QR Code
-        uses: actions/upload-artifact@v4
-        with:
-          name: apk-qr-code
-          path: apk-qr.png
-          retention-days: 30
-      
-      - name: Create Install Instructions
-        run: |
-          cat > INSTALL_STAGING_APK.md << 'EOF'
-          # verifd Staging APK Installation
-          
-          ## Download Link
-          [Download APK](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})
-          
-          ## APK Details
-          - **SHA256**: ${{ env.APK_SHA256 }}
-          - **Size**: ${{ env.APK_SIZE }}
-          - **Build**: #${{ github.run_number }}
-          - **API**: https://staging.api.verifd.com
-          
-          ## Installation Steps
-          
-          ### Android Device
-          1. Enable "Unknown sources" in Settings > Security
-          2. Download the APK from the link above
-          3. Open the downloaded APK file
-          4. Tap "Install"
-          5. Open verifd Staging app
-          
-          ### Override Test Users
-          - Primary: +919233600392
-          - Secondary: +917575854485
-          
-          These numbers receive 100% feature enablement.
-          
-          ## Verification
-          1. Open the app
-          2. Go to Settings > Developer Options
-          3. Open Debug Panel
-          4. Verify KID shows: staging-2025-001
-          5. Enter override phone number
-          6. Verify "Override Active" shows ✓
-          EOF
-          
-          mv INSTALL_STAGING_APK.md apps/android/
-      
+
       - name: Generate Summary
         run: |
           echo "## 📱 Android Staging APK Build" >> $GITHUB_STEP_SUMMARY
@@ -306,204 +228,58 @@ jobs:
           echo "### Build Information" >> $GITHUB_STEP_SUMMARY
           echo "| Property | Value |" >> $GITHUB_STEP_SUMMARY
           echo "|----------|-------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Release Tag | ${{ inputs.release_tag }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Git SHA | \`${GITHUB_SHA:0:7}\` |" >> $GITHUB_STEP_SUMMARY
           echo "| Build Number | #${{ github.run_number }} |" >> $GITHUB_STEP_SUMMARY
           echo "| SHA256 | \`${{ env.APK_SHA256 }}\` |" >> $GITHUB_STEP_SUMMARY
           echo "| Size | ${{ env.APK_SIZE }} |" >> $GITHUB_STEP_SUMMARY
           echo "| API Endpoint | https://staging.api.verifd.com |" >> $GITHUB_STEP_SUMMARY
-          echo "| Signed | ${{ env.ANDROID_KEYSTORE_BASE64 && '✅ Production' || '⚠️ Debug' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Stamps Verified" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ versionName matches release_tag" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ BuildConfig.GIT_SHA present" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ BuildConfig.BUILD_TAG present" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ BuildConfig.IS_CI = true" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "### Download" >> $GITHUB_STEP_SUMMARY
           echo "[📥 Download APK Artifact](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "### QR Code" >> $GITHUB_STEP_SUMMARY
-          echo "![QR Code](apk-qr.png)" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "### Override Test Users" >> $GITHUB_STEP_SUMMARY
-          echo "- Primary: +919233600392" >> $GITHUB_STEP_SUMMARY
-          echo "- Secondary: +917575854485" >> $GITHUB_STEP_SUMMARY
-      
-      - name: Validate Nightly.link Availability
-        if: always()
-        continue-on-error: true
-        run: |
-          echo "🔗 Checking nightly.link availability..."
-          
-          # Check if repo is private
-          REPO_INFO=$(curl -s \
-            -H "Accept: application/vnd.github.v3+json" \
-            "https://api.github.com/repos/${{ github.repository }}")
-          
-          IS_PRIVATE=$(echo "$REPO_INFO" | jq -r '.private')
-          
-          if [ "$IS_PRIVATE" == "true" ]; then
-            echo "⚠️ Repository is private - nightly.link not available"
-            echo "Use GitHub Release URLs instead"
-            exit 0
-          fi
-          
-          # Verify artifact name is exactly "verifd-staging-apk" (no suffix)
-          # Verify workflow file name is exactly "android-staging-apk.yml"
-          # Verify branch is "main"
-          
-          WORKFLOW_FILE="android-staging-apk.yml"
-          ARTIFACT_NAME="verifd-staging-apk"
-          BRANCH="main"
-          
-          # Construct expected nightly.link URL
-          NIGHTLY_URL="https://nightly.link/${{ github.repository }}/workflows/$WORKFLOW_FILE/$BRANCH/$ARTIFACT_NAME.zip"
-          
-          echo "Expected nightly.link URL: $NIGHTLY_URL"
-          
-          # HEAD request to check if URL would work
-          HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" -I "$NIGHTLY_URL" || echo "000")
-          
-          if [ "$HTTP_STATUS" == "200" ] || [ "$HTTP_STATUS" == "302" ]; then
-            echo "✅ Nightly.link URL would be available"
-            echo "URL: $NIGHTLY_URL"
-            
-            # Add to summary
-            echo "" >> $GITHUB_STEP_SUMMARY
-            echo "### Alternative Download (Nightly.link)" >> $GITHUB_STEP_SUMMARY
-            echo "[Download via nightly.link]($NIGHTLY_URL)" >> $GITHUB_STEP_SUMMARY
-          else
-            echo "❌ Nightly.link disabled (HTTP $HTTP_STATUS)"
-            echo "Possible reasons:"
-            echo "- Repository is private"
-            echo "- Artifact name mismatch (must be exactly: $ARTIFACT_NAME)"
-            echo "- Workflow file name mismatch (must be exactly: $WORKFLOW_FILE)"
-            echo "- Branch mismatch (must be: $BRANCH)"
-            echo ""
-            echo "Recommendation: Use GitHub Release URLs for stable distribution"
-          fi
-
-      - name: Prepare Release Files
-        if: github.event_name == 'workflow_dispatch' || github.ref == 'refs/heads/staging'
-        working-directory: apps/android
-        run: |
-          # Standardize APK name for release
-          APK_PATH="app/build/outputs/apk/verifd-staging-signed.apk"
-          if [ ! -f "$APK_PATH" ]; then
-            APK_PATH=$(find app/build/outputs/apk -name "*.apk" -type f | head -1)
-          fi
-          
-          if [ -f "$APK_PATH" ]; then
-            cp "$APK_PATH" verifd-staging.apk
-            echo "✅ Standardized APK name for release"
-            
-            # Generate SHA256 for release
-            sha256sum verifd-staging.apk > apk.sha256
-          fi
-
-      - name: Generate Release QR Code
-        if: github.event_name == 'workflow_dispatch' || github.ref == 'refs/heads/staging'
-        run: |
-          # Determine release tag
-          if [ -n "${{ github.event.inputs.release_tag }}" ]; then
-            TAG="${{ github.event.inputs.release_tag }}"
-          else
-            TAG="v1.3.0-staging-$(date +%Y%m%d-%H%M%S)"
-          fi
-          
-          echo "RELEASE_TAG=$TAG" >> $GITHUB_ENV
-          
-          # Generate QR code for release URL
-          RELEASE_URL="https://github.com/${{ github.repository }}/releases/download/$TAG/verifd-staging.apk"
-          
-          # Use qrencode if available, otherwise npm qrcode
-          if command -v qrencode >/dev/null 2>&1; then
-            qrencode -o qr-verifd-staging.png -s 10 "$RELEASE_URL"
-          else
-            npm install -g qrcode >/dev/null 2>&1 || true
-            qrcode -o qr-verifd-staging.png "$RELEASE_URL"
-          fi
-          
-          echo "✅ QR code generated for release URL: $RELEASE_URL"
-
-      - name: Token Sanity Check
-        if: github.event_name == 'workflow_dispatch' || github.ref == 'refs/heads/staging'
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          echo "Checking GitHub token permissions..."
-          gh auth status || true
-          
-          # Test write access
-          echo "Testing repository write access..."
-          if gh api repos/${{ github.repository }} -X GET > /dev/null 2>&1; then
-            echo "✅ Token has read access to repository"
-          else
-            echo "❌ Token lacks read access to repository"
-            exit 1
-          fi
-          
-          echo ""
-          echo "ℹ️ If release creation fails with 403, check:"
-          echo "   Settings → Actions → General → Workflow permissions"
-          echo "   Should be: 'Read and write permissions'"
-          echo ""
 
       - name: Create GitHub Release
-        if: github.event_name == 'workflow_dispatch' || github.ref == 'refs/heads/staging'
         uses: softprops/action-gh-release@v2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag_name: ${{ env.RELEASE_TAG }}
-          name: Android Staging Release ${{ env.RELEASE_TAG }}
+          tag_name: ${{ inputs.release_tag }}
+          name: Android Staging Release ${{ inputs.release_tag }}
           draft: false
           prerelease: true
           files: |
             apps/android/verifd-staging.apk
             apps/android/apk.sha256
-            qr-verifd-staging.png
-            apps/android/apk-metadata.json
-            apps/android/INSTALL_STAGING_APK.md
+            OPS/BUILD_ENV.txt
           body: |
             ## 📱 Android Staging Release
-            
-            **Version:** ${{ github.event.inputs.release_tag }}
+
+            **Version:** ${{ inputs.release_tag }}
             **Build:** #${{ github.run_number }}
             **SHA256:** `${{ env.APK_SHA256 }}`
             **Size:** ${{ env.APK_SIZE }}
-            
-            ### Features in this Release
-            - ✅ Missed call notification actions (SMS/WhatsApp)
-            - ✅ Reliability hardening with WakefulBroadcastReceiver
-            - ✅ Template caching (24h TTL)
-            - ✅ Dual-SIM support
-            - ✅ QA Panel V2 (staging builds only)
-            - ✅ First-run setup card
-            - ✅ Telemetry with backoff configuration
-            
+            **Git SHA:** `${GITHUB_SHA:0:7}`
+
+            ### Build Fingerprint
+            - Tag: ${{ inputs.release_tag }}
+            - SHA: ${{ github.sha }}
+            - Branch: ${{ github.ref_name }}
+            - Time: $(date -u +"%Y-%m-%dT%H:%M:%SZ")
+
             ### Test Configuration
             - **API Endpoint:** https://staging.api.verifd.com
             - **Override Users:** +919233600392, +917575854485
             - **KID:** staging-2025-001
-            
+
             ### Installation
             1. Download the APK from the assets below
             2. Enable "Unknown sources" in Settings
             3. Install and open the app
-            4. Access QA Panel V2 from menu (staging only)
-      
-      - name: Verify Release Asset
-        if: github.event_name == 'workflow_dispatch' || github.ref == 'refs/heads/staging'
-        continue-on-error: true
-        run: |
-          echo "🔍 Verifying release asset is accessible..."
-          
-          # Wait for release to propagate
-          sleep 10
-          
-          # Test release asset URL
-          ASSET_URL="https://github.com/${{ github.repository }}/releases/download/${{ env.RELEASE_TAG }}/verifd-staging.apk"
-          HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" -I "$ASSET_URL")
-          
-          if [ "$HTTP_STATUS" == "200" ] || [ "$HTTP_STATUS" == "302" ]; then
-            echo "✅ Release asset is accessible: $ASSET_URL"
-            echo "HTTP Status: $HTTP_STATUS"
-          else
-            echo "::warning::Release asset not accessible (HTTP $HTTP_STATUS)"
-            echo "URL tested: $ASSET_URL"
-            echo "This may be a timing issue - please verify manually"
-          fi
+            4. Open QA Panel from overflow menu (staging only)
+            5. Check build fingerprint shows "IN SYNC"

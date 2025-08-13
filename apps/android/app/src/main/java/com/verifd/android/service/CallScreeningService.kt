@@ -630,7 +630,7 @@ class CallScreeningService : CallScreeningService() {
             // Calculate elapsed time from onScreenCall start
             val elapsedMs = System.currentTimeMillis() - (callDetails.extras?.getLong("startTime", System.currentTimeMillis()) ?: System.currentTimeMillis())
             
-            // Build ultra-verbose notification body
+            // Build ultra-verbose notification body with fingerprint
             val verboseInfo = buildString {
                 appendLine("📞 ULTRA-VERBOSE DEBUG")
                 appendLine("═══════════════════════")
@@ -639,17 +639,20 @@ class CallScreeningService : CallScreeningService() {
                 appendLine("")
                 appendLine("SCREENING DECISION:")
                 appendLine("• mode=$mode")
-                appendLine("• sdkInt=${Build.VERSION.SDK_INT}")
-                appendLine("• called_skipLog=$skipLog")
-                appendLine("• called_skipNotif=$skipNotif")
-                appendLine("• suppressUi_attempted=$suppressUiAttempted")
-                appendLine("• suppressUi_result=$suppressUiResult")
+                appendLine("• sha=${BuildConfig.GIT_SHA.take(7)}")
+                appendLine("• tag=${BuildConfig.BUILD_TAG}")
+                appendLine("• branch=${BuildConfig.GIT_BRANCH}")
+                appendLine("• sdk=${Build.VERSION.SDK_INT}")
+                appendLine("• suppressUi=$suppressUiResult")
                 appendLine("• elapsedMs=$elapsedMs")
+                appendLine("• skipLog=$skipLog")
+                appendLine("• skipNotif=$skipNotif")
                 appendLine("")
                 appendLine("BUILD INFO:")
                 appendLine("• ${BuildConfig.APPLICATION_ID}")
                 appendLine("• v${BuildConfig.VERSION_NAME}")
                 appendLine("• Build: ${BuildConfig.BUILD_TYPE}")
+                appendLine("• CI: ${BuildConfig.IS_CI}")
                 appendLine("")
                 appendLine("SYSTEM STATUS:")
                 appendLine("• Has Role: ${hasCallScreeningRole(this)}")
