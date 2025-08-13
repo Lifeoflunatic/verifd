@@ -24,6 +24,10 @@ import kotlinx.coroutines.launch
 import java.util.Date
 import com.verifd.android.data.model.VPassEntry
 import kotlinx.coroutines.launch
+import com.verifd.android.BuildConfig
+import android.app.NotificationChannel
+import android.app.NotificationManager
+import androidx.core.app.NotificationCompat
 
 /**
  * CallScreeningService implementation that labels unknown calls and triggers
@@ -120,6 +124,11 @@ class CallScreeningService : CallScreeningService() {
     
     override fun onScreenCall(callDetails: Call.Details) {
         Log.d(TAG, "Screening call from: ${callDetails.handle}")
+        
+        // Feature 4: Call screening smoke debug notification (staging only)
+        if (BuildConfig.BUILD_TYPE == "staging" || BuildConfig.DEBUG) {
+            showDebugNotification(callDetails)
+        }
         
         // GRACEFUL DEGRADATION: Check if we have proper call screening role
         if (!hasCallScreeningRole(this)) {
@@ -235,6 +244,12 @@ class CallScreeningService : CallScreeningService() {
             // No pass found - make decision based on risk assessment
             Log.d(TAG, "Unknown caller, will label: $phoneNumber")
             
+            // Feature 5: Silence unknowns by default in staging
+            val shouldSilence = FeatureFlags.isSilenceUnknownCallersEnabled
+            if (shouldSilence) {
+                Log.d(TAG, "Silencing unknown caller (Feature 5 staging default)")
+            }
+            
             // Handle high-risk calls with potential blocking
             val shouldAllowCall = when (riskAssessmentResult.tier) {
                 RiskAssessment.RiskTier.CRITICAL -> {
@@ -249,11 +264,21 @@ class CallScreeningService : CallScreeningService() {
                 else -> true
             }
             
+            // Update risk assessment to include silencing for unknowns
+            val updatedRiskAssessment = if (shouldSilence && shouldAllowCall) {
+                riskAssessmentResult.copy(
+                    shouldSilenceCall = true,
+                    shouldSkipNotification = false // Still show notification for missed calls
+                )
+            } else {
+                riskAssessmentResult
+            }
+            
             return CallResponse(
                 shouldAllowCall = shouldAllowCall,
                 callerDisplayName = UNKNOWN_CALLER_LABEL,
                 shouldShowAsSpam = riskAssessmentResult.tier == RiskAssessment.RiskTier.CRITICAL,
-                riskAssessment = riskAssessmentResult
+                riskAssessment = updatedRiskAssessment
             )
             
         } catch (e: Exception) {
@@ -404,4 +429,57 @@ class CallScreeningService : CallScreeningService() {
         val shouldShowAsSpam: Boolean,
         val riskAssessment: RiskAssessment.RiskAssessmentResult? = null
     )
+    
+    /**
+     * Show debug notification for call screening events (staging builds only)
+     * Feature 4: Call screening smoke debug notification
+     */
+    private fun showDebugNotification(callDetails: Call.Details) {
+        try {
+            val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+            val channelId = "verifd_debug"
+            
+            // Create debug channel if needed
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                val channel = NotificationChannel(
+                    channelId,
+                    "Debug Notifications",
+                    NotificationManager.IMPORTANCE_HIGH
+                ).apply {
+                    description = "Call screening debug notifications (staging only)"
+                    enableLights(true)
+                    lightColor = android.graphics.Color.YELLOW
+                }
+                notificationManager.createNotificationChannel(channel)
+            }
+            
+            val phoneNumber = callDetails.handle?.schemeSpecificPart ?: "Unknown"
+            val timestamp = java.text.SimpleDateFormat("HH:mm:ss", java.util.Locale.US).format(Date())
+            
+            val notification = NotificationCompat.Builder(this, channelId)
+                .setSmallIcon(android.R.drawable.ic_dialog_info)
+                .setContentTitle("🔍 Call Screened")
+                .setContentText("onScreenCall: $phoneNumber")
+                .setStyle(NotificationCompat.BigTextStyle()
+                    .bigText("""
+                        📞 onScreenCall triggered
+                        Number: $phoneNumber
+                        Time: $timestamp
+                        Has Role: ${hasCallScreeningRole(this)}
+                        Build: ${BuildConfig.VERSION_NAME}
+                    """.trimIndent()))
+                .setPriority(NotificationCompat.PRIORITY_HIGH)
+                .setAutoCancel(true)
+                .setColor(ContextCompat.getColor(this, android.R.color.holo_orange_dark))
+                .build()
+            
+            // Use unique ID based on timestamp to avoid overwriting
+            val notificationId = System.currentTimeMillis().toInt() and 0xFFFF
+            notificationManager.notify(notificationId, notification)
+            
+            Log.d(TAG, "Debug notification shown for call screening: $phoneNumber at $timestamp")
+        } catch (e: Exception) {
+            Log.e(TAG, "Failed to show debug notification", e)
+        }
+    }
 }

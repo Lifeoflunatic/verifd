@@ -20,6 +20,7 @@ import androidx.core.content.ContextCompat
 import com.google.android.material.card.MaterialCardView
 import com.google.android.material.textfield.TextInputEditText
 import com.google.android.material.textfield.TextInputLayout
+import com.verifd.android.BuildConfig
 import com.verifd.android.R
 import com.verifd.android.service.CallScreeningService
 
@@ -145,11 +146,21 @@ class FirstRunSetupCard @JvmOverloads constructor(
     }
     
     fun shouldShow(): Boolean {
+        // FORCE show in staging builds (ignore any restored 'onboarding_complete')
+        if (BuildConfig.VERSION_NAME.contains("staging", ignoreCase = true)) {
+            return !isSetupComplete() || !hasRequiredPermissions()
+        }
         // Show if setup not complete or critical permissions missing
         return !isSetupComplete() || !hasRequiredPermissions()
     }
     
     private fun isSetupComplete(): Boolean {
+        // In staging, ignore saved state and always require fresh setup
+        if (BuildConfig.VERSION_NAME.contains("staging", ignoreCase = true)) {
+            // Only consider complete if completed in this session
+            return prefs.getBoolean(KEY_SETUP_COMPLETE, false) && 
+                   prefs.getLong("setup_complete_time", 0) > System.currentTimeMillis() - 3600000 // 1 hour
+        }
         return prefs.getBoolean(KEY_SETUP_COMPLETE, false)
     }
     
@@ -333,6 +344,7 @@ class FirstRunSetupCard @JvmOverloads constructor(
         prefs.edit()
             .putBoolean(KEY_SETUP_COMPLETE, true)
             .putString(KEY_USER_NAME, userName)
+            .putLong("setup_complete_time", System.currentTimeMillis())
             .apply()
         
         setupListener?.onSetupComplete(userName)
@@ -353,5 +365,24 @@ class FirstRunSetupCard @JvmOverloads constructor(
     
     fun onCallScreeningRoleResult(granted: Boolean) {
         updateCallScreeningStatus()
+    }
+    
+    /**
+     * Reset the setup state - used in QA Panel for staging builds
+     * Clears the onboarding complete flag and user name
+     */
+    fun resetSetup() {
+        prefs.edit()
+            .putBoolean(KEY_SETUP_COMPLETE, false)
+            .remove(KEY_USER_NAME)
+            .remove("setup_complete_time")
+            .apply()
+        
+        // Reset UI to initial state
+        currentStep = 1
+        nameInput.setText("")
+        expectingCheckbox.isChecked = false
+        visibility = View.VISIBLE
+        updateUI()
     }
 }

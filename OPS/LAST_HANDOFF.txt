@@ -1,21 +1,25 @@
 ---HANDOFF---
 Task: (auto) Fallback handoff — assistant reply had no explicit ---HANDOFF---
-When: 2025-08-13T01:43:58Z
+When: 2025-08-13T02:55:38Z
 Branch: feat/zod-row-typing
 
 Diff Summary:
- .github/workflows/android-staging-apk.yml | 33 ++++++++------
- OPS/HANDOFF_HISTORY.md                    | 67 +++++++++++++++++++++++++++
- OPS/LAST_HANDOFF.txt                      | 76 ++-----------------------------
- 3 files changed, 91 insertions(+), 85 deletions(-)
+ .claude/hooks/after-write.sh                       |   99 +-
+ OPS/HANDOFF_HISTORY.md                             | 6204 ++++++++++----------
+ OPS/LAST_HANDOFF.txt                               |   12 +-
+ .../com/verifd/android/ui/FirstRunSetupCard.kt     |   12 +
+ .../java/com/verifd/android/ui/MainActivity.kt     |   60 +-
+ 5 files changed, 3310 insertions(+), 3077 deletions(-)
 
 Files Touched:
-.github/workflows/android-staging-apk.yml
+.claude/hooks/after-write.sh
 OPS/HANDOFF_HISTORY.md
 OPS/LAST_HANDOFF.txt
+apps/android/app/src/main/java/com/verifd/android/ui/FirstRunSetupCard.kt
+apps/android/app/src/main/java/com/verifd/android/ui/MainActivity.kt
 
 Last Commit:
-d150a8f fix(android): resolve remaining Kotlin compilation errors for .12 build
+8d14ce9 fix(workflow): add GitHub token permissions for release creation
 
 Commands/Tests Run (tail):
 

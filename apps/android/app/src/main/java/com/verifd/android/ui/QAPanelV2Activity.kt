@@ -163,6 +163,11 @@ class QAPanelV2Activity : AppCompatActivity() {
             clearAppCache()
         }
         
+        // Reset Setup button (for staging builds)
+        findViewById<Button>(R.id.btn_reset_setup).setOnClickListener {
+            resetFirstRunSetup()
+        }
+        
         // Feature toggles
         val featureChips = findViewById<ChipGroup>(R.id.feature_chips)
         
@@ -366,11 +371,19 @@ class QAPanelV2Activity : AppCompatActivity() {
             try {
                 val status = StringBuilder()
                 
-                // Build info
+                // Feature 6: Enhanced QA header with BuildConfig + KID + API base + screener status
                 status.append("📱 Build Info\n")
                 status.append("Version: ${BuildConfig.VERSION_NAME} (${BuildConfig.VERSION_CODE})\n")
+                status.append("Build Type: ${BuildConfig.BUILD_TYPE}\n")
                 status.append("Variant: ${BuildConfig.BUILD_VARIANT}\n")
-                status.append("API: ${BuildConfig.BASE_URL}\n")
+                status.append("Debug: ${BuildConfig.DEBUG}\n")
+                status.append("\n")
+                
+                // API Configuration
+                status.append("🌐 API Configuration\n")
+                status.append("Base URL: ${BuildConfig.BASE_URL}\n")
+                status.append("KID: staging-2025-001\n") // Would be fetched from config in real app
+                status.append("Override Users: +919233600392, +917575854485\n")
                 status.append("\n")
                 
                 // Permissions
@@ -394,8 +407,17 @@ class QAPanelV2Activity : AppCompatActivity() {
                 // Call screening role
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                     val hasRole = CallScreeningService.hasCallScreeningRole(this@QAPanelV2Activity)
-                    status.append("📞 Call Screening: ${if (hasRole) "✅" else "❌"}\n")
+                    status.append("📞 Call Screening: ${if (hasRole) "✅ Active" else "❌ Inactive"}\n")
+                    status.append("Screener Status: ${if (hasRole) "ROLE_GRANTED" else "ROLE_NOT_GRANTED"}\n")
+                } else {
+                    status.append("📞 Call Screening: Pre-Android 10\n")
                 }
+                
+                // Feature flags summary
+                status.append("\n🚩 Feature Flags\n")
+                status.append("Missed Call Actions: ${if (FeatureFlags.isMissedCallActionsEnabled) "ON" else "OFF"}\n")
+                status.append("Silence Unknowns: ${if (FeatureFlags.isSilenceUnknownCallersEnabled) "ON" else "OFF"}\n")
+                status.append("Post Call Actions: ${if (FeatureFlags.isPostCallActionsEnabled) "ON" else "OFF"}\n")
                 
                 // Device info
                 status.append("\n🔧 Device\n")
@@ -758,4 +780,33 @@ class QAPanelV2Activity : AppCompatActivity() {
         val data: String,
         val timestamp: Date
     )
+    
+    /**
+     * Reset first-run setup state - clears onboarding flag
+     * Used in staging builds to force setup card to show again
+     */
+    private fun resetFirstRunSetup() {
+        AlertDialog.Builder(this)
+            .setTitle("Reset Setup")
+            .setMessage("This will clear the onboarding complete flag and force the setup card to show again. Continue?")
+            .setPositiveButton("Reset") { _, _ ->
+                // Clear onboarding preferences
+                val setupPrefs = getSharedPreferences("verifd_prefs", Context.MODE_PRIVATE)
+                setupPrefs.edit()
+                    .putBoolean("first_run_setup_complete", false)
+                    .remove("user_name")
+                    .remove("setup_complete_time")
+                    .apply()
+                
+                Toast.makeText(this, "Setup reset! Restart app to see setup card.", Toast.LENGTH_LONG).show()
+                
+                // Optionally restart MainActivity to show setup immediately
+                val intent = Intent(this, MainActivity::class.java)
+                intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                startActivity(intent)
+                finish()
+            }
+            .setNegativeButton("Cancel", null)
+            .show()
+    }
 }

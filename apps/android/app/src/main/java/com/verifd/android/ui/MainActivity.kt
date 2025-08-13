@@ -23,6 +23,10 @@ import kotlinx.coroutines.launch
 import android.view.Menu
 import android.view.MenuItem
 import com.verifd.android.BuildConfig
+import com.google.android.material.floatingactionbutton.FloatingActionButton
+import android.widget.FrameLayout
+import android.view.Gravity
+import androidx.coordinatorlayout.widget.CoordinatorLayout
 
 /**
  * Main activity showing vPass list and app controls
@@ -64,8 +68,10 @@ class MainActivity : AppCompatActivity() {
         if (isGranted) {
             Log.d(TAG, "Notification permission granted")
             notificationSnackbar?.dismiss()
+            notificationSnackbar = null
         } else {
-            Log.w(TAG, "Notification permission denied")
+            Log.w(TAG, "Notification permission denied - showing sticky Snackbar")
+            // Show sticky Snackbar with 'Open settings' action
             showNotificationPermissionBanner()
         }
     }
@@ -101,11 +107,52 @@ class MainActivity : AppCompatActivity() {
     override fun onResume() {
         super.onResume()
         loadVPasses()
+        
+        // Runtime POST_NOTIFICATIONS prompt on Android 13+ (Feature 3)
+        // Check on EVERY resume, not just once
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (!areNotificationsEnabled()) {
+                // Request permission using ActivityResult launcher
+                if (ContextCompat.checkSelfPermission(
+                        this,
+                        Manifest.permission.POST_NOTIFICATIONS
+                    ) != PackageManager.PERMISSION_GRANTED
+                ) {
+                    // Only launch permission request once per session
+                    if (notificationSnackbar == null) {
+                        notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+                    }
+                } else {
+                    // Permission granted but notifications disabled in settings
+                    showNotificationPermissionBanner()
+                }
+            } else {
+                // Notifications enabled, dismiss any banner
+                notificationSnackbar?.dismiss()
+                notificationSnackbar = null
+            }
+        }
     }
 
     private fun setupUI() {
-        // Show app name with version
-        binding.appTitle.text = "verifd • ${BuildConfig.VERSION_NAME}"
+        // Feature 7: Staging watermark - toolbar subtitle = version
+        if (BuildConfig.BUILD_TYPE == "staging") {
+            // Enhanced watermark for staging builds
+            binding.appTitle.text = "verifd [STAGING]"
+            binding.appTitle.setTextColor(ContextCompat.getColor(this, android.R.color.holo_orange_dark))
+            
+            // Add version as subtitle text
+            binding.statusText.text = "v${BuildConfig.VERSION_NAME} • Build ${BuildConfig.VERSION_CODE}"
+            binding.statusText.setTextColor(ContextCompat.getColor(this, android.R.color.holo_orange_dark))
+        } else {
+            // Normal production display
+            binding.appTitle.text = "verifd • ${BuildConfig.VERSION_NAME}"
+        }
+        
+        // Add FAB for QA Panel in staging builds (fallback for OEM overflow quirks)
+        if (BuildConfig.BUILD_TYPE == "staging") {
+            addQAPanelFAB()
+        }
         
         // Setup RecyclerView for vPass list
         vPassAdapter = VPassAdapter { vPass ->
@@ -169,16 +216,21 @@ class MainActivity : AppCompatActivity() {
                 val vPasses = repository.getAllValidVPasses()
                 vPassAdapter.submitList(vPasses)
                 
-                // Update status
-                binding.statusText.text = if (vPasses.isEmpty()) {
-                    "No active vPasses"
-                } else {
-                    "${vPasses.size} active vPass${if (vPasses.size == 1) "" else "es"}"
+                // Update status (preserve staging watermark if present)
+                if (BuildConfig.BUILD_TYPE != "staging") {
+                    binding.statusText.text = if (vPasses.isEmpty()) {
+                        "No active vPasses"
+                    } else {
+                        "${vPasses.size} active vPass${if (vPasses.size == 1) "" else "es"}"
+                    }
                 }
+                // For staging, the watermark remains as set in setupUI()
                 
             } catch (e: Exception) {
                 Log.e(TAG, "Error loading vPasses", e)
-                binding.statusText.text = "Error loading vPasses"
+                if (BuildConfig.BUILD_TYPE != "staging") {
+                    binding.statusText.text = "Error loading vPasses"
+                }
             } finally {
                 binding.loadingIndicator.visibility = android.view.View.GONE
             }
@@ -263,14 +315,19 @@ class MainActivity : AppCompatActivity() {
      * Show banner when notifications are disabled
      */
     private fun showNotificationPermissionBanner() {
+        // Dismiss any existing Snackbar first
+        notificationSnackbar?.dismiss()
+        
         notificationSnackbar = Snackbar.make(
             binding.root,
-            "Enable notifications to receive missed call alerts",
+            "Notifications disabled. Missed call actions won't work.",
             Snackbar.LENGTH_INDEFINITE
-        ).setAction("Enable") {
+        ).setAction("Open Settings") {
             // Open app notification settings
             openNotificationSettings()
-        }.apply {
+        }.setBackgroundTint(
+            ContextCompat.getColor(this, android.R.color.holo_orange_dark)
+        ).apply {
             show()
         }
     }
@@ -300,7 +357,7 @@ class MainActivity : AppCompatActivity() {
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         menuInflater.inflate(R.menu.menu_main, menu)
         
-        // Show QA Panel only in staging builds
+        // ALWAYS show QA Panel in staging builds (no hidden menu logic)
         val qaMenuItem = menu.findItem(R.id.action_qa_panel)
         qaMenuItem?.isVisible = BuildConfig.BUILD_TYPE == "staging" || BuildConfig.DEBUG
         
@@ -328,7 +385,7 @@ class MainActivity : AppCompatActivity() {
      * Open QA Debug Panel
      */
     private fun openQAPanel() {
-        val intent = Intent(this, DebugPanelActivity::class.java)
+        val intent = Intent(this, QAPanelV2Activity::class.java)
         startActivity(intent)
     }
     
@@ -338,5 +395,52 @@ class MainActivity : AppCompatActivity() {
     private fun openSettings() {
         // For now, just open app settings
         openNotificationSettings()
+    }
+    
+    /**
+     * Add a Floating Action Button for QA Panel access in staging builds
+     * This provides a fallback when OEM overflow menus are quirky
+     */
+    private fun addQAPanelFAB() {
+        // Get the root view
+        val rootView = binding.root as? android.view.ViewGroup ?: return
+        
+        // Create FAB programmatically
+        val fab = FloatingActionButton(this).apply {
+            setImageResource(android.R.drawable.ic_menu_manage)
+            setBackgroundTintList(android.content.res.ColorStateList.valueOf(
+                ContextCompat.getColor(this@MainActivity, android.R.color.holo_purple)
+            ))
+            contentDescription = "Open QA Panel"
+            
+            setOnClickListener {
+                openQAPanel()
+            }
+        }
+        
+        // Create layout params for bottom-right positioning
+        val params = if (rootView is CoordinatorLayout) {
+            CoordinatorLayout.LayoutParams(
+                CoordinatorLayout.LayoutParams.WRAP_CONTENT,
+                CoordinatorLayout.LayoutParams.WRAP_CONTENT
+            ).apply {
+                gravity = Gravity.BOTTOM or Gravity.END
+                setMargins(16, 16, 16, 16)
+            }
+        } else {
+            // Fallback for other layouts
+            FrameLayout.LayoutParams(
+                FrameLayout.LayoutParams.WRAP_CONTENT,
+                FrameLayout.LayoutParams.WRAP_CONTENT
+            ).apply {
+                gravity = Gravity.BOTTOM or Gravity.END
+                setMargins(32, 32, 32, 32)
+            }
+        }
+        
+        fab.layoutParams = params
+        
+        // Add FAB to the root view
+        rootView.addView(fab)
     }
 }
