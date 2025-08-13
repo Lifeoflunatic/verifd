@@ -1,5 +1,7 @@
 name: Update README Badges
 
+name: Update Coverage Badges
+
 on:
   workflow_run:
     workflows: ["CI"]

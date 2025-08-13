@@ -137,7 +137,7 @@ export const verifyRoutes: FastifyPluginAsync = async (server) => {
   // Start verification process
   server.post<{
     Body: VerifyStartBody;
-  }>('/start', async (request, reply) => {
+  }>('/start', async (request, reply: any) => {
     const body = VerifyStartSchema.parse(request.body);
     
     // Normalize and validate phone number
@@ -201,7 +201,7 @@ export const verifyRoutes: FastifyPluginAsync = async (server) => {
   // Submit verification and optionally grant pass
   server.post<{
     Body: VerifySubmitBody;
-  }>('/submit', async (request, reply) => {
+  }>('/submit', async (request, reply: any) => {
     const body = VerifySubmitSchema.parse(request.body);
     
     const db = getDb();
@@ -271,7 +271,7 @@ export const verifyRoutes: FastifyPluginAsync = async (server) => {
   });
   
   // Check verification status
-  server.get('/status/:token', async (request, reply) => {
+  server.get('/status/:token', async (request, reply: any) => {
     const { token } = request.params as { token: string };
     
     const db = getDb();

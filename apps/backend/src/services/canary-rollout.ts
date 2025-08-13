@@ -5,9 +5,10 @@
 import { FastifyInstance } from 'fastify';
 import { WebClient } from '@slack/web-api';
 import crypto from 'crypto';
+import { Phase } from '../routes/canary.js';
 
 interface CanaryConfig {
-  phase: 'off' | 'canary_5' | 'canary_20' | 'ga_50' | 'full_100';
+  phase: Phase;
   flags: {
     MISSED_CALL_ACTIONS: number; // Percentage
     enableTemplates: boolean;
@@ -23,6 +24,7 @@ interface CanaryConfig {
     afternoonTime: string; // IST
     channel: string;
   };
+  regions?: string[]; // Optional for backward compatibility
 }
 
 export class CanaryRolloutManager {

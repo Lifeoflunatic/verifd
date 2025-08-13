@@ -1,5 +1,7 @@
 name: Nightly Real-DB Smoke
 
+name: Nightly Smoke Tests
+
 on:
   schedule:
     # Run at 02:00 UTC (7:30 AM IST)

@@ -71,7 +71,7 @@ function checkVoicePingLimit(phoneNumber: string, userId?: string): { allowed: b
 }
 
 export const voicePingRoutes: FastifyPluginAsync = async (server) => {
-  server.post('/request', async (request, reply) => {
+  server.post('/request', async (request, reply: any) => {
     try {
       const body = VoicePingRequestSchema.parse(request.body);
       
@@ -144,7 +144,7 @@ export const voicePingRoutes: FastifyPluginAsync = async (server) => {
   });
   
   // Status check endpoint
-  server.get('/status/:voicePingId', async (request, reply) => {
+  server.get('/status/:voicePingId', async (request, reply: any) => {
     const { voicePingId } = request.params as { voicePingId: string };
     
     if (!voicePingId.startsWith('vp_')) {

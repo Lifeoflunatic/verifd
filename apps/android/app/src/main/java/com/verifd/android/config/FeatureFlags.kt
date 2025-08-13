@@ -16,12 +16,16 @@ object FeatureFlags {
     private const val FLAG_RISK_TIER_ASSESSMENT = "risk_tier_assessment"
     private const val FLAG_HIGH_RISK_BLOCKING = "high_risk_blocking"
     private const val FLAG_QUICK_TILE_EXPECTING = "quick_tile_expecting"
+    private const val FLAG_EXPECTING_WINDOW = "expecting_window"
+    private const val FLAG_POST_CALL_ACTIONS = "post_call_actions"
     
     // Default values (can be overridden at runtime)
     private const val DEFAULT_MISSED_CALL_ACTIONS = true
     private const val DEFAULT_RISK_TIER_ASSESSMENT = true
     private const val DEFAULT_HIGH_RISK_BLOCKING = false // Conservative default
     private const val DEFAULT_QUICK_TILE_EXPECTING = true
+    private const val DEFAULT_EXPECTING_WINDOW = true
+    private const val DEFAULT_POST_CALL_ACTIONS = true
     
     private var prefs: SharedPreferences? = null
     
@@ -61,6 +65,26 @@ object FeatureFlags {
             ?: DEFAULT_QUICK_TILE_EXPECTING
     
     /**
+     * Enable expecting window feature
+     */
+    var isExpectingWindowEnabled: Boolean
+        get() = prefs?.getBoolean(FLAG_EXPECTING_WINDOW, DEFAULT_EXPECTING_WINDOW)
+            ?: DEFAULT_EXPECTING_WINDOW
+        set(value) {
+            prefs?.edit()?.putBoolean(FLAG_EXPECTING_WINDOW, value)?.apply()
+        }
+    
+    /**
+     * Enable post-call actions feature
+     */
+    var isPostCallActionsEnabled: Boolean
+        get() = prefs?.getBoolean(FLAG_POST_CALL_ACTIONS, DEFAULT_POST_CALL_ACTIONS)
+            ?: DEFAULT_POST_CALL_ACTIONS
+        set(value) {
+            prefs?.edit()?.putBoolean(FLAG_POST_CALL_ACTIONS, value)?.apply()
+        }
+    
+    /**
      * Set feature flag value (for testing/debugging)
      */
     fun setFlag(flag: String, enabled: Boolean) {
@@ -82,7 +106,9 @@ object FeatureFlags {
             FLAG_MISSED_CALL_ACTIONS to isMissedCallActionsEnabled,
             FLAG_RISK_TIER_ASSESSMENT to isRiskTierAssessmentEnabled,
             FLAG_HIGH_RISK_BLOCKING to isHighRiskBlockingEnabled,
-            FLAG_QUICK_TILE_EXPECTING to isQuickTileExpectingEnabled
+            FLAG_QUICK_TILE_EXPECTING to isQuickTileExpectingEnabled,
+            FLAG_EXPECTING_WINDOW to isExpectingWindowEnabled,
+            FLAG_POST_CALL_ACTIONS to isPostCallActionsEnabled
         )
     }
 }

@@ -87,6 +87,28 @@ class BackendClient private constructor(context: Context) {
     fun getCurrentBackendUrl(): String = baseUrl
     
     /**
+     * Get or create device ID
+     */
+    private fun getOrCreateDeviceId(): String {
+        return deviceId ?: run {
+            val newId = generateDeviceId()
+            deviceId = newId
+            prefs.edit().putString(KEY_DEVICE_ID, newId).apply()
+            newId
+        }
+    }
+    
+    /**
+     * Generate a new device ID
+     */
+    private fun generateDeviceId(): String {
+        val random = SecureRandom()
+        val bytes = ByteArray(16)
+        random.nextBytes(bytes)
+        return bytes.joinToString("") { "%02x".format(it) }
+    }
+    
+    /**
      * Register device with backend if not already registered
      */
     suspend fun ensureRegistered(): Boolean = withContext(Dispatchers.IO) {
@@ -359,11 +381,11 @@ class BackendClient private constructor(context: Context) {
         userName: String? = null,
         locale: String = "en-US"
     ): MessageTemplatesResult = withContext(Dispatchers.IO) {
-        ensureDeviceRegistered()
+        ensureRegistered()
         
         try {
-            RetryPolicy.withRetry {
-                val url = URL("${getBackendUrl()}/v1/verify/link?" +
+            retryPolicy.execute { attempt ->
+                val url = URL("${baseUrl}/v1/verify/link?" +
                     "phone_number=${phoneNumber.urlEncode()}" +
                     "&device_id=${getOrCreateDeviceId()}" +
                     "&locale=$locale" +

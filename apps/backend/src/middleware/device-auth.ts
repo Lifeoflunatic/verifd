@@ -136,7 +136,8 @@ const deviceAuthPlugin: FastifyPluginAsync<Partial<DeviceAuthConfig>> = async (
     }
     
     // Parse auth header: HMAC timestamp:nonce:signature
-    const match = authHeader.match(/^HMAC (\d+):([a-f0-9]+):([a-f0-9]+)$/);
+    const authString = Array.isArray(authHeader) ? authHeader[0] : authHeader;
+    const match = authString.match(/^HMAC (\d+):([a-f0-9]+):([a-f0-9]+)$/);
     if (!match) {
       return reply.code(401).send({
         error: 'Invalid authentication format',

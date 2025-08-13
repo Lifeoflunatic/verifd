@@ -9,11 +9,14 @@ import fs from 'fs/promises';
 import path from 'path';
 import { z } from 'zod';
 
+// Export Phase type for reuse
+export type Phase = 'off' | 'canary_5' | 'canary_20' | 'ga_50' | 'full_100';
+
 // Canary configuration schema
 const CanaryConfigSchema = z.object({
   version: z.number(),
   timestamp: z.string(),
-  phase: z.enum(['off', 'canary_5', 'canary_20', 'ga_50', 'full_100']),
+  phase: z.enum(['off', 'canary_5', 'canary_20', 'ga_50', 'full_100'] as const),
   flags: z.object({
     MISSED_CALL_ACTIONS: z.object({
       enabled: z.boolean(),
@@ -70,7 +73,29 @@ export default async function canaryRoutes(fastify: FastifyInstance) {
   }
   
   // Get current canary configuration
-  fastify.get('/canary/config', async (request, reply) => {
+  fastify.get('/canary/config', {
+    schema: {
+      response: {
+        200: {
+          type: 'object',
+          properties: {
+            version: { type: 'number' },
+            timestamp: { type: 'string' },
+            phase: { type: 'string' },
+            flags: { type: 'object' },
+            successGates: { type: 'object' },
+            monitoring: { type: 'object' }
+          }
+        },
+        500: {
+          type: 'object',
+          properties: {
+            error: { type: 'string' }
+          }
+        }
+      }
+    }
+  }, async (request, reply: any) => {
     try {
       const config = await loadCanaryConfig();
       const signature = generateCanarySignature(config);
@@ -86,8 +111,48 @@ export default async function canaryRoutes(fastify: FastifyInstance) {
   });
 
   // Update canary phase (admin only)
-  fastify.post('/canary/phase', async (request, reply) => {
-    const { adminToken, phase, reason } = request.body as any;
+  fastify.post<{
+    Body: {
+      adminToken: string;
+      phase: Phase;
+      reason: string;
+    }
+  }>('/canary/phase', {
+    schema: {
+      body: {
+        type: 'object',
+        required: ['adminToken', 'phase', 'reason'],
+        properties: {
+          adminToken: { type: 'string' },
+          phase: { type: 'string' },
+          reason: { type: 'string' }
+        }
+      },
+      response: {
+        200: {
+          type: 'object',
+          properties: {
+            success: { type: 'boolean' },
+            phase: { type: 'string' },
+            version: { type: 'number' }
+          }
+        },
+        401: {
+          type: 'object',
+          properties: {
+            error: { type: 'string' }
+          }
+        },
+        500: {
+          type: 'object',
+          properties: {
+            error: { type: 'string' }
+          }
+        }
+      }
+    }
+  }, async (request, reply: any) => {
+    const { adminToken, phase, reason } = request.body;
     
     // Verify admin token
     if (adminToken !== process.env.ADMIN_CANARY_TOKEN) {
@@ -154,7 +219,39 @@ export default async function canaryRoutes(fastify: FastifyInstance) {
   });
 
   // Submit daily metrics
-  fastify.post('/canary/metrics', async (request, reply) => {
+  fastify.post<{
+    Body: DailyMetrics
+  }>('/canary/metrics', {
+    schema: {
+      body: {
+        type: 'object',
+        required: ['date', 'metrics', 'phase', 'passedGates'],
+        properties: {
+          date: { type: 'string' },
+          metrics: { type: 'object' },
+          phase: { type: 'string' },
+          passedGates: { type: 'boolean' }
+        }
+      },
+      response: {
+        200: {
+          type: 'object',
+          properties: {
+            success: { type: 'boolean' },
+            gatesPassed: { type: 'boolean' },
+            consecutiveDays: { type: 'number' },
+            recommendation: { type: 'string' }
+          }
+        },
+        500: {
+          type: 'object',
+          properties: {
+            error: { type: 'string' }
+          }
+        }
+      }
+    }
+  }, async (request, reply: any) => {
     const metricsData = DailyMetricsSchema.parse(request.body);
     
     try {
@@ -211,7 +308,31 @@ export default async function canaryRoutes(fastify: FastifyInstance) {
   });
 
   // Get canary dashboard
-  fastify.get('/canary/dashboard', async (request, reply) => {
+  fastify.get('/canary/dashboard', {
+    schema: {
+
+      response: {
+        200: {
+          type: 'object',
+          properties: {
+            currentPhase: { type: 'string' },
+            version: { type: 'number' },
+            flags: { type: 'object' },
+            monitoring: { type: 'object' },
+            recentMetrics: { type: 'array' },
+            successGates: { type: 'object' },
+            recommendation: { type: 'string' }
+          }
+        },
+        500: {
+          type: 'object',
+          properties: {
+            error: { type: 'string' }
+          }
+        }
+      }
+    }
+  }, async (request, reply: any) => {
     try {
       const config = await loadCanaryConfig();
       const recentMetrics = await loadRecentMetrics(7); // Last 7 days
@@ -239,8 +360,47 @@ export default async function canaryRoutes(fastify: FastifyInstance) {
   });
 
   // Emergency rollback
-  fastify.post('/canary/rollback', async (request, reply) => {
-    const { adminToken, reason } = request.body as any;
+  fastify.post<{
+    Body: {
+      adminToken: string;
+      reason: string;
+    }
+  }>('/canary/rollback', {
+    schema: {
+
+      body: {
+        type: 'object',
+        required: ['adminToken', 'reason'],
+        properties: {
+          adminToken: { type: 'string' },
+          reason: { type: 'string' }
+        }
+      },
+      response: {
+        200: {
+          type: 'object',
+          properties: {
+            success: { type: 'boolean' },
+            message: { type: 'string' },
+            phase: { type: 'string' }
+          }
+        },
+        401: {
+          type: 'object',
+          properties: {
+            error: { type: 'string' }
+          }
+        },
+        500: {
+          type: 'object',
+          properties: {
+            error: { type: 'string' }
+          }
+        }
+      }
+    }
+  }, async (request, reply: any) => {
+    const { adminToken, reason } = request.body;
     
     if (adminToken !== process.env.ADMIN_CANARY_TOKEN) {
       return reply.status(401).send({ error: 'unauthorized' });

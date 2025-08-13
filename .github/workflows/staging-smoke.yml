@@ -1,5 +1,7 @@
 name: Staging Smoke Tests
 
+name: Staging Smoke Tests
+
 on:
   push:
     branches: [main]

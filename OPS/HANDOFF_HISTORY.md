@@ -7952,3 +7952,2142 @@ Asks for PM:
 - Approve or request changes based on diff/test tails; if unclear, ask Claude to regenerate via /handoff:prep.
 
 ---END-HANDOFF---
+
+
+## 2025-08-12T01:02:14Z
+
+---HANDOFF---
+Task: (auto) Fallback handoff — assistant reply had no explicit ---HANDOFF---
+When: 2025-08-12T01:02:14Z
+Branch: feat/zod-row-typing
+
+Diff Summary:
+
+
+Files Touched:
+
+
+Last Commit:
+570dfd3 fix: CI/CD workflow errors and TypeScript build issues
+
+Commands/Tests Run (tail):
+
+> @verifd/backend@0.1.0 test /Users/harshilpatel/Desktop/Claude_Projects/verifd/apps/backend
+> vitest
+
+[33mThe CJS build of Vite's Node API is deprecated. See https://vite.dev/guide/troubleshooting.html#vite-cjs-node-api-deprecated for more details.[39m
+
+ DEV  v2.1.9 /Users/harshilpatel/Desktop/Claude_Projects/verifd/apps/backend
+
+ ✓ test/pass.check.simple.test.ts (6 tests | 1 skipped) 2ms
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > returns allowed=false for unknown number
+[DEBUG] No active pass found for number: ph_8a59780bb8cd2ba0
+
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > returns allowed=true for active pass
+[INFO] Active pass found for number: ph_8a59780bb8cd2ba0, expires: 1754771816
+
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > returns allowed=false for expired pass
+[DEBUG] No active pass found for number: ph_8a59780bb8cd2ba0
+
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > includes Cache-Control header
+[DEBUG] No active pass found for number: ph_8a59780bb8cd2ba0
+
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > correctly identifies 30m scope
+[INFO] Active pass found for number: ph_f5be76815beedc12, expires: 1754770016
+
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > correctly identifies 30d scope
+[INFO] Active pass found for number: ph_554285f82182d3dd, expires: 1757360216
+
+ ✓ test/pass.check.mock.test.ts (7 tests) 65ms
+
+ Test Files  2 passed (2)
+      Tests  12 passed | 1 skipped (13)
+   Start at  15:36:55
+   Duration  378ms (transform 78ms, setup 0ms, collect 174ms, tests 67ms, environment 0ms, prepare 106ms)
+
+ PASS  Waiting for file changes...
+       press h to show help, press q to quit
+
+Playwright (tail):
+
+
+Open Risks:
+- Auto-generated handoff; ask Claude to run /handoff:prep next time for richer details.
+
+Asks for PM:
+- Approve or request changes based on diff/test tails; if unclear, ask Claude to regenerate via /handoff:prep.
+
+---END-HANDOFF---
+
+
+## 2025-08-12T01:12:08Z
+
+---HANDOFF---
+Task: (auto) Fallback handoff — assistant reply had no explicit ---HANDOFF---
+When: 2025-08-12T01:12:08Z
+Branch: feat/zod-row-typing
+
+Diff Summary:
+ .github/workflows/ci.yml |  2 +-
+ OPS/HANDOFF_HISTORY.md   | 66 ++++++++++++++++++++++++++++++++++++++++++++++++
+ OPS/LAST_HANDOFF.txt     |  4 +--
+ 3 files changed, 69 insertions(+), 3 deletions(-)
+
+Files Touched:
+.github/workflows/ci.yml
+OPS/HANDOFF_HISTORY.md
+OPS/LAST_HANDOFF.txt
+
+Last Commit:
+2c37bf1 fix: remove duplicate backend test jobs in CI workflow
+
+Commands/Tests Run (tail):
+
+> @verifd/backend@0.1.0 test /Users/harshilpatel/Desktop/Claude_Projects/verifd/apps/backend
+> vitest
+
+[33mThe CJS build of Vite's Node API is deprecated. See https://vite.dev/guide/troubleshooting.html#vite-cjs-node-api-deprecated for more details.[39m
+
+ DEV  v2.1.9 /Users/harshilpatel/Desktop/Claude_Projects/verifd/apps/backend
+
+ ✓ test/pass.check.simple.test.ts (6 tests | 1 skipped) 2ms
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > returns allowed=false for unknown number
+[DEBUG] No active pass found for number: ph_8a59780bb8cd2ba0
+
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > returns allowed=true for active pass
+[INFO] Active pass found for number: ph_8a59780bb8cd2ba0, expires: 1754771816
+
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > returns allowed=false for expired pass
+[DEBUG] No active pass found for number: ph_8a59780bb8cd2ba0
+
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > includes Cache-Control header
+[DEBUG] No active pass found for number: ph_8a59780bb8cd2ba0
+
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > correctly identifies 30m scope
+[INFO] Active pass found for number: ph_f5be76815beedc12, expires: 1754770016
+
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > correctly identifies 30d scope
+[INFO] Active pass found for number: ph_554285f82182d3dd, expires: 1757360216
+
+ ✓ test/pass.check.mock.test.ts (7 tests) 65ms
+
+ Test Files  2 passed (2)
+      Tests  12 passed | 1 skipped (13)
+   Start at  15:36:55
+   Duration  378ms (transform 78ms, setup 0ms, collect 174ms, tests 67ms, environment 0ms, prepare 106ms)
+
+ PASS  Waiting for file changes...
+       press h to show help, press q to quit
+
+Playwright (tail):
+
+
+Open Risks:
+- Auto-generated handoff; ask Claude to run /handoff:prep next time for richer details.
+
+Asks for PM:
+- Approve or request changes based on diff/test tails; if unclear, ask Claude to regenerate via /handoff:prep.
+
+---END-HANDOFF---
+
+
+## 2025-08-12T01:23:59Z
+
+---HANDOFF---
+Task: (auto) Fallback handoff — assistant reply had no explicit ---HANDOFF---
+When: 2025-08-12T01:23:59Z
+Branch: feat/zod-row-typing
+
+Diff Summary:
+ OPS/HANDOFF_HISTORY.md | 137 +++++++++++++++++++++++++++++++++++++++++++++++++
+ OPS/LAST_HANDOFF.txt   |  13 +++--
+ 2 files changed, 146 insertions(+), 4 deletions(-)
+
+Files Touched:
+OPS/HANDOFF_HISTORY.md
+OPS/LAST_HANDOFF.txt
+
+Last Commit:
+4a9651e fix: unique artifact names for merge-coverage jobs
+
+Commands/Tests Run (tail):
+
+> @verifd/backend@0.1.0 test /Users/harshilpatel/Desktop/Claude_Projects/verifd/apps/backend
+> vitest
+
+[33mThe CJS build of Vite's Node API is deprecated. See https://vite.dev/guide/troubleshooting.html#vite-cjs-node-api-deprecated for more details.[39m
+
+ DEV  v2.1.9 /Users/harshilpatel/Desktop/Claude_Projects/verifd/apps/backend
+
+ ✓ test/pass.check.simple.test.ts (6 tests | 1 skipped) 2ms
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > returns allowed=false for unknown number
+[DEBUG] No active pass found for number: ph_8a59780bb8cd2ba0
+
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > returns allowed=true for active pass
+[INFO] Active pass found for number: ph_8a59780bb8cd2ba0, expires: 1754771816
+
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > returns allowed=false for expired pass
+[DEBUG] No active pass found for number: ph_8a59780bb8cd2ba0
+
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > includes Cache-Control header
+[DEBUG] No active pass found for number: ph_8a59780bb8cd2ba0
+
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > correctly identifies 30m scope
+[INFO] Active pass found for number: ph_f5be76815beedc12, expires: 1754770016
+
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > correctly identifies 30d scope
+[INFO] Active pass found for number: ph_554285f82182d3dd, expires: 1757360216
+
+ ✓ test/pass.check.mock.test.ts (7 tests) 65ms
+
+ Test Files  2 passed (2)
+      Tests  12 passed | 1 skipped (13)
+   Start at  15:36:55
+   Duration  378ms (transform 78ms, setup 0ms, collect 174ms, tests 67ms, environment 0ms, prepare 106ms)
+
+ PASS  Waiting for file changes...
+       press h to show help, press q to quit
+
+Playwright (tail):
+
+
+Open Risks:
+- Auto-generated handoff; ask Claude to run /handoff:prep next time for richer details.
+
+Asks for PM:
+- Approve or request changes based on diff/test tails; if unclear, ask Claude to regenerate via /handoff:prep.
+
+---END-HANDOFF---
+
+
+## 2025-08-12T01:39:11Z
+
+---HANDOFF---
+Task: (auto) Fallback handoff — assistant reply had no explicit ---HANDOFF---
+When: 2025-08-12T01:39:11Z
+Branch: feat/zod-row-typing
+
+Diff Summary:
+ .github/workflows/ci.yml                   |   3 +
+ .github/workflows/nightly-smoke.yml        |   2 +
+ .github/workflows/staging-smoke.yml        |   2 +
+ .github/workflows/update-badges.yml        |   2 +
+ OPS/HANDOFF_HISTORY.md                     | 206 +++++++++++++++++++++++++++++
+ OPS/LAST_HANDOFF.txt                       |  11 +-
+ apps/backend/package.json                  |   4 +-
+ apps/backend/src/middleware/device-auth.ts |   3 +-
+ apps/backend/src/routes/canary.ts          | 179 ++++++++++++++++++++++++-
+ apps/backend/src/routes/jwks.ts            | 136 ++++++++++++++++++-
+ pnpm-lock.yaml                             |  64 +++------
+ 11 files changed, 551 insertions(+), 61 deletions(-)
+
+Files Touched:
+.github/workflows/ci.yml
+.github/workflows/nightly-smoke.yml
+.github/workflows/staging-smoke.yml
+.github/workflows/update-badges.yml
+OPS/HANDOFF_HISTORY.md
+OPS/LAST_HANDOFF.txt
+apps/backend/package.json
+apps/backend/src/middleware/device-auth.ts
+apps/backend/src/routes/canary.ts
+apps/backend/src/routes/jwks.ts
+pnpm-lock.yaml
+
+Last Commit:
+4a9651e fix: unique artifact names for merge-coverage jobs
+
+Commands/Tests Run (tail):
+
+> @verifd/backend@0.1.0 test /Users/harshilpatel/Desktop/Claude_Projects/verifd/apps/backend
+> vitest
+
+[33mThe CJS build of Vite's Node API is deprecated. See https://vite.dev/guide/troubleshooting.html#vite-cjs-node-api-deprecated for more details.[39m
+
+ DEV  v2.1.9 /Users/harshilpatel/Desktop/Claude_Projects/verifd/apps/backend
+
+ ✓ test/pass.check.simple.test.ts (6 tests | 1 skipped) 2ms
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > returns allowed=false for unknown number
+[DEBUG] No active pass found for number: ph_8a59780bb8cd2ba0
+
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > returns allowed=true for active pass
+[INFO] Active pass found for number: ph_8a59780bb8cd2ba0, expires: 1754771816
+
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > returns allowed=false for expired pass
+[DEBUG] No active pass found for number: ph_8a59780bb8cd2ba0
+
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > includes Cache-Control header
+[DEBUG] No active pass found for number: ph_8a59780bb8cd2ba0
+
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > correctly identifies 30m scope
+[INFO] Active pass found for number: ph_f5be76815beedc12, expires: 1754770016
+
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > correctly identifies 30d scope
+[INFO] Active pass found for number: ph_554285f82182d3dd, expires: 1757360216
+
+ ✓ test/pass.check.mock.test.ts (7 tests) 65ms
+
+ Test Files  2 passed (2)
+      Tests  12 passed | 1 skipped (13)
+   Start at  15:36:55
+   Duration  378ms (transform 78ms, setup 0ms, collect 174ms, tests 67ms, environment 0ms, prepare 106ms)
+
+ PASS  Waiting for file changes...
+       press h to show help, press q to quit
+
+Playwright (tail):
+
+
+Open Risks:
+- Auto-generated handoff; ask Claude to run /handoff:prep next time for richer details.
+
+Asks for PM:
+- Approve or request changes based on diff/test tails; if unclear, ask Claude to regenerate via /handoff:prep.
+
+---END-HANDOFF---
+
+
+## 2025-08-12T01:47:34Z
+
+---HANDOFF---
+Task: (auto) Fallback handoff — assistant reply had no explicit ---HANDOFF---
+When: 2025-08-12T01:47:34Z
+Branch: feat/zod-row-typing
+
+Diff Summary:
+ .github/workflows/ci.yml                   |   3 +
+ .github/workflows/nightly-smoke.yml        |   2 +
+ .github/workflows/staging-smoke.yml        |   2 +
+ .github/workflows/update-badges.yml        |   2 +
+ OPS/HANDOFF_HISTORY.md                     | 293 +++++++++++++++++++++++++++++
+ OPS/LAST_HANDOFF.txt                       |  29 ++-
+ apps/backend/package.json                  |   4 +-
+ apps/backend/src/middleware/device-auth.ts |   3 +-
+ apps/backend/src/routes/canary.ts          | 179 +++++++++++++++++-
+ apps/backend/src/routes/jwks.ts            | 136 ++++++++++++-
+ pnpm-lock.yaml                             |  64 +++----
+ 11 files changed, 656 insertions(+), 61 deletions(-)
+
+Files Touched:
+.github/workflows/ci.yml
+.github/workflows/nightly-smoke.yml
+.github/workflows/staging-smoke.yml
+.github/workflows/update-badges.yml
+OPS/HANDOFF_HISTORY.md
+OPS/LAST_HANDOFF.txt
+apps/backend/package.json
+apps/backend/src/middleware/device-auth.ts
+apps/backend/src/routes/canary.ts
+apps/backend/src/routes/jwks.ts
+pnpm-lock.yaml
+
+Last Commit:
+4a9651e fix: unique artifact names for merge-coverage jobs
+
+Commands/Tests Run (tail):
+
+> @verifd/backend@0.1.0 test /Users/harshilpatel/Desktop/Claude_Projects/verifd/apps/backend
+> vitest
+
+[33mThe CJS build of Vite's Node API is deprecated. See https://vite.dev/guide/troubleshooting.html#vite-cjs-node-api-deprecated for more details.[39m
+
+ DEV  v2.1.9 /Users/harshilpatel/Desktop/Claude_Projects/verifd/apps/backend
+
+ ✓ test/pass.check.simple.test.ts (6 tests | 1 skipped) 2ms
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > returns allowed=false for unknown number
+[DEBUG] No active pass found for number: ph_8a59780bb8cd2ba0
+
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > returns allowed=true for active pass
+[INFO] Active pass found for number: ph_8a59780bb8cd2ba0, expires: 1754771816
+
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > returns allowed=false for expired pass
+[DEBUG] No active pass found for number: ph_8a59780bb8cd2ba0
+
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > includes Cache-Control header
+[DEBUG] No active pass found for number: ph_8a59780bb8cd2ba0
+
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > correctly identifies 30m scope
+[INFO] Active pass found for number: ph_f5be76815beedc12, expires: 1754770016
+
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > correctly identifies 30d scope
+[INFO] Active pass found for number: ph_554285f82182d3dd, expires: 1757360216
+
+ ✓ test/pass.check.mock.test.ts (7 tests) 65ms
+
+ Test Files  2 passed (2)
+      Tests  12 passed | 1 skipped (13)
+   Start at  15:36:55
+   Duration  378ms (transform 78ms, setup 0ms, collect 174ms, tests 67ms, environment 0ms, prepare 106ms)
+
+ PASS  Waiting for file changes...
+       press h to show help, press q to quit
+
+Playwright (tail):
+
+
+Open Risks:
+- Auto-generated handoff; ask Claude to run /handoff:prep next time for richer details.
+
+Asks for PM:
+- Approve or request changes based on diff/test tails; if unclear, ask Claude to regenerate via /handoff:prep.
+
+---END-HANDOFF---
+
+
+## 2025-08-12T01:51:26Z
+
+---HANDOFF---
+Task: (auto) Fallback handoff — assistant reply had no explicit ---HANDOFF---
+When: 2025-08-12T01:51:26Z
+Branch: feat/zod-row-typing
+
+Diff Summary:
+ .github/workflows/ci.yml                   |   3 +
+ .github/workflows/nightly-smoke.yml        |   2 +
+ .github/workflows/staging-smoke.yml        |   2 +
+ .github/workflows/update-badges.yml        |   2 +
+ OPS/HANDOFF_HISTORY.md                     | 380 +++++++++++++++++++++++++++++
+ OPS/LAST_HANDOFF.txt                       |  29 ++-
+ apps/backend/package.json                  |   4 +-
+ apps/backend/src/middleware/device-auth.ts |   3 +-
+ apps/backend/src/routes/canary.ts          | 179 +++++++++++++-
+ apps/backend/src/routes/jwks.ts            | 136 ++++++++++-
+ pnpm-lock.yaml                             |  64 ++---
+ 11 files changed, 743 insertions(+), 61 deletions(-)
+
+Files Touched:
+.github/workflows/ci.yml
+.github/workflows/nightly-smoke.yml
+.github/workflows/staging-smoke.yml
+.github/workflows/update-badges.yml
+OPS/HANDOFF_HISTORY.md
+OPS/LAST_HANDOFF.txt
+apps/backend/package.json
+apps/backend/src/middleware/device-auth.ts
+apps/backend/src/routes/canary.ts
+apps/backend/src/routes/jwks.ts
+pnpm-lock.yaml
+
+Last Commit:
+4a9651e fix: unique artifact names for merge-coverage jobs
+
+Commands/Tests Run (tail):
+
+> @verifd/backend@0.1.0 test /Users/harshilpatel/Desktop/Claude_Projects/verifd/apps/backend
+> vitest
+
+[33mThe CJS build of Vite's Node API is deprecated. See https://vite.dev/guide/troubleshooting.html#vite-cjs-node-api-deprecated for more details.[39m
+
+ DEV  v2.1.9 /Users/harshilpatel/Desktop/Claude_Projects/verifd/apps/backend
+
+ ✓ test/pass.check.simple.test.ts (6 tests | 1 skipped) 2ms
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > returns allowed=false for unknown number
+[DEBUG] No active pass found for number: ph_8a59780bb8cd2ba0
+
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > returns allowed=true for active pass
+[INFO] Active pass found for number: ph_8a59780bb8cd2ba0, expires: 1754771816
+
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > returns allowed=false for expired pass
+[DEBUG] No active pass found for number: ph_8a59780bb8cd2ba0
+
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > includes Cache-Control header
+[DEBUG] No active pass found for number: ph_8a59780bb8cd2ba0
+
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > correctly identifies 30m scope
+[INFO] Active pass found for number: ph_f5be76815beedc12, expires: 1754770016
+
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > correctly identifies 30d scope
+[INFO] Active pass found for number: ph_554285f82182d3dd, expires: 1757360216
+
+ ✓ test/pass.check.mock.test.ts (7 tests) 65ms
+
+ Test Files  2 passed (2)
+      Tests  12 passed | 1 skipped (13)
+   Start at  15:36:55
+   Duration  378ms (transform 78ms, setup 0ms, collect 174ms, tests 67ms, environment 0ms, prepare 106ms)
+
+ PASS  Waiting for file changes...
+       press h to show help, press q to quit
+
+Playwright (tail):
+
+
+Open Risks:
+- Auto-generated handoff; ask Claude to run /handoff:prep next time for richer details.
+
+Asks for PM:
+- Approve or request changes based on diff/test tails; if unclear, ask Claude to regenerate via /handoff:prep.
+
+---END-HANDOFF---
+
+
+## 2025-08-12T02:30:53Z
+
+---HANDOFF---
+Task: (auto) Fallback handoff — assistant reply had no explicit ---HANDOFF---
+When: 2025-08-12T02:30:53Z
+Branch: feat/zod-row-typing
+
+Diff Summary:
+ .github/workflows/ci.yml                           |   3 +
+ .github/workflows/nightly-smoke.yml                |   2 +
+ .github/workflows/staging-smoke.yml                |   2 +
+ .github/workflows/update-badges.yml                |   2 +
+ OPS/ANDROID_NOTIFICATIONS.md                       |  28 +-
+ OPS/HANDOFF_HISTORY.md                             | 467 +++++++++++++++++++++
+ OPS/LAST_HANDOFF.txt                               |  29 +-
+ apps/android/app/src/main/AndroidManifest.xml      |  11 +
+ .../notification/MissedCallNotificationManager.kt  | 388 ++++++++---------
+ .../verifd/android/service/CallScreeningService.kt |  25 +-
+ .../com/verifd/android/util/PhoneNumberUtils.kt    | 101 +++++
+ apps/backend/package.json                          |   4 +-
+ apps/backend/src/middleware/device-auth.ts         |   3 +-
+ apps/backend/src/routes/canary.ts                  | 179 +++++++-
+ apps/backend/src/routes/jwks.ts                    | 136 +++++-
+ pnpm-lock.yaml                                     |  64 +--
+ 16 files changed, 1187 insertions(+), 257 deletions(-)
+
+Files Touched:
+.github/workflows/ci.yml
+.github/workflows/nightly-smoke.yml
+.github/workflows/staging-smoke.yml
+.github/workflows/update-badges.yml
+OPS/ANDROID_NOTIFICATIONS.md
+OPS/HANDOFF_HISTORY.md
+OPS/LAST_HANDOFF.txt
+apps/android/app/src/main/AndroidManifest.xml
+apps/android/app/src/main/java/com/verifd/android/notification/MissedCallNotificationManager.kt
+apps/android/app/src/main/java/com/verifd/android/service/CallScreeningService.kt
+apps/android/app/src/main/java/com/verifd/android/util/PhoneNumberUtils.kt
+apps/backend/package.json
+apps/backend/src/middleware/device-auth.ts
+apps/backend/src/routes/canary.ts
+apps/backend/src/routes/jwks.ts
+pnpm-lock.yaml
+
+Last Commit:
+4a9651e fix: unique artifact names for merge-coverage jobs
+
+Commands/Tests Run (tail):
+
+> @verifd/backend@0.1.0 test /Users/harshilpatel/Desktop/Claude_Projects/verifd/apps/backend
+> vitest
+
+[33mThe CJS build of Vite's Node API is deprecated. See https://vite.dev/guide/troubleshooting.html#vite-cjs-node-api-deprecated for more details.[39m
+
+ DEV  v2.1.9 /Users/harshilpatel/Desktop/Claude_Projects/verifd/apps/backend
+
+ ✓ test/pass.check.simple.test.ts (6 tests | 1 skipped) 2ms
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > returns allowed=false for unknown number
+[DEBUG] No active pass found for number: ph_8a59780bb8cd2ba0
+
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > returns allowed=true for active pass
+[INFO] Active pass found for number: ph_8a59780bb8cd2ba0, expires: 1754771816
+
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > returns allowed=false for expired pass
+[DEBUG] No active pass found for number: ph_8a59780bb8cd2ba0
+
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > includes Cache-Control header
+[DEBUG] No active pass found for number: ph_8a59780bb8cd2ba0
+
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > correctly identifies 30m scope
+[INFO] Active pass found for number: ph_f5be76815beedc12, expires: 1754770016
+
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > correctly identifies 30d scope
+[INFO] Active pass found for number: ph_554285f82182d3dd, expires: 1757360216
+
+ ✓ test/pass.check.mock.test.ts (7 tests) 65ms
+
+ Test Files  2 passed (2)
+      Tests  12 passed | 1 skipped (13)
+   Start at  15:36:55
+   Duration  378ms (transform 78ms, setup 0ms, collect 174ms, tests 67ms, environment 0ms, prepare 106ms)
+
+ PASS  Waiting for file changes...
+       press h to show help, press q to quit
+
+Playwright (tail):
+
+
+Open Risks:
+- Auto-generated handoff; ask Claude to run /handoff:prep next time for richer details.
+
+Asks for PM:
+- Approve or request changes based on diff/test tails; if unclear, ask Claude to regenerate via /handoff:prep.
+
+---END-HANDOFF---
+
+
+## 2025-08-12T02:36:55Z
+
+---HANDOFF---
+Task: (auto) Fallback handoff — assistant reply had no explicit ---HANDOFF---
+When: 2025-08-12T02:36:55Z
+Branch: feat/zod-row-typing
+
+Diff Summary:
+ .github/workflows/ci.yml                           |   3 +
+ .github/workflows/nightly-smoke.yml                |   2 +
+ .github/workflows/staging-smoke.yml                |   2 +
+ .github/workflows/update-badges.yml                |   2 +
+ OPS/ANDROID_NOTIFICATIONS.md                       |  28 +-
+ OPS/HANDOFF_HISTORY.md                             | 564 +++++++++++++++++++++
+ OPS/LAST_HANDOFF.txt                               |  39 +-
+ apps/android/app/src/main/AndroidManifest.xml      |  23 +
+ .../notification/MissedCallNotificationManager.kt  | 388 +++++++-------
+ .../verifd/android/service/CallScreeningService.kt |  25 +-
+ .../com/verifd/android/util/PhoneNumberUtils.kt    | 101 ++++
+ apps/android/app/src/main/res/values/strings.xml   |   4 +
+ apps/backend/package.json                          |   4 +-
+ apps/backend/src/middleware/device-auth.ts         |   3 +-
+ apps/backend/src/routes/canary.ts                  | 179 ++++++-
+ apps/backend/src/routes/jwks.ts                    | 136 ++++-
+ pnpm-lock.yaml                                     |  64 +--
+ 17 files changed, 1310 insertions(+), 257 deletions(-)
+
+Files Touched:
+.github/workflows/ci.yml
+.github/workflows/nightly-smoke.yml
+.github/workflows/staging-smoke.yml
+.github/workflows/update-badges.yml
+OPS/ANDROID_NOTIFICATIONS.md
+OPS/HANDOFF_HISTORY.md
+OPS/LAST_HANDOFF.txt
+apps/android/app/src/main/AndroidManifest.xml
+apps/android/app/src/main/java/com/verifd/android/notification/MissedCallNotificationManager.kt
+apps/android/app/src/main/java/com/verifd/android/service/CallScreeningService.kt
+apps/android/app/src/main/java/com/verifd/android/util/PhoneNumberUtils.kt
+apps/android/app/src/main/res/values/strings.xml
+apps/backend/package.json
+apps/backend/src/middleware/device-auth.ts
+apps/backend/src/routes/canary.ts
+apps/backend/src/routes/jwks.ts
+pnpm-lock.yaml
+
+Last Commit:
+4a9651e fix: unique artifact names for merge-coverage jobs
+
+Commands/Tests Run (tail):
+
+> @verifd/backend@0.1.0 test /Users/harshilpatel/Desktop/Claude_Projects/verifd/apps/backend
+> vitest
+
+[33mThe CJS build of Vite's Node API is deprecated. See https://vite.dev/guide/troubleshooting.html#vite-cjs-node-api-deprecated for more details.[39m
+
+ DEV  v2.1.9 /Users/harshilpatel/Desktop/Claude_Projects/verifd/apps/backend
+
+ ✓ test/pass.check.simple.test.ts (6 tests | 1 skipped) 2ms
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > returns allowed=false for unknown number
+[DEBUG] No active pass found for number: ph_8a59780bb8cd2ba0
+
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > returns allowed=true for active pass
+[INFO] Active pass found for number: ph_8a59780bb8cd2ba0, expires: 1754771816
+
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > returns allowed=false for expired pass
+[DEBUG] No active pass found for number: ph_8a59780bb8cd2ba0
+
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > includes Cache-Control header
+[DEBUG] No active pass found for number: ph_8a59780bb8cd2ba0
+
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > correctly identifies 30m scope
+[INFO] Active pass found for number: ph_f5be76815beedc12, expires: 1754770016
+
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > correctly identifies 30d scope
+[INFO] Active pass found for number: ph_554285f82182d3dd, expires: 1757360216
+
+ ✓ test/pass.check.mock.test.ts (7 tests) 65ms
+
+ Test Files  2 passed (2)
+      Tests  12 passed | 1 skipped (13)
+   Start at  15:36:55
+   Duration  378ms (transform 78ms, setup 0ms, collect 174ms, tests 67ms, environment 0ms, prepare 106ms)
+
+ PASS  Waiting for file changes...
+       press h to show help, press q to quit
+
+Playwright (tail):
+
+
+Open Risks:
+- Auto-generated handoff; ask Claude to run /handoff:prep next time for richer details.
+
+Asks for PM:
+- Approve or request changes based on diff/test tails; if unclear, ask Claude to regenerate via /handoff:prep.
+
+---END-HANDOFF---
+
+
+## 2025-08-12T03:04:00Z
+
+---HANDOFF---
+Task: (auto) Fallback handoff — assistant reply had no explicit ---HANDOFF---
+When: 2025-08-12T03:04:00Z
+Branch: feat/zod-row-typing
+
+Diff Summary:
+ .github/workflows/ci.yml                           |   3 +
+ .github/workflows/nightly-smoke.yml                |   2 +
+ .github/workflows/staging-smoke.yml                |   2 +
+ .github/workflows/update-badges.yml                |   2 +
+ OPS/ANDROID_NOTIFICATIONS.md                       |  28 +-
+ OPS/HANDOFF_HISTORY.md                             | 663 +++++++++++++++++++++
+ OPS/LAST_HANDOFF.txt                               |  41 +-
+ apps/android/app/src/main/AndroidManifest.xml      |  23 +
+ .../java/com/verifd/android/data/BackendClient.kt  |  90 +++
+ .../notification/MissedCallNotificationManager.kt  | 388 ++++++------
+ .../verifd/android/service/CallScreeningService.kt |  67 ++-
+ .../com/verifd/android/util/PhoneNumberUtils.kt    | 101 ++++
+ apps/android/app/src/main/res/values/strings.xml   |   4 +
+ apps/backend/package.json                          |   8 +-
+ apps/backend/src/middleware/device-auth.ts         |   3 +-
+ apps/backend/src/routes/canary.ts                  | 179 +++++-
+ apps/backend/src/routes/index.ts                   |   4 +
+ apps/backend/src/routes/jwks.ts                    | 136 ++++-
+ pnpm-lock.yaml                                     | 164 +++--
+ 19 files changed, 1658 insertions(+), 250 deletions(-)
+
+Files Touched:
+.github/workflows/ci.yml
+.github/workflows/nightly-smoke.yml
+.github/workflows/staging-smoke.yml
+.github/workflows/update-badges.yml
+OPS/ANDROID_NOTIFICATIONS.md
+OPS/HANDOFF_HISTORY.md
+OPS/LAST_HANDOFF.txt
+apps/android/app/src/main/AndroidManifest.xml
+apps/android/app/src/main/java/com/verifd/android/data/BackendClient.kt
+apps/android/app/src/main/java/com/verifd/android/notification/MissedCallNotificationManager.kt
+apps/android/app/src/main/java/com/verifd/android/service/CallScreeningService.kt
+apps/android/app/src/main/java/com/verifd/android/util/PhoneNumberUtils.kt
+apps/android/app/src/main/res/values/strings.xml
+apps/backend/package.json
+apps/backend/src/middleware/device-auth.ts
+apps/backend/src/routes/canary.ts
+apps/backend/src/routes/index.ts
+apps/backend/src/routes/jwks.ts
+pnpm-lock.yaml
+
+Last Commit:
+4a9651e fix: unique artifact names for merge-coverage jobs
+
+Commands/Tests Run (tail):
+
+> @verifd/backend@0.1.0 test /Users/harshilpatel/Desktop/Claude_Projects/verifd/apps/backend
+> vitest
+
+[33mThe CJS build of Vite's Node API is deprecated. See https://vite.dev/guide/troubleshooting.html#vite-cjs-node-api-deprecated for more details.[39m
+
+ DEV  v2.1.9 /Users/harshilpatel/Desktop/Claude_Projects/verifd/apps/backend
+
+ ✓ test/pass.check.simple.test.ts (6 tests | 1 skipped) 2ms
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > returns allowed=false for unknown number
+[DEBUG] No active pass found for number: ph_8a59780bb8cd2ba0
+
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > returns allowed=true for active pass
+[INFO] Active pass found for number: ph_8a59780bb8cd2ba0, expires: 1754771816
+
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > returns allowed=false for expired pass
+[DEBUG] No active pass found for number: ph_8a59780bb8cd2ba0
+
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > includes Cache-Control header
+[DEBUG] No active pass found for number: ph_8a59780bb8cd2ba0
+
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > correctly identifies 30m scope
+[INFO] Active pass found for number: ph_f5be76815beedc12, expires: 1754770016
+
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > correctly identifies 30d scope
+[INFO] Active pass found for number: ph_554285f82182d3dd, expires: 1757360216
+
+ ✓ test/pass.check.mock.test.ts (7 tests) 65ms
+
+ Test Files  2 passed (2)
+      Tests  12 passed | 1 skipped (13)
+   Start at  15:36:55
+   Duration  378ms (transform 78ms, setup 0ms, collect 174ms, tests 67ms, environment 0ms, prepare 106ms)
+
+ PASS  Waiting for file changes...
+       press h to show help, press q to quit
+
+Playwright (tail):
+
+
+Open Risks:
+- Auto-generated handoff; ask Claude to run /handoff:prep next time for richer details.
+
+Asks for PM:
+- Approve or request changes based on diff/test tails; if unclear, ask Claude to regenerate via /handoff:prep.
+
+---END-HANDOFF---
+
+
+## 2025-08-12T03:10:00Z
+
+---HANDOFF---
+Task: (auto) Fallback handoff — assistant reply had no explicit ---HANDOFF---
+When: 2025-08-12T03:10:00Z
+Branch: feat/zod-row-typing
+
+Diff Summary:
+ .github/workflows/ci.yml                           |   3 +
+ .github/workflows/nightly-smoke.yml                |   2 +
+ .github/workflows/staging-smoke.yml                |   2 +
+ .github/workflows/update-badges.yml                |   2 +
+ OPS/ANDROID_NOTIFICATIONS.md                       |  28 +-
+ OPS/HANDOFF_HISTORY.md                             | 766 +++++++++++++++++++++
+ OPS/LAST_HANDOFF.txt                               |  45 +-
+ apps/android/app/src/main/AndroidManifest.xml      |  23 +
+ .../java/com/verifd/android/data/BackendClient.kt  |  90 +++
+ .../notification/MissedCallNotificationManager.kt  | 388 +++++------
+ .../verifd/android/service/CallScreeningService.kt |  67 +-
+ .../com/verifd/android/util/PhoneNumberUtils.kt    | 101 +++
+ apps/android/app/src/main/res/values/strings.xml   |   4 +
+ apps/backend/package.json                          |   8 +-
+ apps/backend/src/middleware/device-auth.ts         |   3 +-
+ apps/backend/src/routes/canary.ts                  | 179 ++++-
+ apps/backend/src/routes/index.ts                   |   4 +
+ apps/backend/src/routes/jwks.ts                    | 136 +++-
+ pnpm-lock.yaml                                     | 164 ++++-
+ 19 files changed, 1765 insertions(+), 250 deletions(-)
+
+Files Touched:
+.github/workflows/ci.yml
+.github/workflows/nightly-smoke.yml
+.github/workflows/staging-smoke.yml
+.github/workflows/update-badges.yml
+OPS/ANDROID_NOTIFICATIONS.md
+OPS/HANDOFF_HISTORY.md
+OPS/LAST_HANDOFF.txt
+apps/android/app/src/main/AndroidManifest.xml
+apps/android/app/src/main/java/com/verifd/android/data/BackendClient.kt
+apps/android/app/src/main/java/com/verifd/android/notification/MissedCallNotificationManager.kt
+apps/android/app/src/main/java/com/verifd/android/service/CallScreeningService.kt
+apps/android/app/src/main/java/com/verifd/android/util/PhoneNumberUtils.kt
+apps/android/app/src/main/res/values/strings.xml
+apps/backend/package.json
+apps/backend/src/middleware/device-auth.ts
+apps/backend/src/routes/canary.ts
+apps/backend/src/routes/index.ts
+apps/backend/src/routes/jwks.ts
+pnpm-lock.yaml
+
+Last Commit:
+4a9651e fix: unique artifact names for merge-coverage jobs
+
+Commands/Tests Run (tail):
+
+> @verifd/backend@0.1.0 test /Users/harshilpatel/Desktop/Claude_Projects/verifd/apps/backend
+> vitest
+
+[33mThe CJS build of Vite's Node API is deprecated. See https://vite.dev/guide/troubleshooting.html#vite-cjs-node-api-deprecated for more details.[39m
+
+ DEV  v2.1.9 /Users/harshilpatel/Desktop/Claude_Projects/verifd/apps/backend
+
+ ✓ test/pass.check.simple.test.ts (6 tests | 1 skipped) 2ms
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > returns allowed=false for unknown number
+[DEBUG] No active pass found for number: ph_8a59780bb8cd2ba0
+
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > returns allowed=true for active pass
+[INFO] Active pass found for number: ph_8a59780bb8cd2ba0, expires: 1754771816
+
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > returns allowed=false for expired pass
+[DEBUG] No active pass found for number: ph_8a59780bb8cd2ba0
+
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > includes Cache-Control header
+[DEBUG] No active pass found for number: ph_8a59780bb8cd2ba0
+
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > correctly identifies 30m scope
+[INFO] Active pass found for number: ph_f5be76815beedc12, expires: 1754770016
+
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > correctly identifies 30d scope
+[INFO] Active pass found for number: ph_554285f82182d3dd, expires: 1757360216
+
+ ✓ test/pass.check.mock.test.ts (7 tests) 65ms
+
+ Test Files  2 passed (2)
+      Tests  12 passed | 1 skipped (13)
+   Start at  15:36:55
+   Duration  378ms (transform 78ms, setup 0ms, collect 174ms, tests 67ms, environment 0ms, prepare 106ms)
+
+ PASS  Waiting for file changes...
+       press h to show help, press q to quit
+
+Playwright (tail):
+
+
+Open Risks:
+- Auto-generated handoff; ask Claude to run /handoff:prep next time for richer details.
+
+Asks for PM:
+- Approve or request changes based on diff/test tails; if unclear, ask Claude to regenerate via /handoff:prep.
+
+---END-HANDOFF---
+
+
+## 2025-08-12T03:29:46Z
+
+---HANDOFF---
+Task: (auto) Fallback handoff — assistant reply had no explicit ---HANDOFF---
+When: 2025-08-12T03:29:46Z
+Branch: feat/zod-row-typing
+
+Diff Summary:
+ .github/workflows/ci.yml                           |   3 +
+ .github/workflows/nightly-smoke.yml                |   2 +
+ .github/workflows/staging-smoke.yml                |   2 +
+ .github/workflows/update-badges.yml                |   2 +
+ .../document_symbols_cache_v23-06-25.pkl           | Bin 153508 -> 923046 bytes
+ OPS/ANDROID_NOTIFICATIONS.md                       |  28 +-
+ OPS/HANDOFF_HISTORY.md                             | 869 +++++++++++++++++++++
+ OPS/LAST_HANDOFF.txt                               |  45 +-
+ apps/android/app/src/main/AndroidManifest.xml      |  40 +
+ .../java/com/verifd/android/data/BackendClient.kt  |  90 +++
+ .../notification/MissedCallNotificationManager.kt  | 388 ++++-----
+ .../verifd/android/service/CallScreeningService.kt |  67 +-
+ .../com/verifd/android/util/PhoneNumberUtils.kt    | 101 +++
+ apps/android/app/src/main/res/values/strings.xml   |   4 +
+ apps/backend/package.json                          |  12 +-
+ apps/backend/src/db/index.ts                       |  12 +-
+ apps/backend/src/middleware/device-auth.ts         |   3 +-
+ apps/backend/src/routes/canary.ts                  | 178 ++++-
+ apps/backend/src/routes/config.ts                  |   8 +-
+ apps/backend/src/routes/index.ts                   |   4 +
+ apps/backend/src/routes/jwks.ts                    | 130 ++-
+ apps/backend/src/services/canary-rollout.ts        |   4 +-
+ pnpm-lock.yaml                                     | 164 +++-
+ 23 files changed, 1894 insertions(+), 262 deletions(-)
+
+Files Touched:
+.github/workflows/ci.yml
+.github/workflows/nightly-smoke.yml
+.github/workflows/staging-smoke.yml
+.github/workflows/update-badges.yml
+.serena/cache/typescript/document_symbols_cache_v23-06-25.pkl
+OPS/ANDROID_NOTIFICATIONS.md
+OPS/HANDOFF_HISTORY.md
+OPS/LAST_HANDOFF.txt
+apps/android/app/src/main/AndroidManifest.xml
+apps/android/app/src/main/java/com/verifd/android/data/BackendClient.kt
+apps/android/app/src/main/java/com/verifd/android/notification/MissedCallNotificationManager.kt
+apps/android/app/src/main/java/com/verifd/android/service/CallScreeningService.kt
+apps/android/app/src/main/java/com/verifd/android/util/PhoneNumberUtils.kt
+apps/android/app/src/main/res/values/strings.xml
+apps/backend/package.json
+apps/backend/src/db/index.ts
+apps/backend/src/middleware/device-auth.ts
+apps/backend/src/routes/canary.ts
+apps/backend/src/routes/config.ts
+apps/backend/src/routes/index.ts
+apps/backend/src/routes/jwks.ts
+apps/backend/src/services/canary-rollout.ts
+pnpm-lock.yaml
+
+Last Commit:
+4a9651e fix: unique artifact names for merge-coverage jobs
+
+Commands/Tests Run (tail):
+
+> @verifd/backend@0.1.0 test /Users/harshilpatel/Desktop/Claude_Projects/verifd/apps/backend
+> vitest
+
+[33mThe CJS build of Vite's Node API is deprecated. See https://vite.dev/guide/troubleshooting.html#vite-cjs-node-api-deprecated for more details.[39m
+
+ DEV  v2.1.9 /Users/harshilpatel/Desktop/Claude_Projects/verifd/apps/backend
+
+ ✓ test/pass.check.simple.test.ts (6 tests | 1 skipped) 2ms
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > returns allowed=false for unknown number
+[DEBUG] No active pass found for number: ph_8a59780bb8cd2ba0
+
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > returns allowed=true for active pass
+[INFO] Active pass found for number: ph_8a59780bb8cd2ba0, expires: 1754771816
+
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > returns allowed=false for expired pass
+[DEBUG] No active pass found for number: ph_8a59780bb8cd2ba0
+
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > includes Cache-Control header
+[DEBUG] No active pass found for number: ph_8a59780bb8cd2ba0
+
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > correctly identifies 30m scope
+[INFO] Active pass found for number: ph_f5be76815beedc12, expires: 1754770016
+
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > correctly identifies 30d scope
+[INFO] Active pass found for number: ph_554285f82182d3dd, expires: 1757360216
+
+ ✓ test/pass.check.mock.test.ts (7 tests) 65ms
+
+ Test Files  2 passed (2)
+      Tests  12 passed | 1 skipped (13)
+   Start at  15:36:55
+   Duration  378ms (transform 78ms, setup 0ms, collect 174ms, tests 67ms, environment 0ms, prepare 106ms)
+
+ PASS  Waiting for file changes...
+       press h to show help, press q to quit
+
+Playwright (tail):
+
+
+Open Risks:
+- Auto-generated handoff; ask Claude to run /handoff:prep next time for richer details.
+
+Asks for PM:
+- Approve or request changes based on diff/test tails; if unclear, ask Claude to regenerate via /handoff:prep.
+
+---END-HANDOFF---
+
+
+## 2025-08-12T13:26:54Z
+
+---HANDOFF---
+Task: (auto) Fallback handoff — assistant reply had no explicit ---HANDOFF---
+When: 2025-08-12T13:26:54Z
+Branch: feat/zod-row-typing
+
+Diff Summary:
+ .github/workflows/android-staging-apk.yml          |   5 +
+ .github/workflows/ci.yml                           |   3 +
+ .github/workflows/nightly-smoke.yml                |   2 +
+ .github/workflows/staging-smoke.yml                |   2 +
+ .github/workflows/update-badges.yml                |   2 +
+ .../document_symbols_cache_v23-06-25.pkl           | Bin 153508 -> 923046 bytes
+ OPS/ANDROID_NOTIFICATIONS.md                       |  28 +-
+ OPS/HANDOFF_HISTORY.md                             | 980 +++++++++++++++++++++
+ OPS/LAST_HANDOFF.txt                               |  53 +-
+ apps/android/app/src/main/AndroidManifest.xml      |  40 +
+ .../java/com/verifd/android/data/BackendClient.kt  |  90 ++
+ .../notification/MissedCallNotificationManager.kt  | 388 ++++----
+ .../verifd/android/service/CallScreeningService.kt |  67 +-
+ .../com/verifd/android/util/PhoneNumberUtils.kt    | 101 +++
+ apps/android/app/src/main/res/values/strings.xml   |   4 +
+ apps/backend/package.json                          |  12 +-
+ apps/backend/src/db/index.ts                       |  12 +-
+ apps/backend/src/middleware/device-auth.ts         |   3 +-
+ apps/backend/src/routes/canary.ts                  | 178 +++-
+ apps/backend/src/routes/config.ts                  |   8 +-
+ apps/backend/src/routes/index.ts                   |   4 +
+ apps/backend/src/routes/jwks.ts                    | 130 ++-
+ apps/backend/src/services/canary-rollout.ts        |   4 +-
+ pnpm-lock.yaml                                     | 164 +++-
+ 24 files changed, 2018 insertions(+), 262 deletions(-)
+
+Files Touched:
+.github/workflows/android-staging-apk.yml
+.github/workflows/ci.yml
+.github/workflows/nightly-smoke.yml
+.github/workflows/staging-smoke.yml
+.github/workflows/update-badges.yml
+.serena/cache/typescript/document_symbols_cache_v23-06-25.pkl
+OPS/ANDROID_NOTIFICATIONS.md
+OPS/HANDOFF_HISTORY.md
+OPS/LAST_HANDOFF.txt
+apps/android/app/src/main/AndroidManifest.xml
+apps/android/app/src/main/java/com/verifd/android/data/BackendClient.kt
+apps/android/app/src/main/java/com/verifd/android/notification/MissedCallNotificationManager.kt
+apps/android/app/src/main/java/com/verifd/android/service/CallScreeningService.kt
+apps/android/app/src/main/java/com/verifd/android/util/PhoneNumberUtils.kt
+apps/android/app/src/main/res/values/strings.xml
+apps/backend/package.json
+apps/backend/src/db/index.ts
+apps/backend/src/middleware/device-auth.ts
+apps/backend/src/routes/canary.ts
+apps/backend/src/routes/config.ts
+apps/backend/src/routes/index.ts
+apps/backend/src/routes/jwks.ts
+apps/backend/src/services/canary-rollout.ts
+pnpm-lock.yaml
+
+Last Commit:
+4a9651e fix: unique artifact names for merge-coverage jobs
+
+Commands/Tests Run (tail):
+
+> @verifd/backend@0.1.0 test /Users/harshilpatel/Desktop/Claude_Projects/verifd/apps/backend
+> vitest
+
+[33mThe CJS build of Vite's Node API is deprecated. See https://vite.dev/guide/troubleshooting.html#vite-cjs-node-api-deprecated for more details.[39m
+
+ DEV  v2.1.9 /Users/harshilpatel/Desktop/Claude_Projects/verifd/apps/backend
+
+ ✓ test/pass.check.simple.test.ts (6 tests | 1 skipped) 2ms
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > returns allowed=false for unknown number
+[DEBUG] No active pass found for number: ph_8a59780bb8cd2ba0
+
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > returns allowed=true for active pass
+[INFO] Active pass found for number: ph_8a59780bb8cd2ba0, expires: 1754771816
+
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > returns allowed=false for expired pass
+[DEBUG] No active pass found for number: ph_8a59780bb8cd2ba0
+
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > includes Cache-Control header
+[DEBUG] No active pass found for number: ph_8a59780bb8cd2ba0
+
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > correctly identifies 30m scope
+[INFO] Active pass found for number: ph_f5be76815beedc12, expires: 1754770016
+
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > correctly identifies 30d scope
+[INFO] Active pass found for number: ph_554285f82182d3dd, expires: 1757360216
+
+ ✓ test/pass.check.mock.test.ts (7 tests) 65ms
+
+ Test Files  2 passed (2)
+      Tests  12 passed | 1 skipped (13)
+   Start at  15:36:55
+   Duration  378ms (transform 78ms, setup 0ms, collect 174ms, tests 67ms, environment 0ms, prepare 106ms)
+
+ PASS  Waiting for file changes...
+       press h to show help, press q to quit
+
+Playwright (tail):
+
+
+Open Risks:
+- Auto-generated handoff; ask Claude to run /handoff:prep next time for richer details.
+
+Asks for PM:
+- Approve or request changes based on diff/test tails; if unclear, ask Claude to regenerate via /handoff:prep.
+
+---END-HANDOFF---
+
+
+## 2025-08-12T14:01:42Z
+
+---HANDOFF---
+Task: (auto) Fallback handoff — assistant reply had no explicit ---HANDOFF---
+When: 2025-08-12T14:01:42Z
+Branch: feat/zod-row-typing
+
+Diff Summary:
+ .github/workflows/android-staging-apk.yml          |   47 +-
+ .github/workflows/ci.yml                           |    3 +
+ .github/workflows/nightly-smoke.yml                |    2 +
+ .github/workflows/staging-smoke.yml                |    2 +
+ .github/workflows/update-badges.yml                |    2 +
+ .../document_symbols_cache_v23-06-25.pkl           |  Bin 153508 -> 923046 bytes
+ OPS/ANDROID_NOTIFICATIONS.md                       |   28 +-
+ OPS/HANDOFF_HISTORY.md                             | 1093 ++++++++++++++++++++
+ OPS/LAST_HANDOFF.txt                               |   55 +-
+ apps/android/app/src/main/AndroidManifest.xml      |   40 +
+ .../java/com/verifd/android/data/BackendClient.kt  |   90 ++
+ .../notification/MissedCallNotificationManager.kt  |  388 +++----
+ .../verifd/android/service/CallScreeningService.kt |   67 +-
+ .../com/verifd/android/util/PhoneNumberUtils.kt    |  101 ++
+ apps/android/app/src/main/res/values/strings.xml   |    4 +
+ apps/backend/package.json                          |   12 +-
+ apps/backend/src/db/index.ts                       |   12 +-
+ apps/backend/src/middleware/device-auth.ts         |    3 +-
+ apps/backend/src/routes/canary.ts                  |  176 +++-
+ apps/backend/src/routes/config-admin.ts            |   12 -
+ apps/backend/src/routes/config.ts                  |   12 +-
+ apps/backend/src/routes/index.ts                   |    4 +
+ apps/backend/src/routes/jwks.ts                    |  130 ++-
+ apps/backend/src/routes/telemetry.ts               |    6 -
+ apps/backend/src/services/canary-rollout.ts        |    4 +-
+ pnpm-lock.yaml                                     |  164 ++-
+ 26 files changed, 2172 insertions(+), 285 deletions(-)
+
+Files Touched:
+.github/workflows/android-staging-apk.yml
+.github/workflows/ci.yml
+.github/workflows/nightly-smoke.yml
+.github/workflows/staging-smoke.yml
+.github/workflows/update-badges.yml
+.serena/cache/typescript/document_symbols_cache_v23-06-25.pkl
+OPS/ANDROID_NOTIFICATIONS.md
+OPS/HANDOFF_HISTORY.md
+OPS/LAST_HANDOFF.txt
+apps/android/app/src/main/AndroidManifest.xml
+apps/android/app/src/main/java/com/verifd/android/data/BackendClient.kt
+apps/android/app/src/main/java/com/verifd/android/notification/MissedCallNotificationManager.kt
+apps/android/app/src/main/java/com/verifd/android/service/CallScreeningService.kt
+apps/android/app/src/main/java/com/verifd/android/util/PhoneNumberUtils.kt
+apps/android/app/src/main/res/values/strings.xml
+apps/backend/package.json
+apps/backend/src/db/index.ts
+apps/backend/src/middleware/device-auth.ts
+apps/backend/src/routes/canary.ts
+apps/backend/src/routes/config-admin.ts
+apps/backend/src/routes/config.ts
+apps/backend/src/routes/index.ts
+apps/backend/src/routes/jwks.ts
+apps/backend/src/routes/telemetry.ts
+apps/backend/src/services/canary-rollout.ts
+pnpm-lock.yaml
+
+Last Commit:
+4a9651e fix: unique artifact names for merge-coverage jobs
+
+Commands/Tests Run (tail):
+
+> @verifd/backend@0.1.0 test /Users/harshilpatel/Desktop/Claude_Projects/verifd/apps/backend
+> vitest
+
+[33mThe CJS build of Vite's Node API is deprecated. See https://vite.dev/guide/troubleshooting.html#vite-cjs-node-api-deprecated for more details.[39m
+
+ DEV  v2.1.9 /Users/harshilpatel/Desktop/Claude_Projects/verifd/apps/backend
+
+ ✓ test/pass.check.simple.test.ts (6 tests | 1 skipped) 2ms
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > returns allowed=false for unknown number
+[DEBUG] No active pass found for number: ph_8a59780bb8cd2ba0
+
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > returns allowed=true for active pass
+[INFO] Active pass found for number: ph_8a59780bb8cd2ba0, expires: 1754771816
+
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > returns allowed=false for expired pass
+[DEBUG] No active pass found for number: ph_8a59780bb8cd2ba0
+
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > includes Cache-Control header
+[DEBUG] No active pass found for number: ph_8a59780bb8cd2ba0
+
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > correctly identifies 30m scope
+[INFO] Active pass found for number: ph_f5be76815beedc12, expires: 1754770016
+
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > correctly identifies 30d scope
+[INFO] Active pass found for number: ph_554285f82182d3dd, expires: 1757360216
+
+ ✓ test/pass.check.mock.test.ts (7 tests) 65ms
+
+ Test Files  2 passed (2)
+      Tests  12 passed | 1 skipped (13)
+   Start at  15:36:55
+   Duration  378ms (transform 78ms, setup 0ms, collect 174ms, tests 67ms, environment 0ms, prepare 106ms)
+
+ PASS  Waiting for file changes...
+       press h to show help, press q to quit
+
+Playwright (tail):
+
+
+Open Risks:
+- Auto-generated handoff; ask Claude to run /handoff:prep next time for richer details.
+
+Asks for PM:
+- Approve or request changes based on diff/test tails; if unclear, ask Claude to regenerate via /handoff:prep.
+
+---END-HANDOFF---
+
+
+## 2025-08-12T20:44:58Z
+
+---HANDOFF---
+Task: (auto) Fallback handoff — assistant reply had no explicit ---HANDOFF---
+When: 2025-08-12T20:44:58Z
+Branch: feat/zod-row-typing
+
+Diff Summary:
+ .github/workflows/ci.yml                           |    3 +
+ .github/workflows/nightly-smoke.yml                |    2 +
+ .github/workflows/staging-smoke.yml                |    2 +
+ .github/workflows/update-badges.yml                |    2 +
+ .../document_symbols_cache_v23-06-25.pkl           |  Bin 153508 -> 923046 bytes
+ OPS/ANDROID_NOTIFICATIONS.md                       |   28 +-
+ OPS/HANDOFF_HISTORY.md                             | 1210 ++++++++++++++++++++
+ OPS/LAST_HANDOFF.txt                               |   59 +-
+ OPS/STAGING_QA_LINKS.md                            |  208 +---
+ OPS/STAGING_RESULTS.md                             |  343 +-----
+ apps/android/app/src/main/AndroidManifest.xml      |   40 +
+ .../java/com/verifd/android/data/BackendClient.kt  |   90 ++
+ .../notification/MissedCallNotificationManager.kt  |  388 +++----
+ .../verifd/android/service/CallScreeningService.kt |   67 +-
+ .../com/verifd/android/util/PhoneNumberUtils.kt    |  101 ++
+ apps/android/app/src/main/res/values/strings.xml   |    4 +
+ apps/backend/package.json                          |   12 +-
+ apps/backend/src/db/index.ts                       |   12 +-
+ apps/backend/src/middleware/device-auth.ts         |    3 +-
+ apps/backend/src/routes/canary-advance.ts          |    6 +-
+ apps/backend/src/routes/canary.ts                  |  176 ++-
+ apps/backend/src/routes/config-admin.ts            |   24 +-
+ apps/backend/src/routes/config.ts                  |   20 +-
+ apps/backend/src/routes/device.ts                  |    4 +-
+ apps/backend/src/routes/index.ts                   |    6 +-
+ apps/backend/src/routes/jwks.ts                    |  130 ++-
+ apps/backend/src/routes/pass.ts                    |   16 +-
+ apps/backend/src/routes/telemetry.ts               |   12 +-
+ apps/backend/src/routes/verify.ts                  |    6 +-
+ apps/backend/src/routes/voice-ping.ts              |    4 +-
+ apps/backend/src/services/canary-rollout.ts        |    4 +-
+ pnpm-lock.yaml                                     |  164 ++-
+ 32 files changed, 2385 insertions(+), 761 deletions(-)
+
+Files Touched:
+.github/workflows/ci.yml
+.github/workflows/nightly-smoke.yml
+.github/workflows/staging-smoke.yml
+.github/workflows/update-badges.yml
+.serena/cache/typescript/document_symbols_cache_v23-06-25.pkl
+OPS/ANDROID_NOTIFICATIONS.md
+OPS/HANDOFF_HISTORY.md
+OPS/LAST_HANDOFF.txt
+OPS/STAGING_QA_LINKS.md
+OPS/STAGING_RESULTS.md
+apps/android/app/src/main/AndroidManifest.xml
+apps/android/app/src/main/java/com/verifd/android/data/BackendClient.kt
+apps/android/app/src/main/java/com/verifd/android/notification/MissedCallNotificationManager.kt
+apps/android/app/src/main/java/com/verifd/android/service/CallScreeningService.kt
+apps/android/app/src/main/java/com/verifd/android/util/PhoneNumberUtils.kt
+apps/android/app/src/main/res/values/strings.xml
+apps/backend/package.json
+apps/backend/src/db/index.ts
+apps/backend/src/middleware/device-auth.ts
+apps/backend/src/routes/canary-advance.ts
+apps/backend/src/routes/canary.ts
+apps/backend/src/routes/config-admin.ts
+apps/backend/src/routes/config.ts
+apps/backend/src/routes/device.ts
+apps/backend/src/routes/index.ts
+apps/backend/src/routes/jwks.ts
+apps/backend/src/routes/pass.ts
+apps/backend/src/routes/telemetry.ts
+apps/backend/src/routes/verify.ts
+apps/backend/src/routes/voice-ping.ts
+apps/backend/src/services/canary-rollout.ts
+pnpm-lock.yaml
+
+Last Commit:
+d4bb89a feat(workflow): add release_tag input to Android staging APK workflow
+
+Commands/Tests Run (tail):
+
+> @verifd/backend@0.1.0 test /Users/harshilpatel/Desktop/Claude_Projects/verifd/apps/backend
+> vitest
+
+[33mThe CJS build of Vite's Node API is deprecated. See https://vite.dev/guide/troubleshooting.html#vite-cjs-node-api-deprecated for more details.[39m
+
+ DEV  v2.1.9 /Users/harshilpatel/Desktop/Claude_Projects/verifd/apps/backend
+
+ ✓ test/pass.check.simple.test.ts (6 tests | 1 skipped) 2ms
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > returns allowed=false for unknown number
+[DEBUG] No active pass found for number: ph_8a59780bb8cd2ba0
+
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > returns allowed=true for active pass
+[INFO] Active pass found for number: ph_8a59780bb8cd2ba0, expires: 1754771816
+
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > returns allowed=false for expired pass
+[DEBUG] No active pass found for number: ph_8a59780bb8cd2ba0
+
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > includes Cache-Control header
+[DEBUG] No active pass found for number: ph_8a59780bb8cd2ba0
+
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > correctly identifies 30m scope
+[INFO] Active pass found for number: ph_f5be76815beedc12, expires: 1754770016
+
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > correctly identifies 30d scope
+[INFO] Active pass found for number: ph_554285f82182d3dd, expires: 1757360216
+
+ ✓ test/pass.check.mock.test.ts (7 tests) 65ms
+
+ Test Files  2 passed (2)
+      Tests  12 passed | 1 skipped (13)
+   Start at  15:36:55
+   Duration  378ms (transform 78ms, setup 0ms, collect 174ms, tests 67ms, environment 0ms, prepare 106ms)
+
+ PASS  Waiting for file changes...
+       press h to show help, press q to quit
+
+Playwright (tail):
+
+
+Open Risks:
+- Auto-generated handoff; ask Claude to run /handoff:prep next time for richer details.
+
+Asks for PM:
+- Approve or request changes based on diff/test tails; if unclear, ask Claude to regenerate via /handoff:prep.
+
+---END-HANDOFF---
+
+
+## 2025-08-12T22:43:01Z
+
+---HANDOFF---
+Task: (auto) Fallback handoff — assistant reply had no explicit ---HANDOFF---
+When: 2025-08-12T22:43:01Z
+Branch: feat/zod-row-typing
+
+Diff Summary:
+ .github/workflows/ci.yml                           |    3 +
+ .github/workflows/nightly-smoke.yml                |    2 +
+ .github/workflows/staging-smoke.yml                |    2 +
+ .github/workflows/update-badges.yml                |    2 +
+ .../document_symbols_cache_v23-06-25.pkl           |  Bin 153508 -> 923046 bytes
+ OPS/ANDROID_NOTIFICATIONS.md                       |   28 +-
+ OPS/HANDOFF_HISTORY.md                             | 1339 ++++++++++++++++++++
+ OPS/LAST_HANDOFF.txt                               |   71 +-
+ OPS/STAGING_QA_LINKS.md                            |  199 +--
+ OPS/STAGING_RESULTS.md                             |  343 +----
+ apps/android/app/src/main/AndroidManifest.xml      |   40 +
+ .../java/com/verifd/android/data/BackendClient.kt  |   90 ++
+ .../notification/MissedCallNotificationManager.kt  |  388 +++---
+ .../verifd/android/service/CallScreeningService.kt |   67 +-
+ .../com/verifd/android/util/PhoneNumberUtils.kt    |  101 ++
+ apps/android/app/src/main/res/values/strings.xml   |    4 +
+ apps/backend/package.json                          |   12 +-
+ apps/backend/src/db/index.ts                       |   12 +-
+ apps/backend/src/middleware/device-auth.ts         |    3 +-
+ apps/backend/src/routes/canary-advance.ts          |    6 +-
+ apps/backend/src/routes/canary.ts                  |  176 ++-
+ apps/backend/src/routes/config-admin.ts            |   24 +-
+ apps/backend/src/routes/config.ts                  |   20 +-
+ apps/backend/src/routes/device.ts                  |    4 +-
+ apps/backend/src/routes/index.ts                   |    6 +-
+ apps/backend/src/routes/jwks.ts                    |  130 +-
+ apps/backend/src/routes/pass.ts                    |   16 +-
+ apps/backend/src/routes/telemetry.ts               |   12 +-
+ apps/backend/src/routes/verify.ts                  |    6 +-
+ apps/backend/src/routes/voice-ping.ts              |    4 +-
+ apps/backend/src/services/canary-rollout.ts        |    4 +-
+ pnpm-lock.yaml                                     |  164 ++-
+ 32 files changed, 2527 insertions(+), 751 deletions(-)
+
+Files Touched:
+.github/workflows/ci.yml
+.github/workflows/nightly-smoke.yml
+.github/workflows/staging-smoke.yml
+.github/workflows/update-badges.yml
+.serena/cache/typescript/document_symbols_cache_v23-06-25.pkl
+OPS/ANDROID_NOTIFICATIONS.md
+OPS/HANDOFF_HISTORY.md
+OPS/LAST_HANDOFF.txt
+OPS/STAGING_QA_LINKS.md
+OPS/STAGING_RESULTS.md
+apps/android/app/src/main/AndroidManifest.xml
+apps/android/app/src/main/java/com/verifd/android/data/BackendClient.kt
+apps/android/app/src/main/java/com/verifd/android/notification/MissedCallNotificationManager.kt
+apps/android/app/src/main/java/com/verifd/android/service/CallScreeningService.kt
+apps/android/app/src/main/java/com/verifd/android/util/PhoneNumberUtils.kt
+apps/android/app/src/main/res/values/strings.xml
+apps/backend/package.json
+apps/backend/src/db/index.ts
+apps/backend/src/middleware/device-auth.ts
+apps/backend/src/routes/canary-advance.ts
+apps/backend/src/routes/canary.ts
+apps/backend/src/routes/config-admin.ts
+apps/backend/src/routes/config.ts
+apps/backend/src/routes/device.ts
+apps/backend/src/routes/index.ts
+apps/backend/src/routes/jwks.ts
+apps/backend/src/routes/pass.ts
+apps/backend/src/routes/telemetry.ts
+apps/backend/src/routes/verify.ts
+apps/backend/src/routes/voice-ping.ts
+apps/backend/src/services/canary-rollout.ts
+pnpm-lock.yaml
+
+Last Commit:
+d4bb89a feat(workflow): add release_tag input to Android staging APK workflow
+
+Commands/Tests Run (tail):
+
+> @verifd/backend@0.1.0 test /Users/harshilpatel/Desktop/Claude_Projects/verifd/apps/backend
+> vitest
+
+[33mThe CJS build of Vite's Node API is deprecated. See https://vite.dev/guide/troubleshooting.html#vite-cjs-node-api-deprecated for more details.[39m
+
+ DEV  v2.1.9 /Users/harshilpatel/Desktop/Claude_Projects/verifd/apps/backend
+
+ ✓ test/pass.check.simple.test.ts (6 tests | 1 skipped) 2ms
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > returns allowed=false for unknown number
+[DEBUG] No active pass found for number: ph_8a59780bb8cd2ba0
+
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > returns allowed=true for active pass
+[INFO] Active pass found for number: ph_8a59780bb8cd2ba0, expires: 1754771816
+
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > returns allowed=false for expired pass
+[DEBUG] No active pass found for number: ph_8a59780bb8cd2ba0
+
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > includes Cache-Control header
+[DEBUG] No active pass found for number: ph_8a59780bb8cd2ba0
+
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > correctly identifies 30m scope
+[INFO] Active pass found for number: ph_f5be76815beedc12, expires: 1754770016
+
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > correctly identifies 30d scope
+[INFO] Active pass found for number: ph_554285f82182d3dd, expires: 1757360216
+
+ ✓ test/pass.check.mock.test.ts (7 tests) 65ms
+
+ Test Files  2 passed (2)
+      Tests  12 passed | 1 skipped (13)
+   Start at  15:36:55
+   Duration  378ms (transform 78ms, setup 0ms, collect 174ms, tests 67ms, environment 0ms, prepare 106ms)
+
+ PASS  Waiting for file changes...
+       press h to show help, press q to quit
+
+Playwright (tail):
+
+
+Open Risks:
+- Auto-generated handoff; ask Claude to run /handoff:prep next time for richer details.
+
+Asks for PM:
+- Approve or request changes based on diff/test tails; if unclear, ask Claude to regenerate via /handoff:prep.
+
+---END-HANDOFF---
+
+
+## 2025-08-12T23:48:45Z
+
+---HANDOFF---
+Task: (auto) Fallback handoff — assistant reply had no explicit ---HANDOFF---
+When: 2025-08-12T23:48:45Z
+Branch: feat/zod-row-typing
+
+Diff Summary:
+ .github/workflows/android-staging-apk.yml          |   53 +-
+ .github/workflows/ci.yml                           |    3 +
+ .github/workflows/nightly-smoke.yml                |    2 +
+ .github/workflows/staging-smoke.yml                |    2 +
+ .github/workflows/update-badges.yml                |    2 +
+ .../document_symbols_cache_v23-06-25.pkl           |  Bin 153508 -> 923046 bytes
+ OPS/ANDROID_NOTIFICATIONS.md                       |   28 +-
+ OPS/HANDOFF_HISTORY.md                             | 1468 ++++++++++++++++++++
+ OPS/LAST_HANDOFF.txt                               |   71 +-
+ OPS/STAGING_QA_LINKS.md                            |  223 +--
+ OPS/STAGING_RESULTS.md                             |  343 +----
+ apps/android/app/src/main/AndroidManifest.xml      |   40 +
+ .../java/com/verifd/android/data/BackendClient.kt  |   90 ++
+ .../notification/MissedCallNotificationManager.kt  |  388 +++---
+ .../verifd/android/service/CallScreeningService.kt |   67 +-
+ .../com/verifd/android/util/PhoneNumberUtils.kt    |  101 ++
+ apps/android/app/src/main/res/values/strings.xml   |    4 +
+ apps/backend/package.json                          |   12 +-
+ apps/backend/src/db/index.ts                       |   12 +-
+ apps/backend/src/middleware/device-auth.ts         |    3 +-
+ apps/backend/src/routes/canary-advance.ts          |    6 +-
+ apps/backend/src/routes/canary.ts                  |  176 ++-
+ apps/backend/src/routes/config-admin.ts            |   24 +-
+ apps/backend/src/routes/config.ts                  |   20 +-
+ apps/backend/src/routes/device.ts                  |    4 +-
+ apps/backend/src/routes/index.ts                   |    6 +-
+ apps/backend/src/routes/jwks.ts                    |  130 +-
+ apps/backend/src/routes/pass.ts                    |   16 +-
+ apps/backend/src/routes/telemetry.ts               |   12 +-
+ apps/backend/src/routes/verify.ts                  |    6 +-
+ apps/backend/src/routes/voice-ping.ts              |    4 +-
+ apps/backend/src/services/canary-rollout.ts        |    4 +-
+ pnpm-lock.yaml                                     |  164 ++-
+ 33 files changed, 2719 insertions(+), 765 deletions(-)
+
+Files Touched:
+.github/workflows/android-staging-apk.yml
+.github/workflows/ci.yml
+.github/workflows/nightly-smoke.yml
+.github/workflows/staging-smoke.yml
+.github/workflows/update-badges.yml
+.serena/cache/typescript/document_symbols_cache_v23-06-25.pkl
+OPS/ANDROID_NOTIFICATIONS.md
+OPS/HANDOFF_HISTORY.md
+OPS/LAST_HANDOFF.txt
+OPS/STAGING_QA_LINKS.md
+OPS/STAGING_RESULTS.md
+apps/android/app/src/main/AndroidManifest.xml
+apps/android/app/src/main/java/com/verifd/android/data/BackendClient.kt
+apps/android/app/src/main/java/com/verifd/android/notification/MissedCallNotificationManager.kt
+apps/android/app/src/main/java/com/verifd/android/service/CallScreeningService.kt
+apps/android/app/src/main/java/com/verifd/android/util/PhoneNumberUtils.kt
+apps/android/app/src/main/res/values/strings.xml
+apps/backend/package.json
+apps/backend/src/db/index.ts
+apps/backend/src/middleware/device-auth.ts
+apps/backend/src/routes/canary-advance.ts
+apps/backend/src/routes/canary.ts
+apps/backend/src/routes/config-admin.ts
+apps/backend/src/routes/config.ts
+apps/backend/src/routes/device.ts
+apps/backend/src/routes/index.ts
+apps/backend/src/routes/jwks.ts
+apps/backend/src/routes/pass.ts
+apps/backend/src/routes/telemetry.ts
+apps/backend/src/routes/verify.ts
+apps/backend/src/routes/voice-ping.ts
+apps/backend/src/services/canary-rollout.ts
+pnpm-lock.yaml
+
+Last Commit:
+d4bb89a feat(workflow): add release_tag input to Android staging APK workflow
+
+Commands/Tests Run (tail):
+
+> @verifd/backend@0.1.0 test /Users/harshilpatel/Desktop/Claude_Projects/verifd/apps/backend
+> vitest
+
+[33mThe CJS build of Vite's Node API is deprecated. See https://vite.dev/guide/troubleshooting.html#vite-cjs-node-api-deprecated for more details.[39m
+
+ DEV  v2.1.9 /Users/harshilpatel/Desktop/Claude_Projects/verifd/apps/backend
+
+ ✓ test/pass.check.simple.test.ts (6 tests | 1 skipped) 2ms
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > returns allowed=false for unknown number
+[DEBUG] No active pass found for number: ph_8a59780bb8cd2ba0
+
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > returns allowed=true for active pass
+[INFO] Active pass found for number: ph_8a59780bb8cd2ba0, expires: 1754771816
+
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > returns allowed=false for expired pass
+[DEBUG] No active pass found for number: ph_8a59780bb8cd2ba0
+
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > includes Cache-Control header
+[DEBUG] No active pass found for number: ph_8a59780bb8cd2ba0
+
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > correctly identifies 30m scope
+[INFO] Active pass found for number: ph_f5be76815beedc12, expires: 1754770016
+
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > correctly identifies 30d scope
+[INFO] Active pass found for number: ph_554285f82182d3dd, expires: 1757360216
+
+ ✓ test/pass.check.mock.test.ts (7 tests) 65ms
+
+ Test Files  2 passed (2)
+      Tests  12 passed | 1 skipped (13)
+   Start at  15:36:55
+   Duration  378ms (transform 78ms, setup 0ms, collect 174ms, tests 67ms, environment 0ms, prepare 106ms)
+
+ PASS  Waiting for file changes...
+       press h to show help, press q to quit
+
+Playwright (tail):
+
+
+Open Risks:
+- Auto-generated handoff; ask Claude to run /handoff:prep next time for richer details.
+
+Asks for PM:
+- Approve or request changes based on diff/test tails; if unclear, ask Claude to regenerate via /handoff:prep.
+
+---END-HANDOFF---
+
+
+## 2025-08-13T00:15:41Z
+
+---HANDOFF---
+Task: (auto) Fallback handoff — assistant reply had no explicit ---HANDOFF---
+When: 2025-08-13T00:15:41Z
+Branch: feat/zod-row-typing
+
+Diff Summary:
+ .github/workflows/android-staging-apk.yml          |  109 +-
+ .github/workflows/ci.yml                           |    3 +
+ .github/workflows/nightly-smoke.yml                |    2 +
+ .github/workflows/staging-smoke.yml                |    2 +
+ .github/workflows/update-badges.yml                |    2 +
+ .../document_symbols_cache_v23-06-25.pkl           |  Bin 153508 -> 923046 bytes
+ OPS/ANDROID_NOTIFICATIONS.md                       |   28 +-
+ OPS/HANDOFF_HISTORY.md                             | 1599 ++++++++++++++++++++
+ OPS/LAST_HANDOFF.txt                               |   73 +-
+ OPS/RELEASE_TRAIN.md                               |   24 +-
+ OPS/STAGING_QA_LINKS.md                            |  227 +--
+ OPS/STAGING_RESULTS.md                             |  343 +----
+ apps/android/app/build.gradle                      |   17 +-
+ apps/android/app/src/main/AndroidManifest.xml      |   40 +
+ .../java/com/verifd/android/data/BackendClient.kt  |   90 ++
+ .../notification/MissedCallNotificationManager.kt  |  388 ++---
+ .../verifd/android/service/CallScreeningService.kt |   67 +-
+ .../com/verifd/android/util/PhoneNumberUtils.kt    |  101 ++
+ apps/android/app/src/main/res/values/strings.xml   |    4 +
+ apps/backend/package.json                          |   12 +-
+ apps/backend/src/db/index.ts                       |   12 +-
+ apps/backend/src/middleware/device-auth.ts         |    3 +-
+ apps/backend/src/routes/canary-advance.ts          |    6 +-
+ apps/backend/src/routes/canary.ts                  |  176 ++-
+ apps/backend/src/routes/config-admin.ts            |   24 +-
+ apps/backend/src/routes/config.ts                  |   20 +-
+ apps/backend/src/routes/device.ts                  |    4 +-
+ apps/backend/src/routes/index.ts                   |    6 +-
+ apps/backend/src/routes/jwks.ts                    |  130 +-
+ apps/backend/src/routes/pass.ts                    |   16 +-
+ apps/backend/src/routes/telemetry.ts               |   12 +-
+ apps/backend/src/routes/verify.ts                  |    6 +-
+ apps/backend/src/routes/voice-ping.ts              |    4 +-
+ apps/backend/src/services/canary-rollout.ts        |    4 +-
+ pnpm-lock.yaml                                     |  164 +-
+ 35 files changed, 2946 insertions(+), 772 deletions(-)
+
+Files Touched:
+.github/workflows/android-staging-apk.yml
+.github/workflows/ci.yml
+.github/workflows/nightly-smoke.yml
+.github/workflows/staging-smoke.yml
+.github/workflows/update-badges.yml
+.serena/cache/typescript/document_symbols_cache_v23-06-25.pkl
+OPS/ANDROID_NOTIFICATIONS.md
+OPS/HANDOFF_HISTORY.md
+OPS/LAST_HANDOFF.txt
+OPS/RELEASE_TRAIN.md
+OPS/STAGING_QA_LINKS.md
+OPS/STAGING_RESULTS.md
+apps/android/app/build.gradle
+apps/android/app/src/main/AndroidManifest.xml
+apps/android/app/src/main/java/com/verifd/android/data/BackendClient.kt
+apps/android/app/src/main/java/com/verifd/android/notification/MissedCallNotificationManager.kt
+apps/android/app/src/main/java/com/verifd/android/service/CallScreeningService.kt
+apps/android/app/src/main/java/com/verifd/android/util/PhoneNumberUtils.kt
+apps/android/app/src/main/res/values/strings.xml
+apps/backend/package.json
+apps/backend/src/db/index.ts
+apps/backend/src/middleware/device-auth.ts
+apps/backend/src/routes/canary-advance.ts
+apps/backend/src/routes/canary.ts
+apps/backend/src/routes/config-admin.ts
+apps/backend/src/routes/config.ts
+apps/backend/src/routes/device.ts
+apps/backend/src/routes/index.ts
+apps/backend/src/routes/jwks.ts
+apps/backend/src/routes/pass.ts
+apps/backend/src/routes/telemetry.ts
+apps/backend/src/routes/verify.ts
+apps/backend/src/routes/voice-ping.ts
+apps/backend/src/services/canary-rollout.ts
+pnpm-lock.yaml
+
+Last Commit:
+d4bb89a feat(workflow): add release_tag input to Android staging APK workflow
+
+Commands/Tests Run (tail):
+
+> @verifd/backend@0.1.0 test /Users/harshilpatel/Desktop/Claude_Projects/verifd/apps/backend
+> vitest
+
+[33mThe CJS build of Vite's Node API is deprecated. See https://vite.dev/guide/troubleshooting.html#vite-cjs-node-api-deprecated for more details.[39m
+
+ DEV  v2.1.9 /Users/harshilpatel/Desktop/Claude_Projects/verifd/apps/backend
+
+ ✓ test/pass.check.simple.test.ts (6 tests | 1 skipped) 2ms
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > returns allowed=false for unknown number
+[DEBUG] No active pass found for number: ph_8a59780bb8cd2ba0
+
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > returns allowed=true for active pass
+[INFO] Active pass found for number: ph_8a59780bb8cd2ba0, expires: 1754771816
+
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > returns allowed=false for expired pass
+[DEBUG] No active pass found for number: ph_8a59780bb8cd2ba0
+
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > includes Cache-Control header
+[DEBUG] No active pass found for number: ph_8a59780bb8cd2ba0
+
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > correctly identifies 30m scope
+[INFO] Active pass found for number: ph_f5be76815beedc12, expires: 1754770016
+
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > correctly identifies 30d scope
+[INFO] Active pass found for number: ph_554285f82182d3dd, expires: 1757360216
+
+ ✓ test/pass.check.mock.test.ts (7 tests) 65ms
+
+ Test Files  2 passed (2)
+      Tests  12 passed | 1 skipped (13)
+   Start at  15:36:55
+   Duration  378ms (transform 78ms, setup 0ms, collect 174ms, tests 67ms, environment 0ms, prepare 106ms)
+
+ PASS  Waiting for file changes...
+       press h to show help, press q to quit
+
+Playwright (tail):
+
+
+Open Risks:
+- Auto-generated handoff; ask Claude to run /handoff:prep next time for richer details.
+
+Asks for PM:
+- Approve or request changes based on diff/test tails; if unclear, ask Claude to regenerate via /handoff:prep.
+
+---END-HANDOFF---
+
+
+## 2025-08-13T00:27:36Z
+
+---HANDOFF---
+Task: (auto) Fallback handoff — assistant reply had no explicit ---HANDOFF---
+When: 2025-08-13T00:27:36Z
+Branch: feat/zod-row-typing
+
+Diff Summary:
+ .github/workflows/android-staging-apk.yml          |  109 +-
+ .github/workflows/ci.yml                           |    3 +
+ .github/workflows/nightly-smoke.yml                |    2 +
+ .github/workflows/staging-smoke.yml                |    2 +
+ .github/workflows/update-badges.yml                |    2 +
+ .../document_symbols_cache_v23-06-25.pkl           |  Bin 153508 -> 923046 bytes
+ OPS/ANDROID_NOTIFICATIONS.md                       |   28 +-
+ OPS/HANDOFF_HISTORY.md                             | 1734 ++++++++++++++++++++
+ OPS/LAST_HANDOFF.txt                               |   77 +-
+ OPS/RELEASE_TRAIN.md                               |   24 +-
+ OPS/STAGING_QA_LINKS.md                            |  227 +--
+ OPS/STAGING_RESULTS.md                             |  343 +---
+ apps/android/app/build.gradle                      |   17 +-
+ apps/android/app/src/main/AndroidManifest.xml      |   40 +
+ .../java/com/verifd/android/data/BackendClient.kt  |   90 +
+ .../notification/MissedCallNotificationManager.kt  |  388 ++---
+ .../verifd/android/service/CallScreeningService.kt |   67 +-
+ .../com/verifd/android/util/PhoneNumberUtils.kt    |  101 ++
+ apps/android/app/src/main/res/values/strings.xml   |    4 +
+ apps/backend/package.json                          |   12 +-
+ apps/backend/src/db/index.ts                       |   12 +-
+ apps/backend/src/middleware/device-auth.ts         |    3 +-
+ apps/backend/src/routes/canary-advance.ts          |    6 +-
+ apps/backend/src/routes/canary.ts                  |  176 +-
+ apps/backend/src/routes/config-admin.ts            |   24 +-
+ apps/backend/src/routes/config.ts                  |   20 +-
+ apps/backend/src/routes/device.ts                  |    4 +-
+ apps/backend/src/routes/index.ts                   |    6 +-
+ apps/backend/src/routes/jwks.ts                    |  130 +-
+ apps/backend/src/routes/pass.ts                    |   16 +-
+ apps/backend/src/routes/telemetry.ts               |   12 +-
+ apps/backend/src/routes/verify.ts                  |    6 +-
+ apps/backend/src/routes/voice-ping.ts              |    4 +-
+ apps/backend/src/services/canary-rollout.ts        |    4 +-
+ pnpm-lock.yaml                                     |  164 +-
+ 35 files changed, 3085 insertions(+), 772 deletions(-)
+
+Files Touched:
+.github/workflows/android-staging-apk.yml
+.github/workflows/ci.yml
+.github/workflows/nightly-smoke.yml
+.github/workflows/staging-smoke.yml
+.github/workflows/update-badges.yml
+.serena/cache/typescript/document_symbols_cache_v23-06-25.pkl
+OPS/ANDROID_NOTIFICATIONS.md
+OPS/HANDOFF_HISTORY.md
+OPS/LAST_HANDOFF.txt
+OPS/RELEASE_TRAIN.md
+OPS/STAGING_QA_LINKS.md
+OPS/STAGING_RESULTS.md
+apps/android/app/build.gradle
+apps/android/app/src/main/AndroidManifest.xml
+apps/android/app/src/main/java/com/verifd/android/data/BackendClient.kt
+apps/android/app/src/main/java/com/verifd/android/notification/MissedCallNotificationManager.kt
+apps/android/app/src/main/java/com/verifd/android/service/CallScreeningService.kt
+apps/android/app/src/main/java/com/verifd/android/util/PhoneNumberUtils.kt
+apps/android/app/src/main/res/values/strings.xml
+apps/backend/package.json
+apps/backend/src/db/index.ts
+apps/backend/src/middleware/device-auth.ts
+apps/backend/src/routes/canary-advance.ts
+apps/backend/src/routes/canary.ts
+apps/backend/src/routes/config-admin.ts
+apps/backend/src/routes/config.ts
+apps/backend/src/routes/device.ts
+apps/backend/src/routes/index.ts
+apps/backend/src/routes/jwks.ts
+apps/backend/src/routes/pass.ts
+apps/backend/src/routes/telemetry.ts
+apps/backend/src/routes/verify.ts
+apps/backend/src/routes/voice-ping.ts
+apps/backend/src/services/canary-rollout.ts
+pnpm-lock.yaml
+
+Last Commit:
+d4bb89a feat(workflow): add release_tag input to Android staging APK workflow
+
+Commands/Tests Run (tail):
+
+> @verifd/backend@0.1.0 test /Users/harshilpatel/Desktop/Claude_Projects/verifd/apps/backend
+> vitest
+
+[33mThe CJS build of Vite's Node API is deprecated. See https://vite.dev/guide/troubleshooting.html#vite-cjs-node-api-deprecated for more details.[39m
+
+ DEV  v2.1.9 /Users/harshilpatel/Desktop/Claude_Projects/verifd/apps/backend
+
+ ✓ test/pass.check.simple.test.ts (6 tests | 1 skipped) 2ms
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > returns allowed=false for unknown number
+[DEBUG] No active pass found for number: ph_8a59780bb8cd2ba0
+
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > returns allowed=true for active pass
+[INFO] Active pass found for number: ph_8a59780bb8cd2ba0, expires: 1754771816
+
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > returns allowed=false for expired pass
+[DEBUG] No active pass found for number: ph_8a59780bb8cd2ba0
+
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > includes Cache-Control header
+[DEBUG] No active pass found for number: ph_8a59780bb8cd2ba0
+
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > correctly identifies 30m scope
+[INFO] Active pass found for number: ph_f5be76815beedc12, expires: 1754770016
+
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > correctly identifies 30d scope
+[INFO] Active pass found for number: ph_554285f82182d3dd, expires: 1757360216
+
+ ✓ test/pass.check.mock.test.ts (7 tests) 65ms
+
+ Test Files  2 passed (2)
+      Tests  12 passed | 1 skipped (13)
+   Start at  15:36:55
+   Duration  378ms (transform 78ms, setup 0ms, collect 174ms, tests 67ms, environment 0ms, prepare 106ms)
+
+ PASS  Waiting for file changes...
+       press h to show help, press q to quit
+
+Playwright (tail):
+
+
+Open Risks:
+- Auto-generated handoff; ask Claude to run /handoff:prep next time for richer details.
+
+Asks for PM:
+- Approve or request changes based on diff/test tails; if unclear, ask Claude to regenerate via /handoff:prep.
+
+---END-HANDOFF---
+
+
+## 2025-08-13T00:46:49Z
+
+---HANDOFF---
+Task: (auto) Fallback handoff — assistant reply had no explicit ---HANDOFF---
+When: 2025-08-13T00:46:49Z
+Branch: feat/zod-row-typing
+
+Diff Summary:
+ .github/workflows/android-staging-apk.yml          |  149 +-
+ .github/workflows/ci.yml                           |    3 +
+ .github/workflows/nightly-smoke.yml                |    2 +
+ .github/workflows/staging-smoke.yml                |    2 +
+ .github/workflows/update-badges.yml                |    2 +
+ .../document_symbols_cache_v23-06-25.pkl           |  Bin 153508 -> 923046 bytes
+ OPS/ANDROID_NOTIFICATIONS.md                       |   28 +-
+ OPS/HANDOFF_HISTORY.md                             | 1869 ++++++++++++++++++++
+ OPS/LAST_HANDOFF.txt                               |   77 +-
+ OPS/RELEASE_TRAIN.md                               |   31 +-
+ OPS/STAGING_QA_LINKS.md                            |  228 +--
+ OPS/STAGING_RESULTS.md                             |  343 +---
+ apps/android/app/build.gradle                      |   22 +-
+ apps/android/app/src/main/AndroidManifest.xml      |   40 +
+ .../java/com/verifd/android/data/BackendClient.kt  |   90 +
+ .../notification/MissedCallNotificationManager.kt  |  388 ++--
+ .../verifd/android/service/CallScreeningService.kt |   67 +-
+ .../com/verifd/android/util/PhoneNumberUtils.kt    |  101 ++
+ apps/android/app/src/main/res/values/strings.xml   |    4 +
+ apps/backend/package.json                          |   12 +-
+ apps/backend/src/db/index.ts                       |   12 +-
+ apps/backend/src/middleware/device-auth.ts         |    3 +-
+ apps/backend/src/routes/canary-advance.ts          |    6 +-
+ apps/backend/src/routes/canary.ts                  |  176 +-
+ apps/backend/src/routes/config-admin.ts            |   24 +-
+ apps/backend/src/routes/config.ts                  |   20 +-
+ apps/backend/src/routes/device.ts                  |    4 +-
+ apps/backend/src/routes/index.ts                   |    6 +-
+ apps/backend/src/routes/jwks.ts                    |  130 +-
+ apps/backend/src/routes/pass.ts                    |   16 +-
+ apps/backend/src/routes/telemetry.ts               |   12 +-
+ apps/backend/src/routes/verify.ts                  |    6 +-
+ apps/backend/src/routes/voice-ping.ts              |    4 +-
+ apps/backend/src/services/canary-rollout.ts        |    4 +-
+ pnpm-lock.yaml                                     |  164 +-
+ 35 files changed, 3272 insertions(+), 773 deletions(-)
+
+Files Touched:
+.github/workflows/android-staging-apk.yml
+.github/workflows/ci.yml
+.github/workflows/nightly-smoke.yml
+.github/workflows/staging-smoke.yml
+.github/workflows/update-badges.yml
+.serena/cache/typescript/document_symbols_cache_v23-06-25.pkl
+OPS/ANDROID_NOTIFICATIONS.md
+OPS/HANDOFF_HISTORY.md
+OPS/LAST_HANDOFF.txt
+OPS/RELEASE_TRAIN.md
+OPS/STAGING_QA_LINKS.md
+OPS/STAGING_RESULTS.md
+apps/android/app/build.gradle
+apps/android/app/src/main/AndroidManifest.xml
+apps/android/app/src/main/java/com/verifd/android/data/BackendClient.kt
+apps/android/app/src/main/java/com/verifd/android/notification/MissedCallNotificationManager.kt
+apps/android/app/src/main/java/com/verifd/android/service/CallScreeningService.kt
+apps/android/app/src/main/java/com/verifd/android/util/PhoneNumberUtils.kt
+apps/android/app/src/main/res/values/strings.xml
+apps/backend/package.json
+apps/backend/src/db/index.ts
+apps/backend/src/middleware/device-auth.ts
+apps/backend/src/routes/canary-advance.ts
+apps/backend/src/routes/canary.ts
+apps/backend/src/routes/config-admin.ts
+apps/backend/src/routes/config.ts
+apps/backend/src/routes/device.ts
+apps/backend/src/routes/index.ts
+apps/backend/src/routes/jwks.ts
+apps/backend/src/routes/pass.ts
+apps/backend/src/routes/telemetry.ts
+apps/backend/src/routes/verify.ts
+apps/backend/src/routes/voice-ping.ts
+apps/backend/src/services/canary-rollout.ts
+pnpm-lock.yaml
+
+Last Commit:
+d4bb89a feat(workflow): add release_tag input to Android staging APK workflow
+
+Commands/Tests Run (tail):
+
+> @verifd/backend@0.1.0 test /Users/harshilpatel/Desktop/Claude_Projects/verifd/apps/backend
+> vitest
+
+[33mThe CJS build of Vite's Node API is deprecated. See https://vite.dev/guide/troubleshooting.html#vite-cjs-node-api-deprecated for more details.[39m
+
+ DEV  v2.1.9 /Users/harshilpatel/Desktop/Claude_Projects/verifd/apps/backend
+
+ ✓ test/pass.check.simple.test.ts (6 tests | 1 skipped) 2ms
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > returns allowed=false for unknown number
+[DEBUG] No active pass found for number: ph_8a59780bb8cd2ba0
+
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > returns allowed=true for active pass
+[INFO] Active pass found for number: ph_8a59780bb8cd2ba0, expires: 1754771816
+
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > returns allowed=false for expired pass
+[DEBUG] No active pass found for number: ph_8a59780bb8cd2ba0
+
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > includes Cache-Control header
+[DEBUG] No active pass found for number: ph_8a59780bb8cd2ba0
+
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > correctly identifies 30m scope
+[INFO] Active pass found for number: ph_f5be76815beedc12, expires: 1754770016
+
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > correctly identifies 30d scope
+[INFO] Active pass found for number: ph_554285f82182d3dd, expires: 1757360216
+
+ ✓ test/pass.check.mock.test.ts (7 tests) 65ms
+
+ Test Files  2 passed (2)
+      Tests  12 passed | 1 skipped (13)
+   Start at  15:36:55
+   Duration  378ms (transform 78ms, setup 0ms, collect 174ms, tests 67ms, environment 0ms, prepare 106ms)
+
+ PASS  Waiting for file changes...
+       press h to show help, press q to quit
+
+Playwright (tail):
+
+
+Open Risks:
+- Auto-generated handoff; ask Claude to run /handoff:prep next time for richer details.
+
+Asks for PM:
+- Approve or request changes based on diff/test tails; if unclear, ask Claude to regenerate via /handoff:prep.
+
+---END-HANDOFF---
+
+
+## 2025-08-13T01:00:42Z
+
+---HANDOFF---
+Task: (auto) Fallback handoff — assistant reply had no explicit ---HANDOFF---
+When: 2025-08-13T01:00:42Z
+Branch: feat/zod-row-typing
+
+Diff Summary:
+ .github/workflows/android-staging-apk.yml          |  149 +-
+ .github/workflows/ci.yml                           |    3 +
+ .github/workflows/nightly-smoke.yml                |    2 +
+ .github/workflows/staging-smoke.yml                |    2 +
+ .github/workflows/update-badges.yml                |    2 +
+ .../document_symbols_cache_v23-06-25.pkl           |  Bin 153508 -> 923046 bytes
+ OPS/ANDROID_NOTIFICATIONS.md                       |   28 +-
+ OPS/HANDOFF_HISTORY.md                             | 2004 ++++++++++++++++++++
+ OPS/LAST_HANDOFF.txt                               |   77 +-
+ OPS/RELEASE_TRAIN.md                               |   31 +-
+ OPS/STAGING_QA_LINKS.md                            |  228 +--
+ OPS/STAGING_RESULTS.md                             |  343 +---
+ apps/android/app/build.gradle                      |   22 +-
+ apps/android/app/src/main/AndroidManifest.xml      |   40 +
+ .../java/com/verifd/android/data/BackendClient.kt  |   90 +
+ .../notification/MissedCallNotificationManager.kt  |  388 ++--
+ .../verifd/android/service/CallScreeningService.kt |   67 +-
+ .../com/verifd/android/util/PhoneNumberUtils.kt    |  101 +
+ apps/android/app/src/main/res/values/strings.xml   |    4 +
+ apps/backend/package.json                          |   12 +-
+ apps/backend/src/db/index.ts                       |   12 +-
+ apps/backend/src/middleware/device-auth.ts         |    3 +-
+ apps/backend/src/routes/canary-advance.ts          |    6 +-
+ apps/backend/src/routes/canary.ts                  |  176 +-
+ apps/backend/src/routes/config-admin.ts            |   24 +-
+ apps/backend/src/routes/config.ts                  |   20 +-
+ apps/backend/src/routes/device.ts                  |    4 +-
+ apps/backend/src/routes/index.ts                   |    6 +-
+ apps/backend/src/routes/jwks.ts                    |  130 +-
+ apps/backend/src/routes/pass.ts                    |   16 +-
+ apps/backend/src/routes/telemetry.ts               |   12 +-
+ apps/backend/src/routes/verify.ts                  |    6 +-
+ apps/backend/src/routes/voice-ping.ts              |    4 +-
+ apps/backend/src/services/canary-rollout.ts        |    4 +-
+ pnpm-lock.yaml                                     |  164 +-
+ 35 files changed, 3407 insertions(+), 773 deletions(-)
+
+Files Touched:
+.github/workflows/android-staging-apk.yml
+.github/workflows/ci.yml
+.github/workflows/nightly-smoke.yml
+.github/workflows/staging-smoke.yml
+.github/workflows/update-badges.yml
+.serena/cache/typescript/document_symbols_cache_v23-06-25.pkl
+OPS/ANDROID_NOTIFICATIONS.md
+OPS/HANDOFF_HISTORY.md
+OPS/LAST_HANDOFF.txt
+OPS/RELEASE_TRAIN.md
+OPS/STAGING_QA_LINKS.md
+OPS/STAGING_RESULTS.md
+apps/android/app/build.gradle
+apps/android/app/src/main/AndroidManifest.xml
+apps/android/app/src/main/java/com/verifd/android/data/BackendClient.kt
+apps/android/app/src/main/java/com/verifd/android/notification/MissedCallNotificationManager.kt
+apps/android/app/src/main/java/com/verifd/android/service/CallScreeningService.kt
+apps/android/app/src/main/java/com/verifd/android/util/PhoneNumberUtils.kt
+apps/android/app/src/main/res/values/strings.xml
+apps/backend/package.json
+apps/backend/src/db/index.ts
+apps/backend/src/middleware/device-auth.ts
+apps/backend/src/routes/canary-advance.ts
+apps/backend/src/routes/canary.ts
+apps/backend/src/routes/config-admin.ts
+apps/backend/src/routes/config.ts
+apps/backend/src/routes/device.ts
+apps/backend/src/routes/index.ts
+apps/backend/src/routes/jwks.ts
+apps/backend/src/routes/pass.ts
+apps/backend/src/routes/telemetry.ts
+apps/backend/src/routes/verify.ts
+apps/backend/src/routes/voice-ping.ts
+apps/backend/src/services/canary-rollout.ts
+pnpm-lock.yaml
+
+Last Commit:
+d4bb89a feat(workflow): add release_tag input to Android staging APK workflow
+
+Commands/Tests Run (tail):
+
+> @verifd/backend@0.1.0 test /Users/harshilpatel/Desktop/Claude_Projects/verifd/apps/backend
+> vitest
+
+[33mThe CJS build of Vite's Node API is deprecated. See https://vite.dev/guide/troubleshooting.html#vite-cjs-node-api-deprecated for more details.[39m
+
+ DEV  v2.1.9 /Users/harshilpatel/Desktop/Claude_Projects/verifd/apps/backend
+
+ ✓ test/pass.check.simple.test.ts (6 tests | 1 skipped) 2ms
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > returns allowed=false for unknown number
+[DEBUG] No active pass found for number: ph_8a59780bb8cd2ba0
+
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > returns allowed=true for active pass
+[INFO] Active pass found for number: ph_8a59780bb8cd2ba0, expires: 1754771816
+
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > returns allowed=false for expired pass
+[DEBUG] No active pass found for number: ph_8a59780bb8cd2ba0
+
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > includes Cache-Control header
+[DEBUG] No active pass found for number: ph_8a59780bb8cd2ba0
+
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > correctly identifies 30m scope
+[INFO] Active pass found for number: ph_f5be76815beedc12, expires: 1754770016
+
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > correctly identifies 30d scope
+[INFO] Active pass found for number: ph_554285f82182d3dd, expires: 1757360216
+
+ ✓ test/pass.check.mock.test.ts (7 tests) 65ms
+
+ Test Files  2 passed (2)
+      Tests  12 passed | 1 skipped (13)
+   Start at  15:36:55
+   Duration  378ms (transform 78ms, setup 0ms, collect 174ms, tests 67ms, environment 0ms, prepare 106ms)
+
+ PASS  Waiting for file changes...
+       press h to show help, press q to quit
+
+Playwright (tail):
+
+
+Open Risks:
+- Auto-generated handoff; ask Claude to run /handoff:prep next time for richer details.
+
+Asks for PM:
+- Approve or request changes based on diff/test tails; if unclear, ask Claude to regenerate via /handoff:prep.
+
+---END-HANDOFF---

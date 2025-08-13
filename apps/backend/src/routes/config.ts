@@ -38,11 +38,7 @@ const configRoute: FastifyPluginAsync = async (fastify) => {
       const payloadBuffer = Buffer.from(payload, 'utf8');
       
       // Sign with Ed25519
-      const signature = crypto.sign(null, payloadBuffer, {
-        key: privateKeyBuffer,
-        format: 'der',
-        type: 'ed25519'
-      });
+      const signature = crypto.sign(null, payloadBuffer, privateKeyBuffer);
 
       return {
         signature: signature.toString('base64'),
@@ -65,8 +61,6 @@ const configRoute: FastifyPluginAsync = async (fastify) => {
     };
   }>('/config/features', {
     schema: {
-      description: 'Get feature flag configuration',
-      tags: ['config'],
       headers: {
         type: 'object',
         properties: {
@@ -88,7 +82,7 @@ const configRoute: FastifyPluginAsync = async (fastify) => {
         }
       }
     }
-  }, async (request, reply) => {
+  }, async (request, reply: any) => {
     const now = Date.now();
     
     // Extract user info from headers or query
@@ -270,8 +264,6 @@ const configRoute: FastifyPluginAsync = async (fastify) => {
   // Admin endpoint to trigger kill switch (protected)
   fastify.post('/config/kill-switch', {
     schema: {
-      description: 'Activate or deactivate global kill switch',
-      tags: ['config', 'admin'],
       body: {
         type: 'object',
         required: ['active', 'adminToken'],
@@ -296,7 +288,7 @@ const configRoute: FastifyPluginAsync = async (fastify) => {
         }
       }
     }
-  }, async (request, reply) => {
+  }, async (request, reply: any) => {
     const { active, adminToken } = request.body as { active: boolean; adminToken: string };
     
     // Verify admin token
@@ -333,7 +325,7 @@ const configRoute: FastifyPluginAsync = async (fastify) => {
   });
   
   // Health check for config service
-  fastify.get('/config/health', async (request, reply) => {
+  fastify.get('/config/health', async (request, reply: any) => {
     return reply.send({
       healthy: true,
       cacheValid: cachedConfig !== null && (Date.now() - cacheTime) < CACHE_DURATION,
@@ -345,8 +337,6 @@ const configRoute: FastifyPluginAsync = async (fastify) => {
   // Staging overrides endpoint (staging only)
   fastify.get('/config/staging-overrides', {
     schema: {
-      description: 'Get staging override configuration (staging only)',
-      tags: ['config', 'staging'],
       response: {
         200: {
           type: 'object',
@@ -369,7 +359,7 @@ const configRoute: FastifyPluginAsync = async (fastify) => {
         }
       }
     }
-  }, async (request, reply) => {
+  }, async (request, reply: any) => {
     // Only available in staging
     if (process.env.NODE_ENV !== 'staging') {
       return reply.code(404).send({ error: 'Staging overrides not available in this environment' });

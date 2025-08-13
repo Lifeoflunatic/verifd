@@ -10,7 +10,40 @@ import crypto from 'crypto';
 
 export default async function jwksRoutes(fastify: FastifyInstance) {
   // JWKS endpoint
-  fastify.get('/.well-known/jwks.json', async (request, reply) => {
+  fastify.get('/.well-known/jwks.json', {
+    schema: {
+      response: {
+        200: {
+          type: 'object',
+          properties: {
+            keys: {
+              type: 'array',
+              items: {
+                type: 'object',
+                properties: {
+                  kty: { type: 'string' },
+                  crv: { type: 'string' },
+                  use: { type: 'string' },
+                  kid: { type: 'string' },
+                  alg: { type: 'string' },
+                  x: { type: 'string' },
+                  n: { type: 'string' },
+                  e: { type: 'string' }
+                }
+              }
+            }
+          }
+        },
+        500: {
+          type: 'object',
+          properties: {
+            error: { type: 'string' },
+            message: { type: 'string' }
+          }
+        }
+      }
+    }
+  }, async (request, reply: any) => {
     try {
       const jwks = await generateJWKS();
       
@@ -28,7 +61,48 @@ export default async function jwksRoutes(fastify: FastifyInstance) {
   });
 
   // Key rotation status endpoint (admin only)
-  fastify.get('/admin/keys/status', async (request, reply) => {
+  fastify.get<{
+    Headers: {
+      'x-admin-token'?: string;
+    }
+  }>('/admin/keys/status', {
+    schema: {
+      headers: {
+        type: 'object',
+        properties: {
+          'x-admin-token': { type: 'string' }
+        }
+      },
+      response: {
+        200: {
+          type: 'object',
+          properties: {
+            keyId: { type: 'string' },
+            keyPath: { type: 'string' },
+            lastModified: { type: 'string' },
+            ageInDays: { type: 'number' },
+            rotationRecommended: { type: 'boolean' },
+            jwksEndpoint: { type: 'string' },
+            error: { type: 'string' },
+            keyExists: { type: 'boolean' }
+          }
+        },
+        401: {
+          type: 'object',
+          properties: {
+            error: { type: 'string' }
+          }
+        },
+        500: {
+          type: 'object',
+          properties: {
+            error: { type: 'string' },
+            message: { type: 'string' }
+          }
+        }
+      }
+    }
+  }, async (request, reply: any) => {
     const adminToken = request.headers['x-admin-token'];
     
     if (adminToken !== process.env.ADMIN_SIGNING_KEY) {
@@ -48,7 +122,55 @@ export default async function jwksRoutes(fastify: FastifyInstance) {
   });
 
   // Trigger key rotation (admin only)
-  fastify.post('/admin/keys/rotate', async (request, reply) => {
+  fastify.post<{
+    Headers: {
+      'x-admin-token'?: string;
+    };
+    Body: {
+      reason?: string;
+    }
+  }>('/admin/keys/rotate', {
+    schema: {
+      headers: {
+        type: 'object',
+        properties: {
+          'x-admin-token': { type: 'string' }
+        }
+      },
+      body: {
+        type: 'object',
+        properties: {
+          reason: { type: 'string' }
+        }
+      },
+      response: {
+        200: {
+          type: 'object',
+          properties: {
+            success: { type: 'boolean' },
+            oldKeyId: { type: 'string' },
+            newKeyId: { type: 'string' },
+            rotatedAt: { type: 'string' },
+            reason: { type: 'string' },
+            status: { type: 'string' }
+          }
+        },
+        401: {
+          type: 'object',
+          properties: {
+            error: { type: 'string' }
+          }
+        },
+        500: {
+          type: 'object',
+          properties: {
+            error: { type: 'string' },
+            message: { type: 'string' }
+          }
+        }
+      }
+    }
+  }, async (request, reply: any) => {
     const adminToken = request.headers['x-admin-token'];
     
     if (adminToken !== process.env.ADMIN_SIGNING_KEY) {
@@ -56,7 +178,7 @@ export default async function jwksRoutes(fastify: FastifyInstance) {
     }
     
     try {
-      const { reason } = request.body as { reason?: string };
+      const { reason } = request.body;
       const result = await rotateSigningKeys(reason || 'Manual rotation');
       
       return reply.send({

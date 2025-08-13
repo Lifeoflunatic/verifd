@@ -1,0 +1,33 @@
+FROM node:20-bookworm-slim
+
+# Install build dependencies for native modules
+RUN apt-get update && apt-get install -y \
+    build-essential \
+    python3 \
+    sqlite3 \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+
+# Install pnpm
+RUN corepack enable && corepack prepare pnpm@latest --activate
+
+# Copy workspace files
+COPY package.json pnpm-workspace.yaml ./
+COPY packages/shared/package.json packages/shared/
+COPY apps/backend/package.json apps/backend/
+
+# Install dependencies (including native builds)
+RUN pnpm install --frozen-lockfile
+
+# Copy source code
+COPY . .
+
+# Build shared package
+RUN pnpm -F @verifd/shared build
+
+WORKDIR /app/apps/backend
+
+EXPOSE 3000
+
+CMD ["pnpm", "dev"]

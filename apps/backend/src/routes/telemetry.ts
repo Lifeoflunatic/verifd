@@ -18,8 +18,6 @@ const telemetryRoute: FastifyPluginAsync = async (fastify) => {
     Body: TelemetryBody;
   }>('/telemetry/metrics', {
     schema: {
-      description: 'Receive privacy-safe telemetry metrics',
-      tags: ['telemetry'],
       body: {
         type: 'object',
         required: ['metrics', 'timestamp', 'privacyMode', 'epsilon'],
@@ -68,7 +66,7 @@ const telemetryRoute: FastifyPluginAsync = async (fastify) => {
         }
       }
     }
-  }, async (request, reply) => {
+  }, async (request, reply: any) => {
     const { metrics, privacyMode, epsilon } = request.body;
     
     // Validate privacy mode
@@ -124,8 +122,6 @@ const telemetryRoute: FastifyPluginAsync = async (fastify) => {
     };
   }>('/telemetry/query', {
     schema: {
-      description: 'Query aggregated telemetry metrics',
-      tags: ['telemetry', 'admin'],
       querystring: {
         type: 'object',
         properties: {
@@ -164,7 +160,7 @@ const telemetryRoute: FastifyPluginAsync = async (fastify) => {
         }
       }
     }
-  }, async (request, reply) => {
+  }, async (request, reply: any) => {
     const { metric, start, end, adminToken } = request.query;
     
     // Verify admin token
@@ -213,8 +209,6 @@ const telemetryRoute: FastifyPluginAsync = async (fastify) => {
   // Dashboard data endpoint
   fastify.get('/telemetry/dashboard', {
     schema: {
-      description: 'Get telemetry dashboard data',
-      tags: ['telemetry'],
       response: {
         200: {
           type: 'object',
@@ -251,7 +245,7 @@ const telemetryRoute: FastifyPluginAsync = async (fastify) => {
         }
       }
     }
-  }, async (request, reply) => {
+  }, async (request, reply: any) => {
     // Aggregate metrics for dashboard
     const featureMetrics: Record<string, any> = {};
     const performanceMetrics: any = {

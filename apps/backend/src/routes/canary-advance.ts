@@ -16,7 +16,7 @@ export default async function canaryAdvanceRoutes(fastify: FastifyInstance) {
   /**
    * POST /canary/advance - Admin-only phase advancement with signature
    */
-  fastify.post('/canary/advance', async (request, reply) => {
+  fastify.post('/canary/advance', async (request, reply: any) => {
     // Verify admin signature
     const signature = request.headers['x-admin-signature'] as string;
     if (!signature) {
@@ -158,7 +158,7 @@ export default async function canaryAdvanceRoutes(fastify: FastifyInstance) {
   /**
    * GET /canary/state - Get current canary controller state
    */
-  fastify.get('/canary/state', async (request, reply) => {
+  fastify.get('/canary/state', async (request, reply: any) => {
     try {
       const fs = await import('fs/promises');
       
@@ -198,7 +198,7 @@ export default async function canaryAdvanceRoutes(fastify: FastifyInstance) {
   /**
    * POST /canary/slack-interaction - Handle Slack approval interactions
    */
-  fastify.post('/canary/slack-interaction', async (request, reply) => {
+  fastify.post('/canary/slack-interaction', async (request, reply: any) => {
     // Verify Slack signature
     const timestamp = request.headers['x-slack-request-timestamp'] as string;
     const signature = request.headers['x-slack-signature'] as string;

@@ -116,8 +116,6 @@ const configAdminRoute: FastifyPluginAsync = async (fastify) => {
     };
   }>('/config/admin-audit', {
     schema: {
-      description: 'Get configuration audit log',
-      tags: ['config', 'admin'],
       querystring: {
         type: 'object',
         required: ['adminToken'],
@@ -160,7 +158,7 @@ const configAdminRoute: FastifyPluginAsync = async (fastify) => {
         }
       }
     }
-  }, async (request, reply) => {
+  }, async (request, reply: any) => {
     const { limit = 100, offset = 0, actor, action, since, adminToken } = request.query;
     
     if (!verifyAdminAccess(adminToken, 'read_audit')) {
@@ -228,8 +226,6 @@ const configAdminRoute: FastifyPluginAsync = async (fastify) => {
     Body: ConfigUpdateRequest;
   }>('/config/admin/feature', {
     schema: {
-      description: 'Update feature flag configuration',
-      tags: ['config', 'admin'],
       body: {
         type: 'object',
         required: ['feature', 'changes', 'reason', 'adminToken'],
@@ -252,7 +248,7 @@ const configAdminRoute: FastifyPluginAsync = async (fastify) => {
         }
       }
     }
-  }, async (request, reply) => {
+  }, async (request, reply: any) => {
     const { feature, changes, reason, adminToken } = request.body;
     
     if (!verifyAdminAccess(adminToken, 'update_feature')) {
@@ -305,8 +301,6 @@ const configAdminRoute: FastifyPluginAsync = async (fastify) => {
   // Get signed configuration
   fastify.get('/config/signed', {
     schema: {
-      description: 'Get signed feature configuration',
-      tags: ['config'],
       response: {
         200: {
           type: 'object',
@@ -321,7 +315,7 @@ const configAdminRoute: FastifyPluginAsync = async (fastify) => {
         }
       }
     }
-  }, async (request, reply) => {
+  }, async (request, reply: any) => {
     // Build config payload
     const config = {
       GLOBAL_KILL_SWITCH: process.env.FEATURE_KILL_SWITCH === 'true',
@@ -393,8 +387,6 @@ const configAdminRoute: FastifyPluginAsync = async (fastify) => {
     Body: KeyRotationRequest;
   }>('/config/admin/rotate-key', {
     schema: {
-      description: 'Rotate configuration signing key',
-      tags: ['config', 'admin'],
       body: {
         type: 'object',
         required: ['oldKeyId', 'newKeyId', 'newPublicKey', 'adminToken'],
@@ -417,7 +409,7 @@ const configAdminRoute: FastifyPluginAsync = async (fastify) => {
         }
       }
     }
-  }, async (request, reply) => {
+  }, async (request, reply: any) => {
     const { oldKeyId, newKeyId, newPublicKey, adminToken } = request.body;
     
     if (!verifyAdminAccess(adminToken, 'rotate_key')) {
@@ -469,8 +461,6 @@ const configAdminRoute: FastifyPluginAsync = async (fastify) => {
   // Get current public key
   fastify.get('/config/public-key', {
     schema: {
-      description: 'Get current configuration public key',
-      tags: ['config'],
       response: {
         200: {
           type: 'object',
@@ -484,7 +474,7 @@ const configAdminRoute: FastifyPluginAsync = async (fastify) => {
         }
       }
     }
-  }, async (request, reply) => {
+  }, async (request, reply: any) => {
     return reply.send({
       keyId: currentKeyId,
       publicKey: signingKeyPair.publicKey,
@@ -501,8 +491,6 @@ const configAdminRoute: FastifyPluginAsync = async (fastify) => {
     };
   }>('/config/admin-audit/stats', {
     schema: {
-      description: 'Get audit log statistics',
-      tags: ['config', 'admin'],
       querystring: {
         type: 'object',
         required: ['adminToken'],
@@ -527,7 +515,7 @@ const configAdminRoute: FastifyPluginAsync = async (fastify) => {
         }
       }
     }
-  }, async (request, reply) => {
+  }, async (request, reply: any) => {
     const { adminToken } = request.query;
     
     if (!verifyAdminAccess(adminToken, 'read_audit')) {

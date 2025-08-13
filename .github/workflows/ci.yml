@@ -42,6 +42,8 @@ jobs:
           if [ "${{ matrix.use_mock }}" = "true" ]; then
             # Skip native builds for mock tests
             pnpm install --ignore-scripts
+            # Install only necessary dependencies for testing
+            cd apps/backend && npm install --no-save zod @fastify/type-provider-typebox
           else
             pnpm install
           fi
@@ -79,6 +81,7 @@ jobs:
           name: coverage-${{ matrix.name }}
           path: apps/backend/coverage/lcov.info
           retention-days: 1
+          if-no-files-found: warn
             
       - name: Stop Docker services
         if: always() && matrix.needs_docker

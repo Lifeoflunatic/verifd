@@ -1,307 +1,84 @@
-# Staging Validation Results
+# Staging Smoke Test Results
 
-## Day-0 Validation Status: ✅ READY
+## Build: v1.3.0-rc1-staging+8
 
-### 1. Canary Controller Validation
+**Date:** 2025-08-12T20:38:00Z  
+**Branch:** feat/zod-row-typing  
+**Workflow Run:** [#16920036766](https://github.com/Lifeoflunatic/verifd/actions/runs/16920036766)  
 
-#### Manual Trigger Test
-```bash
-# Trigger evaluation
-curl -X POST http://localhost:3001/canary/evaluate \
-  -H "X-Admin-Token: ${ADMIN_CANARY_TOKEN}"
+## ✅ Android APK Build
 
-Response:
-{
-  "status": "evaluated",
-  "phase": "canary_5",
-  "gates": {
-    "verify_lift": { "value": 18, "threshold": 15, "passed": true },
-    "notif_action_tap": { "value": 11, "threshold": 10, "passed": true },
-    "false_allow": { "value": 0.9, "threshold": 1.0, "passed": true },
-    "complaint_rate": { "value": 0.3, "threshold": 0.5, "passed": true }
-  },
-  "consecutiveSuccessDays": 1,
-  "timestamp": "2025-01-11T10:30:00Z"
-}
-```
+### APK Details
+- **SHA256:** `9ca5081cb817f19a02e85401b61bcb44a48f7fbe670349ee3cb130e7f1e78d49`
+- **Size:** 7.7M
+- **Version:** 1.0.0-staging
+- **Download:** [verifd-staging-signed.apk](https://nightly.link/Lifeoflunatic/verifd/runs/16920036766/verifd-staging-apk)
 
-#### Slack Approval Flow
+### QR Code for Installation
+![APK Download QR Code](./artifacts/apk-qrcode.png)
+
+## ✅ Release Link Smoke Test
+
+### Test Parameters
+- **Phone:** +919233600392 (staging override)
+- **Locale:** en-US
+- **Device ID:** test-device-android-001
+- **User Name:** TestUser
+
+### Response
 ```json
 {
-  "type": "promotion_proposed",
-  "fromPhase": "canary_5",
-  "toPhase": "canary_20",
-  "metrics": {
-    "avgVerifyLift": 17.5,
-    "avgNotifTap": 10.8,
-    "avgFalseAllow": 0.85,
-    "avgComplaint": 0.35
-  },
-  "slackMessage": {
-    "channel": "#staging-canary-approvals",
-    "blocks": [
-      {
-        "type": "section",
-        "text": "🚀 Canary Promotion Ready: canary_5 → canary_20"
-      },
-      {
-        "type": "actions",
-        "elements": [
-          {
-            "type": "button",
-            "action_id": "approve_promotion",
-            "text": "✅ Approve",
-            "value": "token_abc123"
-          },
-          {
-            "type": "button",
-            "action_id": "reject_promotion",
-            "text": "❌ Reject",
-            "value": "token_abc123"
-          }
-        ]
-      }
-    ]
-  }
+  "sms_template": "TestUser here. Verify: https://vfd.link/eyJhbGciOiJI",
+  "whatsapp_template": "Hey—it's TestUser. I screen unknown calls. Reply with Name + Reason or tap to verify: https://vfd.link/eyJhbGciOiJI",
+  "verify_link": "https://vfd.link/eyJhbGciOiJI",
+  "signature": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+  "cached": false,
+  "ttl_seconds": 86400
 }
 ```
 
-#### Audit Log Entry
-```json
-{
-  "timestamp": "2025-01-11T10:35:00Z",
-  "action": "promotion_approved",
-  "phase": "canary_20",
-  "approvedBy": "staging_admin",
-  "signature": "Ed25519:base64signature...",
-  "metrics": {
-    "consecutiveSuccessDays": 3,
-    "gatesPassedCount": 12
-  }
-}
-```
+### Validation
+- ✅ SMS template under 160 chars (52 chars)
+- ✅ WhatsApp template formatted correctly
+- ✅ Short URL generation working
+- ✅ JWT signature present
+- ✅ 24-hour TTL configured
+- ✅ Rate limiting active (60/hour device, 3/5min number)
 
-### 2. Key Rotation Validation
+## ⚠️ Backend TypeScript Status
 
-#### JWKS Endpoint (Dual Keys Active)
-```bash
-curl http://localhost:3001/.well-known/jwks.json | jq '.'
-```
+### Current Issues
+- **better-sqlite3:** Native module compilation fails on macOS
+- **Workaround:** Using `USE_MOCK_DB=true` for testing
+- **Next:** Need to complete TypeScript cleanup (Task 3)
 
-```json
-{
-  "keys": [
-    {
-      "kid": "verifd_staging_1736593200_primary",
-      "alg": "EdDSA",
-      "use": "sig",
-      "kty": "OKP",
-      "crv": "Ed25519",
-      "x": "MCowBQYDK2VwAyEA7qPCbUC2LxtFDU9T2OVp...",
-      "validFrom": "2025-01-11T00:00:00Z",
-      "validUntil": "2025-02-10T23:59:59Z",
-      "isPrimary": true
-    },
-    {
-      "kid": "verifd_staging_1736247600_secondary",
-      "alg": "EdDSA",
-      "use": "sig",
-      "kty": "OKP",
-      "crv": "Ed25519",
-      "x": "MCowBQYDK2VwAyEA2kMNoPQRsTUVwXYZ1nHk...",
-      "validFrom": "2025-01-07T00:00:00Z",
-      "validUntil": "2025-02-06T23:59:59Z",
-      "isPrimary": false
-    }
-  ]
-}
-```
+## Features Enabled
 
-#### Manual Rotation Test
-```bash
-# Trigger rotation
-curl -X POST http://localhost:3001/config/keys/rotate \
-  -H "Content-Type: application/json" \
-  -d '{
-    "adminToken": "'${ADMIN_KEY_ROTATION_TOKEN}'",
-    "reason": "Staging validation test"
-  }'
+### Staging Rollout (50% cohort)
+- ✅ Missed Call Actions (IN geo)
+- ✅ Quick Tile Expecting
+- ✅ App Shortcuts
 
-Response:
-{
-  "success": true,
-  "message": "Key rotation initiated",
-  "schedule": {
-    "currentPrimary": {
-      "kid": "verifd_staging_1736593200_primary",
-      "validUntil": "2025-02-10T23:59:59Z",
-      "daysRemaining": 30
-    },
-    "currentSecondary": {
-      "kid": "verifd_staging_1736593201_new",
-      "validFrom": "2025-01-11T10:40:00Z",
-      "promotionDate": "2025-01-18T10:40:00Z"
-    },
-    "nextRotation": "2025-02-03T00:00:00Z"
-  }
-}
-```
+### Staging Rollout (Other)
+- ✅ Identity Lookup (25%)
+- ✅ Templates (75%)
+- ✅ WhatsApp (75%)
+- ⚠️ Risk Scoring (10%, shadow mode)
 
-#### Client Verification (Both Keys Work)
-```bash
-# Test with primary key
-curl -X POST http://localhost:3001/config/verify \
-  -H "X-Config-Signature: Ed25519:primarysig..." \
-  -H "X-Config-KID: verifd_staging_1736593200_primary"
-# Result: ✅ Valid
+## Configuration Keys
+- **Signing KID:** staging-2025-001
+- **API Endpoint:** https://staging.api.verifd.com
+- **Override Numbers:** +919233600392, +917575854485
 
-# Test with secondary key  
-curl -X POST http://localhost:3001/config/verify \
-  -H "X-Config-Signature: Ed25519:secondarysig..." \
-  -H "X-Config-KID: verifd_staging_1736247600_secondary"
-# Result: ✅ Valid (with drift alert)
-```
+## Summary
 
-### 3. Release Train Validation
-
-#### Workflow Trigger
-```bash
-gh workflow run release-train.yml \
-  -f version=1.3.0 \
-  -f candidate=1 \
-  -f deploy_env=staging
-```
-
-#### Build Artifacts Generated
-```
-release-v1.3.0-rc1/
-├── verifd-v1.3.0-rc1.apk              ✅
-├── verifd-v1.3.0-rc1.apk.sha256       ✅
-├── verifd-v1.3.0-rc1.apk.sha512       ✅
-├── verifd-v1.3.0-rc1.ipa              ✅
-├── verifd-v1.3.0-rc1.ipa.sha256       ✅
-├── verifd-v1.3.0-rc1.ipa.sha512       ✅
-├── sbom-android-v1.3.0-rc1.json       ✅
-├── sbom-ios-v1.3.0-rc1.json           ✅
-├── sbom-combined-v1.3.0-rc1.json      ✅
-├── RELEASE_NOTES.md                    ✅
-└── smoke-test-checklist.md            ✅
-```
-
-#### SBOM Sample (CycloneDX)
-```json
-{
-  "bomFormat": "CycloneDX",
-  "specVersion": "1.4",
-  "version": 1,
-  "metadata": {
-    "timestamp": "2025-01-11T10:45:00Z",
-    "component": {
-      "name": "verifd",
-      "version": "1.3.0-rc1",
-      "type": "application"
-    }
-  },
-  "components": [
-    {
-      "type": "library",
-      "name": "fastify",
-      "version": "4.25.0",
-      "purl": "pkg:npm/fastify@4.25.0"
-    },
-    {
-      "type": "library",
-      "name": "zod",
-      "version": "3.22.4",
-      "purl": "pkg:npm/zod@3.22.4"
-    }
-  ]
-}
-```
-
-#### Attestation Verification
-```bash
-gh attestation verify verifd-v1.3.0-rc1.apk \
-  --owner verifd \
-  --repo verifd
-
-✅ Attestation verified
-Subject: verifd-v1.3.0-rc1.apk
-SHA256: abc123def456...
-Signed by: GitHub Actions (staging)
-```
-
-### 4. Integration Test Results
-
-| Component | Test | Result | Evidence |
-|-----------|------|--------|----------|
-| Canary Controller | Manual evaluation | ✅ PASS | Gates evaluated correctly |
-| Canary Controller | Slack approval | ✅ PASS | Interactive buttons work |
-| Canary Controller | Auto-rollback | ✅ PASS | Triggered after 2 failures |
-| Canary Controller | Audit logging | ✅ PASS | Signed entries created |
-| Key Rotation | JWKS endpoint | ✅ PASS | Both keys visible |
-| Key Rotation | Dual-key window | ✅ PASS | Clients accept both |
-| Key Rotation | Manual rotation | ✅ PASS | New key generated |
-| Key Rotation | Drift detection | ✅ PASS | Alerts on secondary usage |
-| Release Train | Dependency lock | ✅ PASS | SHA256 verified |
-| Release Train | SBOM generation | ✅ PASS | CycloneDX valid |
-| Release Train | Artifact signing | ✅ PASS | Checksums match |
-| Release Train | Attestations | ✅ PASS | SLSA verified |
-
-### 5. Performance Metrics
-
-```
-Canary Evaluation: 45ms avg
-JWKS Response: 12ms avg
-Key Verification: 3ms avg
-Audit Write: 8ms avg
-Release Build: 12min total
-```
-
-### 6. Security Validation
-
-- [x] Admin tokens required for sensitive operations
-- [x] Slack signatures verified on callbacks
-- [x] Ed25519 signatures on audit entries
-- [x] Keys stored with 0600 permissions
-- [x] No secrets in logs
-- [x] CORS headers properly configured
-
-## Staging Environment Details
-
-**URLs:**
-- Backend: http://localhost:3001
-- JWKS: http://localhost:3001/.well-known/jwks.json
-- Canary Dashboard: http://localhost:3001/canary/dashboard
-- Health: http://localhost:3001/health
-
-**Database:**
-- Location: /tmp/verifd-staging.db
-- Schema: Latest with migrations applied
-- Test data: 100 sample passes loaded
-
-**Logs:**
-- Location: /tmp/verifd-staging.log
-- Level: DEBUG
-- Rotation: Daily with 7-day retention
-
-## DoD Verification
-
-✅ **JWKS shows new KID** - Both primary and secondary keys visible
-✅ **Clients accept both** - Verified with test signatures
-✅ **Slack actions recorded in audit log** - Approval/rejection logged with signatures
-✅ **RC artifacts signed** - SHA256/SHA512 checksums and SLSA attestations
+✅ **APK Build:** Successfully built v1.3.0-rc1-staging+8  
+✅ **Release Link:** Template endpoint working with short URLs  
+⚠️ **TypeScript:** 22 errors remaining (native SQLite issue)  
 
 ## Next Steps
 
-1. ✅ Staging validation complete
-2. ⏳ Ready for Day-1 canary (US 5%)
-3. ⏳ Daily Slack rollups configured
-4. ⏳ Promotion rehearsal scheduled
-
----
-
-**Validation completed**: 2025-01-11T10:50:00Z
-**Validated by**: Staging Automation
-**Environment**: feat/zod-row-typing branch
-**Status**: READY FOR PRODUCTION
+1. Complete backend TypeScript cleanup
+2. Manual QA on Android device with staging APK
+3. Deploy to staging environment
+4. Run E2E test suite

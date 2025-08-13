@@ -9,6 +9,7 @@ import configRoute from './config.js';
 import telemetryRoute from './telemetry.js';
 import canaryRoute from './canary.js';
 import jwksRoute from './jwks.js';
+import verifyLinkRoute from './verify-link.js';
 import { getVanityToken, deleteVanityToken } from './verify.js';
 import { config } from '../config.js';
 
@@ -34,6 +35,9 @@ export async function setupRoutes(server: FastifyInstance) {
   // Verification endpoints
   await server.register(verifyRoutes, { prefix: '/verify' });
   
+  // Verify link templates (for notification actions)
+  await server.register(verifyLinkRoute);
+  
   // Pass management (includes /grant and /since)
   await server.register(passRoutes, { prefix: '/pass' });
   
@@ -47,7 +51,7 @@ export async function setupRoutes(server: FastifyInstance) {
   await server.register(testHelperRoutes);
   
   // Vanity URL redirect handler (must be before root route)
-  server.get('/v/:vanityToken', async (request, reply) => {
+  server.get('/v/:vanityToken', async (request, reply: any) => {
     const { vanityToken } = request.params as { vanityToken: string };
     
     const mapping = getVanityToken(vanityToken);

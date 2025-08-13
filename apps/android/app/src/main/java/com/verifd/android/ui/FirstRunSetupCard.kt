@@ -50,7 +50,7 @@ class FirstRunSetupCard @JvmOverloads constructor(
     }
     
     private lateinit var prefs: SharedPreferences
-    private lateinit var setupListener: SetupListener?
+    private var setupListener: SetupListener? = null
     
     // UI elements
     private lateinit var stepIndicator: LinearLayout

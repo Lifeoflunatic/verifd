@@ -18,7 +18,7 @@ export const deviceRoutes: FastifyPluginAsync = async (server) => {
   // Register a new device
   server.post<{
     Body: DeviceRegisterBody;
-  }>('/register', async (request, reply) => {
+  }>('/register', async (request, reply: any) => {
     try {
       const body = DeviceRegisterSchema.parse(request.body);
       
@@ -84,7 +84,7 @@ export const deviceRoutes: FastifyPluginAsync = async (server) => {
   });
   
   // Revoke a device (for future use)
-  server.post('/revoke', async (request, reply) => {
+  server.post('/revoke', async (request, reply: any) => {
     const deviceId = request.headers['x-device-id'] as string;
     
     if (!deviceId) {

@@ -71,7 +71,7 @@ export const passRoutes: FastifyPluginAsync = async (server) => {
   server.get<{
     Querystring: { number_e164?: string; phoneNumber?: string };
     Reply: PassCheckResponse | { error: string };
-  }>('/check', async (request, reply) => {
+  }>('/check', async (request, reply: any) => {
     // Extract IP for rate limiting
     const clientIp = request.ip;
     
@@ -147,7 +147,7 @@ export const passRoutes: FastifyPluginAsync = async (server) => {
   // Check if a valid pass exists
   server.post<{
     Body: CheckPassBody;
-  }>('/check', async (request, reply) => {
+  }>('/check', async (request, reply: any) => {
     const body = CheckPassSchema.parse(request.body);
     
     const db = getDb();
@@ -204,7 +204,7 @@ export const passRoutes: FastifyPluginAsync = async (server) => {
   });
   
   // List active passes for a phone number
-  server.get('/list/:phoneNumber', async (request, reply) => {
+  server.get('/list/:phoneNumber', async (request, reply: any) => {
     const { phoneNumber } = request.params as { phoneNumber: string };
     
     const db = getDb();
@@ -231,7 +231,7 @@ export const passRoutes: FastifyPluginAsync = async (server) => {
   });
   
   // Revoke a pass
-  server.delete('/:passId', async (request, reply) => {
+  server.delete('/:passId', async (request, reply: any) => {
     const { passId } = request.params as { passId: string };
     
     const db = getDb();
@@ -250,12 +250,12 @@ export const passRoutes: FastifyPluginAsync = async (server) => {
   
   // Grant a pass directly (device-initiated)
   server.post('/grant', {
-    preHandler: async (request, reply) => {
+    preHandler: async (request, reply: any) => {
       // Require device authentication
       const { verifyDeviceAuth } = await import('../middleware/auth.js');
       await verifyDeviceAuth(request, reply);
     }
-  }, async (request, reply) => {
+  }, async (request, reply: any) => {
     const GrantPassSchema = z.object({
       number_e164: z.string().regex(/^\+[1-9]\d{1,14}$/),
       scope: z.enum(['30m', '24h', '30d']).default('24h'),
@@ -334,12 +334,12 @@ export const passRoutes: FastifyPluginAsync = async (server) => {
   
   // Get passes since timestamp (for sync)
   server.get('/since', {
-    preHandler: async (request, reply) => {
+    preHandler: async (request, reply: any) => {
       // Require device authentication
       const { verifyDeviceAuth } = await import('../middleware/auth.js');
       await verifyDeviceAuth(request, reply);
     }
-  }, async (request, reply) => {
+  }, async (request, reply: any) => {
     const query = request.query as { ts?: string };
     const timestamp = parseInt(query.ts || '0', 10);
     
