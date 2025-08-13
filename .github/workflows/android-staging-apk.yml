@@ -58,10 +58,12 @@ jobs:
           echo "Building staging variant..."
           if [ -n "${{ inputs.release_tag }}" ]; then
             echo "Using release tag: ${{ inputs.release_tag }}"
-            ./gradlew clean :app:assembleStaging --stacktrace --no-daemon -PreleaseTag=${{ inputs.release_tag }}
+            ./gradlew clean
+            ./gradlew :app:assembleStaging --stacktrace -PreleaseTag=${{ inputs.release_tag }}
           else
             echo "Building without release tag (dev mode)"
-            ./gradlew clean :app:assembleStaging --stacktrace --no-daemon
+            ./gradlew clean
+            ./gradlew :app:assembleStaging --stacktrace
           fi
           
           # List APK output
