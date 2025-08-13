@@ -52,9 +52,9 @@ jobs:
         run: chmod +x ./gradlew
       
       - name: Build Staging APK
+        working-directory: apps/android
         run: |
           # Build staging variant explicitly with release tag
-          cd apps/android
           echo "Current directory: $(pwd)"
           echo "Building staging variant..."
           if [ -n "${{ inputs.release_tag }}" ]; then
@@ -69,17 +69,18 @@ jobs:
           
           # List APK output
           echo "APK build outputs:"
-          ls -lah apps/android/app/build/outputs/apk/staging/ || true
+          ls -lah app/build/outputs/apk/staging/ || true
         env:
           RELEASE_TAG: ${{ inputs.release_tag }}
       
       - name: Verify APK Version
         if: inputs.release_tag != ''
+        working-directory: apps/android
         run: |
           echo "Verifying APK version matches release tag..."
           
           # Find the built APK
-          APK=$(find apps/android/app/build/outputs/apk/staging -name "*.apk" -type f | head -1)
+          APK=$(find app/build/outputs/apk/staging -name "*.apk" -type f | head -1)
           
           if [ -z "$APK" ]; then
             echo "❌ No APK found to verify"
@@ -113,6 +114,7 @@ jobs:
           echo "✅ APK version matches release tag"
       
       - name: Sign APK
+        working-directory: apps/android
         env:
           ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
           ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
@@ -126,7 +128,7 @@ jobs:
             echo "$ANDROID_KEYSTORE_BASE64" | base64 -d > keystore.jks
             
             # Find unsigned APK in staging directory
-            UNSIGNED_APK=$(find apps/android/app/build/outputs/apk/staging -name "*.apk" -type f | head -1)
+            UNSIGNED_APK=$(find app/build/outputs/apk/staging -name "*.apk" -type f | head -1)
             
             if [ -z "$UNSIGNED_APK" ]; then
               echo "❌ No unsigned APK found"
@@ -149,7 +151,7 @@ jobs:
             jarsigner -verify -verbose -certs "$UNSIGNED_APK"
             
             # Zipalign
-            SIGNED_APK="apps/android/app/build/outputs/apk/verifd-staging-signed.apk"
+            SIGNED_APK="app/build/outputs/apk/verifd-staging-signed.apk"
             zipalign -v 4 "$UNSIGNED_APK" "$SIGNED_APK" || cp "$UNSIGNED_APK" "$SIGNED_APK"
             
             # Clean up
@@ -159,9 +161,9 @@ jobs:
           else
             echo "⚠️ No signing keys provided, using debug signature"
             # Find and rename APK for consistency
-            APK_PATH=$(find apps/android/app/build/outputs/apk -name "*.apk" -type f | head -1)
+            APK_PATH=$(find app/build/outputs/apk -name "*.apk" -type f | head -1)
             if [ -n "$APK_PATH" ]; then
-              cp "$APK_PATH" apps/android/app/build/outputs/apk/verifd-staging-signed.apk
+              cp "$APK_PATH" app/build/outputs/apk/verifd-staging-signed.apk
             fi
           fi
       
@@ -204,15 +206,16 @@ jobs:
           echo "APK_SIZE=$SIZE" >> $GITHUB_ENV
       
       - name: Count and Standardize APKs
+        working-directory: apps/android
         run: |
           # First check if we have the signed APK from the previous step
-          if [ -f "apps/android/app/build/outputs/apk/verifd-staging-signed.apk" ]; then
+          if [ -f "app/build/outputs/apk/verifd-staging-signed.apk" ]; then
             # Use the signed APK
-            cp "apps/android/app/build/outputs/apk/verifd-staging-signed.apk" "verifd-staging.apk"
+            cp "app/build/outputs/apk/verifd-staging-signed.apk" "verifd-staging.apk"
             echo "✅ Using signed APK"
           else
             # Fall back to staging directory APK
-            APK_COUNT=$(find apps/android/app/build/outputs/apk/staging -name "*.apk" -type f 2>/dev/null | wc -l)
+            APK_COUNT=$(find app/build/outputs/apk/staging -name "*.apk" -type f 2>/dev/null | wc -l)
             echo "Found $APK_COUNT APK(s) in staging directory"
             
             if [ "$APK_COUNT" -ne 1 ]; then
@@ -221,7 +224,7 @@ jobs:
             fi
             
             # Standardize APK name for upload
-            APK=$(find apps/android/app/build/outputs/apk/staging -name "*.apk" -type f | head -1)
+            APK=$(find app/build/outputs/apk/staging -name "*.apk" -type f | head -1)
             cp "$APK" "verifd-staging.apk"
             echo "✅ Standardized APK for upload"
           fi
@@ -231,7 +234,7 @@ jobs:
         with:
           name: verifd-staging-apk
           path: |
-            verifd-staging.apk
+            apps/android/verifd-staging.apk
             apk-metadata.json
           if-no-files-found: error
           retention-days: 30
