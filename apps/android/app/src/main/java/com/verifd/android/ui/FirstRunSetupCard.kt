@@ -15,7 +15,9 @@ import android.widget.TextView
 import androidx.cardview.widget.CardView
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
+import androidx.core.app.ActivityCompat
 import com.verifd.android.BuildConfig
+import com.verifd.android.MainActivity
 import com.verifd.android.R
 import com.verifd.android.service.CallScreeningService
 
@@ -52,11 +54,19 @@ class FirstRunSetupCard @JvmOverloads constructor(
     
     private fun setupButtons() {
         btnSetCallScreener.setOnClickListener {
+            // Task: Open role settings to set as default call screener
             openCallScreeningRoleSettings()
         }
         
         btnEnableNotifications.setOnClickListener {
-            openNotificationSettings()
+            // Task: Request POST_NOTIFICATIONS or open app channel settings
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                // Android 13+ - request POST_NOTIFICATIONS permission
+                requestNotificationPermission()
+            } else {
+                // Android 12 and below - open notification settings
+                openNotificationSettings()
+            }
         }
         
         btnDismissSetup.setOnClickListener {
@@ -156,5 +166,25 @@ class FirstRunSetupCard @JvmOverloads constructor(
             data = android.net.Uri.parse("package:${context.packageName}")
         }
         (context as? MainActivity)?.startActivity(intent)
+    }
+    
+    private fun requestNotificationPermission() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            val activity = context as? MainActivity
+            if (activity != null && ContextCompat.checkSelfPermission(
+                    context,
+                    Manifest.permission.POST_NOTIFICATIONS
+                ) != PackageManager.PERMISSION_GRANTED
+            ) {
+                ActivityCompat.requestPermissions(
+                    activity,
+                    arrayOf(Manifest.permission.POST_NOTIFICATIONS),
+                    1002 // REQUEST_CODE_NOTIFICATIONS
+                )
+            } else {
+                // Permission already granted or can't request
+                openNotificationSettings()
+            }
+        }
     }
 }

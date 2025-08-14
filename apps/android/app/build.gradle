@@ -9,6 +9,11 @@ plugins {
 def relTag = (project.findProperty("releaseTag") ?: System.getenv("RELEASE_TAG")) ?: ""
 def isReleaseBuild = gradle.startParameter.taskNames.join(' ').contains("assembleRelease") || gradle.startParameter.taskNames.join(' ').contains("bundleRelease")
 
+// Get Git metadata
+def gitBranch = 'git rev-parse --abbrev-ref HEAD'.execute().text.trim() ?: "unknown"
+def gitSha = 'git rev-parse HEAD'.execute().text.trim() ?: "unknown"
+def gitTag = 'git describe --tags --exact-match 2>/dev/null'.execute().text.trim() ?: relTag
+
 android {
     namespace 'com.verifd.android'
     compileSdk 34
@@ -27,6 +32,11 @@ android {
         versionName relTag?.startsWith("v") ? relTag.substring(1) : (relTag ?: "1.0-dev")
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        
+        // Git metadata fields
+        buildConfigField "String", "GIT_BRANCH", "\"${gitBranch}\""
+        buildConfigField "String", "GIT_SHA", "\"${gitSha}\""
+        buildConfigField "String", "BUILD_TAG", "\"${gitTag}\""
 
         javaCompileOptions {
             annotationProcessorOptions {

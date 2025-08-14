@@ -388,7 +388,13 @@ class QAPanelV2Activity : AppCompatActivity() {
                 status.append("📱 Build Info\n")
                 status.append("Version: ${BuildConfig.VERSION_NAME} (${BuildConfig.VERSION_CODE})\n")
                 status.append("Build Type: ${BuildConfig.BUILD_TYPE}\n")
-                status.append("Branch: feat/zod-row-typing\n") // Hardcoded for now, would be injected at build time
+                
+                // Real Git metadata
+                val shortSha = (BuildConfig.GIT_SHA ?: "").take(7)
+                status.append("Branch: ${BuildConfig.GIT_BRANCH}\n")
+                status.append("Tag: ${BuildConfig.BUILD_TAG}\n")
+                status.append("SHA: $shortSha\n")
+                
                 status.append("Application ID: ${BuildConfig.APPLICATION_ID}\n")
                 status.append("SDK: ${Build.VERSION.SDK_INT} (Android ${Build.VERSION.RELEASE})\n")
                 status.append("Debug: ${BuildConfig.DEBUG}\n")
@@ -435,16 +441,26 @@ class QAPanelV2Activity : AppCompatActivity() {
                 val qaRejectHideUI = prefs.getBoolean("qa_reject_hide_ui", true)
                 status.append("🚫 QA Reject+Hide Mode: ${if (qaRejectHideUI) "ENABLED" else "DISABLED"}\n")
                 
-                // Task 5: Add QA Setup Status row
+                // Task 5 & 6: Enhanced QA Setup Status with gate details
                 status.append("\n📱 SETUP STATUS\n")
                 val hasRole = CallScreeningService.hasCallScreeningRole(this@QAPanelV2Activity)
                 val hasNotifications = notificationsEnabled
                 val needsSetup = !hasRole || !hasNotifications
                 
-                status.append("• Call Screening Role: ${if (hasRole) "✅" else "❌"}\n")
-                status.append("• Notifications: ${if (hasNotifications) "✅" else "❌"}\n")
-                status.append("• Setup Card Should Show: ${if (needsSetup) "YES" else "NO"}\n")
-                status.append("• Runtime Gate Active: ${if (needsSetup) "BLOCKING" else "PASSED"}\n")
+                // Determine gate reason
+                val gateReason = when {
+                    !hasRole && !hasNotifications -> "both"
+                    !hasRole -> "role"
+                    !hasNotifications -> "notifications"
+                    else -> "none"
+                }
+                
+                status.append("• roleHolder: ${if (hasRole) "true ✅" else "false ❌"}\n")
+                status.append("• notifications: ${if (hasNotifications) "true ✅" else "false ❌"}\n")
+                status.append("• needsSetup: $needsSetup\n")
+                status.append("• gateScreen: MainActivity/PassListActivity\n")
+                status.append("• lastGateReason: $gateReason\n")
+                status.append("• Runtime Gate: ${if (needsSetup) "BLOCKING" else "PASSED"}\n")
                 
                 // Task 2e: Live suppression results
                 val suppressCount = prefs.getInt("suppress_ui_success_count", 0)

@@ -4,5 +4,11 @@
     <exclude domain="database" path="verifd_database" />
     <exclude domain="database" path="verifd_database-shm" />
     <exclude domain="database" path="verifd_database-wal" />
+    
+    <!-- Task 3: Exclude onboarding/setup preferences from backup -->
     <exclude domain="sharedpref" path="verifd_prefs.xml" />
+    <exclude domain="sharedpref" path="qa_panel_prefs.xml" />
+    
+    <!-- Include non-sensitive preferences -->
+    <include domain="sharedpref" path="app_settings.xml" />
 </full-backup-content>

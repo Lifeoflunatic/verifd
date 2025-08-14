@@ -14,6 +14,10 @@ import com.verifd.android.ui.DebugPanelActivity
 import com.verifd.android.ui.FirstRunSetupCard
 import com.verifd.android.service.CallScreeningService
 import androidx.core.app.NotificationManagerCompat
+import com.google.android.material.snackbar.Snackbar
+import android.animation.ObjectAnimator
+import android.animation.AnimatorListenerAdapter
+import android.animation.Animator
 
 class MainActivity : AppCompatActivity() {
     
@@ -110,8 +114,17 @@ class MainActivity : AppCompatActivity() {
         
         if (needsSetup) {
             // Task 2: Show FirstRunSetupCard on the real PassList home screen
-            firstRunSetupCard.visibility = View.VISIBLE
-            firstRunSetupCard.updateStatus()
+            if (firstRunSetupCard.visibility != View.VISIBLE) {
+                firstRunSetupCard.visibility = View.VISIBLE
+                firstRunSetupCard.updateStatus()
+                
+                // Animate in
+                firstRunSetupCard.alpha = 0f
+                ObjectAnimator.ofFloat(firstRunSetupCard, "alpha", 0f, 1f).apply {
+                    duration = 300
+                    start()
+                }
+            }
             
             // Set callback for when setup is complete
             firstRunSetupCard.onSetupCompleteListener = {
@@ -119,8 +132,25 @@ class MainActivity : AppCompatActivity() {
                 checkAndShowFirstRunSetup()
             }
         } else {
-            // Hide setup card when both conditions are met
-            firstRunSetupCard.visibility = View.GONE
+            // Hide setup card when both conditions are met with animation
+            if (firstRunSetupCard.visibility == View.VISIBLE) {
+                ObjectAnimator.ofFloat(firstRunSetupCard, "alpha", 1f, 0f).apply {
+                    duration = 300
+                    addListener(object : AnimatorListenerAdapter() {
+                        override fun onAnimationEnd(animation: Animator) {
+                            firstRunSetupCard.visibility = View.GONE
+                            
+                            // Show Snackbar confirming setup complete
+                            Snackbar.make(
+                                findViewById(android.R.id.content),
+                                "✅ Setup complete! verifd is ready to protect your calls.",
+                                Snackbar.LENGTH_LONG
+                            ).show()
+                        }
+                    })
+                    start()
+                }
+            }
         }
     }
     

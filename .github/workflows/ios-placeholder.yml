@@ -1,0 +1,51 @@
+name: iOS Build (Placeholder)
+
+on:
+  workflow_dispatch:
+    inputs:
+      build_type:
+        description: "Build type"
+        required: true
+        default: "debug"
+        type: choice
+        options:
+          - debug
+          - release
+          - staging
+
+jobs:
+  placeholder:
+    name: iOS Build Placeholder
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Placeholder Notice
+        run: |
+          echo "📱 iOS Build Workflow - Placeholder"
+          echo "=================================="
+          echo ""
+          echo "This is a placeholder workflow for iOS builds."
+          echo "Full implementation requires:"
+          echo "  - Apple Developer account secrets"
+          echo "  - Provisioning profiles"
+          echo "  - Code signing certificates"
+          echo "  - Xcode project setup"
+          echo ""
+          echo "Requested build type: ${{ inputs.build_type }}"
+          echo ""
+          echo "To implement:"
+          echo "1. Add secrets: IOS_CERTIFICATE_BASE64, IOS_PROVISION_PROFILE_BASE64"
+          echo "2. Add secrets: IOS_KEYCHAIN_PASSWORD, IOS_CERTIFICATE_PASSWORD"
+          echo "3. Bootstrap iOS project with Call Directory Extension"
+          echo "4. Update this workflow with actual build steps"
+
+      - name: Check for iOS project
+        run: |
+          if [ -d "apps/ios" ]; then
+            echo "✅ iOS project directory exists"
+            ls -la apps/ios/
+          else
+            echo "❌ iOS project not yet created"
+            echo "Run: npx react-native init verifd --directory apps/ios"
+          fi

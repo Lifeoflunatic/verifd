@@ -10695,7 +10695,6 @@ Asks for PM:
 
 ---END-HANDOFF---
 
-
 ## 2025-08-13T19:55:20Z
 
 ---HANDOFF---
@@ -10705,9 +10704,7 @@ Branch: release/staging-17
 
 Diff Summary:
 
-
 Files Touched:
-
 
 Last Commit:
 73b0328 feat(ops): add branch protection and tag policy documentation
@@ -10719,9 +10716,9 @@ Commands/Tests Run (tail):
 
 [33mThe CJS build of Vite's Node API is deprecated. See https://vite.dev/guide/troubleshooting.html#vite-cjs-node-api-deprecated for more details.[39m
 
- DEV  v2.1.9 /Users/harshilpatel/Desktop/Claude_Projects/verifd/apps/backend
+DEV v2.1.9 /Users/harshilpatel/Desktop/Claude_Projects/verifd/apps/backend
 
- ✓ test/pass.check.simple.test.ts (6 tests | 1 skipped) 2ms
+✓ test/pass.check.simple.test.ts (6 tests | 1 skipped) 2ms
 stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > returns allowed=false for unknown number
 [DEBUG] No active pass found for number: ph_8a59780bb8cd2ba0
 
@@ -10740,27 +10737,27 @@ stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Moc
 stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > correctly identifies 30d scope
 [INFO] Active pass found for number: ph_554285f82182d3dd, expires: 1757360216
 
- ✓ test/pass.check.mock.test.ts (7 tests) 65ms
+✓ test/pass.check.mock.test.ts (7 tests) 65ms
 
- Test Files  2 passed (2)
-      Tests  12 passed | 1 skipped (13)
-   Start at  15:36:55
-   Duration  378ms (transform 78ms, setup 0ms, collect 174ms, tests 67ms, environment 0ms, prepare 106ms)
+Test Files 2 passed (2)
+Tests 12 passed | 1 skipped (13)
+Start at 15:36:55
+Duration 378ms (transform 78ms, setup 0ms, collect 174ms, tests 67ms, environment 0ms, prepare 106ms)
 
- PASS  Waiting for file changes...
-       press h to show help, press q to quit
+PASS Waiting for file changes...
+press h to show help, press q to quit
 
 Playwright (tail):
 
-
 Open Risks:
+
 - Auto-generated handoff; ask Claude to run /handoff:prep next time for richer details.
 
 Asks for PM:
+
 - Approve or request changes based on diff/test tails; if unclear, ask Claude to regenerate via /handoff:prep.
 
 ---END-HANDOFF---
-
 
 ## 2025-08-13T20:15:57Z
 
@@ -10771,9 +10768,7 @@ Branch: release/staging-17
 
 Diff Summary:
 
-
 Files Touched:
-
 
 Last Commit:
 9e6402f fix(android): fix compilation errors in ContactRepository and CallScreeningService
@@ -10785,9 +10780,9 @@ Commands/Tests Run (tail):
 
 [33mThe CJS build of Vite's Node API is deprecated. See https://vite.dev/guide/troubleshooting.html#vite-cjs-node-api-deprecated for more details.[39m
 
- DEV  v2.1.9 /Users/harshilpatel/Desktop/Claude_Projects/verifd/apps/backend
+DEV v2.1.9 /Users/harshilpatel/Desktop/Claude_Projects/verifd/apps/backend
 
- ✓ test/pass.check.simple.test.ts (6 tests | 1 skipped) 2ms
+✓ test/pass.check.simple.test.ts (6 tests | 1 skipped) 2ms
 stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > returns allowed=false for unknown number
 [DEBUG] No active pass found for number: ph_8a59780bb8cd2ba0
 
@@ -10806,23 +10801,366 @@ stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Moc
 stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > correctly identifies 30d scope
 [INFO] Active pass found for number: ph_554285f82182d3dd, expires: 1757360216
 
- ✓ test/pass.check.mock.test.ts (7 tests) 65ms
+✓ test/pass.check.mock.test.ts (7 tests) 65ms
 
- Test Files  2 passed (2)
-      Tests  12 passed | 1 skipped (13)
-   Start at  15:36:55
-   Duration  378ms (transform 78ms, setup 0ms, collect 174ms, tests 67ms, environment 0ms, prepare 106ms)
+Test Files 2 passed (2)
+Tests 12 passed | 1 skipped (13)
+Start at 15:36:55
+Duration 378ms (transform 78ms, setup 0ms, collect 174ms, tests 67ms, environment 0ms, prepare 106ms)
 
- PASS  Waiting for file changes...
-       press h to show help, press q to quit
+PASS Waiting for file changes...
+press h to show help, press q to quit
 
 Playwright (tail):
 
-
 Open Risks:
+
 - Auto-generated handoff; ask Claude to run /handoff:prep next time for richer details.
 
 Asks for PM:
+
+- Approve or request changes based on diff/test tails; if unclear, ask Claude to regenerate via /handoff:prep.
+
+---END-HANDOFF---
+
+## 2025-08-13T20:29:03Z
+
+---HANDOFF---
+Task: (auto) Fallback handoff — assistant reply had no explicit ---HANDOFF---
+When: 2025-08-13T20:29:03Z
+Branch: release/staging-17
+
+Diff Summary:
+
+Files Touched:
+
+Last Commit:
+7a51e4b docs: add comprehensive HANDOFF_STAGING_17 with root cause analysis
+
+Commands/Tests Run (tail):
+
+> @verifd/backend@0.1.0 test /Users/harshilpatel/Desktop/Claude_Projects/verifd/apps/backend
+> vitest
+
+[33mThe CJS build of Vite's Node API is deprecated. See https://vite.dev/guide/troubleshooting.html#vite-cjs-node-api-deprecated for more details.[39m
+
+DEV v2.1.9 /Users/harshilpatel/Desktop/Claude_Projects/verifd/apps/backend
+
+✓ test/pass.check.simple.test.ts (6 tests | 1 skipped) 2ms
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > returns allowed=false for unknown number
+[DEBUG] No active pass found for number: ph_8a59780bb8cd2ba0
+
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > returns allowed=true for active pass
+[INFO] Active pass found for number: ph_8a59780bb8cd2ba0, expires: 1754771816
+
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > returns allowed=false for expired pass
+[DEBUG] No active pass found for number: ph_8a59780bb8cd2ba0
+
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > includes Cache-Control header
+[DEBUG] No active pass found for number: ph_8a59780bb8cd2ba0
+
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > correctly identifies 30m scope
+[INFO] Active pass found for number: ph_f5be76815beedc12, expires: 1754770016
+
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > correctly identifies 30d scope
+[INFO] Active pass found for number: ph_554285f82182d3dd, expires: 1757360216
+
+✓ test/pass.check.mock.test.ts (7 tests) 65ms
+
+Test Files 2 passed (2)
+Tests 12 passed | 1 skipped (13)
+Start at 15:36:55
+Duration 378ms (transform 78ms, setup 0ms, collect 174ms, tests 67ms, environment 0ms, prepare 106ms)
+
+PASS Waiting for file changes...
+press h to show help, press q to quit
+
+Playwright (tail):
+
+Open Risks:
+
+- Auto-generated handoff; ask Claude to run /handoff:prep next time for richer details.
+
+Asks for PM:
+
+- Approve or request changes based on diff/test tails; if unclear, ask Claude to regenerate via /handoff:prep.
+
+---END-HANDOFF---
+
+## 2025-08-13T21:12:04Z
+
+---HANDOFF---
+Task: (auto) Fallback handoff — assistant reply had no explicit ---HANDOFF---
+When: 2025-08-13T21:12:04Z
+Branch: release/staging-17
+
+Diff Summary:
+OPS/HANDOFF_HISTORY.md | 66 ++++++++++++++++++++++++++++++++++++++++++++++++++
+OPS/LAST_HANDOFF.txt | 4 +--
+2 files changed, 68 insertions(+), 2 deletions(-)
+
+Files Touched:
+OPS/HANDOFF_HISTORY.md
+OPS/LAST_HANDOFF.txt
+
+Last Commit:
+a6854f2 fix(android): fix QAPanelV2Activity string syntax errors
+
+Commands/Tests Run (tail):
+
+> @verifd/backend@0.1.0 test /Users/harshilpatel/Desktop/Claude_Projects/verifd/apps/backend
+> vitest
+
+[33mThe CJS build of Vite's Node API is deprecated. See https://vite.dev/guide/troubleshooting.html#vite-cjs-node-api-deprecated for more details.[39m
+
+DEV v2.1.9 /Users/harshilpatel/Desktop/Claude_Projects/verifd/apps/backend
+
+✓ test/pass.check.simple.test.ts (6 tests | 1 skipped) 2ms
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > returns allowed=false for unknown number
+[DEBUG] No active pass found for number: ph_8a59780bb8cd2ba0
+
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > returns allowed=true for active pass
+[INFO] Active pass found for number: ph_8a59780bb8cd2ba0, expires: 1754771816
+
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > returns allowed=false for expired pass
+[DEBUG] No active pass found for number: ph_8a59780bb8cd2ba0
+
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > includes Cache-Control header
+[DEBUG] No active pass found for number: ph_8a59780bb8cd2ba0
+
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > correctly identifies 30m scope
+[INFO] Active pass found for number: ph_f5be76815beedc12, expires: 1754770016
+
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > correctly identifies 30d scope
+[INFO] Active pass found for number: ph_554285f82182d3dd, expires: 1757360216
+
+✓ test/pass.check.mock.test.ts (7 tests) 65ms
+
+Test Files 2 passed (2)
+Tests 12 passed | 1 skipped (13)
+Start at 15:36:55
+Duration 378ms (transform 78ms, setup 0ms, collect 174ms, tests 67ms, environment 0ms, prepare 106ms)
+
+PASS Waiting for file changes...
+press h to show help, press q to quit
+
+Playwright (tail):
+
+Open Risks:
+
+- Auto-generated handoff; ask Claude to run /handoff:prep next time for richer details.
+
+Asks for PM:
+
+- Approve or request changes based on diff/test tails; if unclear, ask Claude to regenerate via /handoff:prep.
+
+---END-HANDOFF---
+
+## 2025-08-13T21:18:53Z
+
+---HANDOFF---
+Task: (auto) Fallback handoff — assistant reply had no explicit ---HANDOFF---
+When: 2025-08-13T21:18:53Z
+Branch: release/staging-17
+
+Diff Summary:
+OPS/HANDOFF_HISTORY.md | 135 +++++++++++++++++++++++++++++++++++++++++++++++++
+OPS/LAST_HANDOFF.txt | 11 ++--
+2 files changed, 142 insertions(+), 4 deletions(-)
+
+Files Touched:
+OPS/HANDOFF_HISTORY.md
+OPS/LAST_HANDOFF.txt
+
+Last Commit:
+ab3a1f8 fix(ci): remove duplicate name fields in workflow files
+
+Commands/Tests Run (tail):
+
+> @verifd/backend@0.1.0 test /Users/harshilpatel/Desktop/Claude_Projects/verifd/apps/backend
+> vitest
+
+[33mThe CJS build of Vite's Node API is deprecated. See https://vite.dev/guide/troubleshooting.html#vite-cjs-node-api-deprecated for more details.[39m
+
+DEV v2.1.9 /Users/harshilpatel/Desktop/Claude_Projects/verifd/apps/backend
+
+✓ test/pass.check.simple.test.ts (6 tests | 1 skipped) 2ms
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > returns allowed=false for unknown number
+[DEBUG] No active pass found for number: ph_8a59780bb8cd2ba0
+
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > returns allowed=true for active pass
+[INFO] Active pass found for number: ph_8a59780bb8cd2ba0, expires: 1754771816
+
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > returns allowed=false for expired pass
+[DEBUG] No active pass found for number: ph_8a59780bb8cd2ba0
+
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > includes Cache-Control header
+[DEBUG] No active pass found for number: ph_8a59780bb8cd2ba0
+
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > correctly identifies 30m scope
+[INFO] Active pass found for number: ph_f5be76815beedc12, expires: 1754770016
+
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > correctly identifies 30d scope
+[INFO] Active pass found for number: ph_554285f82182d3dd, expires: 1757360216
+
+✓ test/pass.check.mock.test.ts (7 tests) 65ms
+
+Test Files 2 passed (2)
+Tests 12 passed | 1 skipped (13)
+Start at 15:36:55
+Duration 378ms (transform 78ms, setup 0ms, collect 174ms, tests 67ms, environment 0ms, prepare 106ms)
+
+PASS Waiting for file changes...
+press h to show help, press q to quit
+
+Playwright (tail):
+
+Open Risks:
+
+- Auto-generated handoff; ask Claude to run /handoff:prep next time for richer details.
+
+Asks for PM:
+
+- Approve or request changes based on diff/test tails; if unclear, ask Claude to regenerate via /handoff:prep.
+
+---END-HANDOFF---
+
+## 2025-08-13T21:21:39Z
+
+---HANDOFF---
+Task: (auto) Fallback handoff — assistant reply had no explicit ---HANDOFF---
+When: 2025-08-13T21:21:39Z
+Branch: release/staging-17
+
+Diff Summary:
+OPS/HANDOFF_HISTORY.md | 204 +++++++++++++++++++++++++++++++++++++++++++++++++
+OPS/LAST_HANDOFF.txt | 11 ++-
+2 files changed, 211 insertions(+), 4 deletions(-)
+
+Files Touched:
+OPS/HANDOFF_HISTORY.md
+OPS/LAST_HANDOFF.txt
+
+Last Commit:
+ab3a1f8 fix(ci): remove duplicate name fields in workflow files
+
+Commands/Tests Run (tail):
+
+> @verifd/backend@0.1.0 test /Users/harshilpatel/Desktop/Claude_Projects/verifd/apps/backend
+> vitest
+
+[33mThe CJS build of Vite's Node API is deprecated. See https://vite.dev/guide/troubleshooting.html#vite-cjs-node-api-deprecated for more details.[39m
+
+DEV v2.1.9 /Users/harshilpatel/Desktop/Claude_Projects/verifd/apps/backend
+
+✓ test/pass.check.simple.test.ts (6 tests | 1 skipped) 2ms
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > returns allowed=false for unknown number
+[DEBUG] No active pass found for number: ph_8a59780bb8cd2ba0
+
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > returns allowed=true for active pass
+[INFO] Active pass found for number: ph_8a59780bb8cd2ba0, expires: 1754771816
+
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > returns allowed=false for expired pass
+[DEBUG] No active pass found for number: ph_8a59780bb8cd2ba0
+
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > includes Cache-Control header
+[DEBUG] No active pass found for number: ph_8a59780bb8cd2ba0
+
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > correctly identifies 30m scope
+[INFO] Active pass found for number: ph_f5be76815beedc12, expires: 1754770016
+
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > correctly identifies 30d scope
+[INFO] Active pass found for number: ph_554285f82182d3dd, expires: 1757360216
+
+✓ test/pass.check.mock.test.ts (7 tests) 65ms
+
+Test Files 2 passed (2)
+Tests 12 passed | 1 skipped (13)
+Start at 15:36:55
+Duration 378ms (transform 78ms, setup 0ms, collect 174ms, tests 67ms, environment 0ms, prepare 106ms)
+
+PASS Waiting for file changes...
+press h to show help, press q to quit
+
+Playwright (tail):
+
+Open Risks:
+
+- Auto-generated handoff; ask Claude to run /handoff:prep next time for richer details.
+
+Asks for PM:
+
+- Approve or request changes based on diff/test tails; if unclear, ask Claude to regenerate via /handoff:prep.
+
+---END-HANDOFF---
+
+## 2025-08-13T21:26:55Z
+
+---HANDOFF---
+Task: (auto) Fallback handoff — assistant reply had no explicit ---HANDOFF---
+When: 2025-08-13T21:26:55Z
+Branch: release/staging-17
+
+Diff Summary:
+OPS/HANDOFF_HISTORY.md | 315 +++++++++++++++++++--
+OPS/LAST_HANDOFF.txt | 11 +-
+.../com/verifd/android/ui/QAPanelV2Activity.kt | 2 +-
+3 files changed, 299 insertions(+), 29 deletions(-)
+
+Files Touched:
+OPS/HANDOFF_HISTORY.md
+OPS/LAST_HANDOFF.txt
+apps/android/app/src/main/java/com/verifd/android/ui/QAPanelV2Activity.kt
+
+Last Commit:
+ab3a1f8 fix(ci): remove duplicate name fields in workflow files
+
+Commands/Tests Run (tail):
+
+> @verifd/backend@0.1.0 test /Users/harshilpatel/Desktop/Claude_Projects/verifd/apps/backend
+> vitest
+
+[33mThe CJS build of Vite's Node API is deprecated. See https://vite.dev/guide/troubleshooting.html#vite-cjs-node-api-deprecated for more details.[39m
+
+DEV v2.1.9 /Users/harshilpatel/Desktop/Claude_Projects/verifd/apps/backend
+
+✓ test/pass.check.simple.test.ts (6 tests | 1 skipped) 2ms
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > returns allowed=false for unknown number
+[DEBUG] No active pass found for number: ph_8a59780bb8cd2ba0
+
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > returns allowed=true for active pass
+[INFO] Active pass found for number: ph_8a59780bb8cd2ba0, expires: 1754771816
+
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > returns allowed=false for expired pass
+[DEBUG] No active pass found for number: ph_8a59780bb8cd2ba0
+
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > includes Cache-Control header
+[DEBUG] No active pass found for number: ph_8a59780bb8cd2ba0
+
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > correctly identifies 30m scope
+[INFO] Active pass found for number: ph_f5be76815beedc12, expires: 1754770016
+
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > correctly identifies 30d scope
+[INFO] Active pass found for number: ph_554285f82182d3dd, expires: 1757360216
+
+✓ test/pass.check.mock.test.ts (7 tests) 65ms
+
+Test Files 2 passed (2)
+Tests 12 passed | 1 skipped (13)
+Start at 15:36:55
+Duration 378ms (transform 78ms, setup 0ms, collect 174ms, tests 67ms, environment 0ms, prepare 106ms)
+
+PASS Waiting for file changes...
+press h to show help, press q to quit
+
+Playwright (tail):
+
+Open Risks:
+
+- Auto-generated handoff; ask Claude to run /handoff:prep next time for richer details.
+
+Asks for PM:
+
 - Approve or request changes based on diff/test tails; if unclear, ask Claude to regenerate via /handoff:prep.
 
 ---END-HANDOFF---
