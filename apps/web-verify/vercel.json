@@ -1,4 +1,0 @@
-{
-  "buildCommand": "cd ../.. && pnpm -w --filter @verifd/shared build && pnpm -w --filter web-verify build",
-  "installCommand": "pnpm install --frozen-lockfile"
-}
