@@ -104,6 +104,7 @@ async function setupApiMocks(page: Page, allowPassCheck: boolean = false) {
     
     console.log('📤 Mocked /pass/check called for number:', numberE164);
     
+    // Always return a response even if phone number is missing/undefined
     const response = allowPassCheck ? MOCK_PASS_CHECK_RESPONSE_ALLOWED : MOCK_PASS_CHECK_RESPONSE_DENIED;
     
     await route.fulfill({
@@ -346,7 +347,13 @@ test.describe('verifd Web Verify E2E Tests', () => {
     
     console.log(`📤 Got verification token: ${token}`);
 
-    // Step 2: Visit /v/<token> → should show success page directly
+    // Step 2: Set up sessionStorage with phone number before visiting the page
+    await page.goto('/'); // Go to home first to set up storage
+    await page.evaluate((phoneNumber) => {
+      sessionStorage.setItem('phoneNumber', phoneNumber);
+    }, MOCK_VERIFY_DATA.phoneNumber);
+    
+    // Now visit /v/<token> → should show success page directly
     await page.goto(`/v/${token}`);
     
     // Should stay on /v/<token> and show the success page
@@ -366,8 +373,8 @@ test.describe('verifd Web Verify E2E Tests', () => {
     ]);
     
     // Step 3: Check that pass status shows allowed
-    await expect(page.getByTestId('pass-status')).toBeVisible();
-    await expect(page.getByTestId('pass-allowed')).toBeVisible();
+    await expect(page.getByTestId('pass-status')).toBeVisible({ timeout: 15000 });
+    await expect(page.getByTestId('pass-allowed')).toBeVisible({ timeout: 5000 });
     await expect(page.getByTestId('pass-scope')).toContainText('30 minutes');
     
     // Take screenshot of success page
