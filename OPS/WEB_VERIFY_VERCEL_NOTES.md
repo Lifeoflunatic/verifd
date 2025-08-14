@@ -3,6 +3,14 @@
 ## Summary
 This document outlines the required configuration for deploying the web-verify Next.js app to Vercel from a pnpm monorepo using workspace packages.
 
+## Build Order Requirements
+
+**CRITICAL**: The shared package must be built before web-verify. Ensure your build commands follow this order:
+1. Build `@verifd/shared` first (generates dist/ with .js, .mjs, .d.ts files)
+2. Build `web-verify` second (consumes the built shared package)
+
+For CI/Vercel, use: `pnpm -r --filter @verifd/shared --filter web-verify build`
+
 ## Key Configuration Changes
 
 ### 1. next.config.js
@@ -68,7 +76,7 @@ declare module '@verifd/shared' {
 
 When deploying to Vercel:
 1. Set Root Directory: `apps/web-verify`
-2. Build Command: `pnpm build` or `cd ../.. && pnpm --filter=web-verify build`
+2. Build Command: `cd ../.. && pnpm -r --filter @verifd/shared --filter web-verify build`
 3. Output Directory: `.next`
 4. Install Command: `pnpm install --frozen-lockfile`
 
