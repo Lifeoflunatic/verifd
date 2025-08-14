@@ -48,13 +48,13 @@ export default defineConfig({
     {
       command: 'pnpm dev',
       url: 'http://localhost:3000',
-      reuseExistingServer: !process.env.CI,
+      reuseExistingServer: true,  // Always reuse if server is already running
       timeout: 120 * 1000,
     },
     {
       command: 'cd ../backend && pnpm dev',
-      url: 'http://localhost:3001/health/z',
-      reuseExistingServer: !process.env.CI,
+      url: 'http://localhost:3001/health/healthz',  // Use correct health endpoint
+      reuseExistingServer: true,  // Always reuse if server is already running
       timeout: 120 * 1000,
     }
   ],
