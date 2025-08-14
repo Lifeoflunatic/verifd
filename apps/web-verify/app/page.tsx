@@ -56,7 +56,7 @@ export default function Home() {
         sessionStorage.setItem('passGranted', data.passGranted ? 'true' : 'false');
         sessionStorage.setItem('passId', data.passId || '');
         
-        router.push(`/success?token=${encodeURIComponent(token)}&granted=${data.passGranted}`);
+        router.push(`/v/${encodeURIComponent(token)}`);
       } else {
         // No token - start a new verification request
         const response = await fetch(`${apiUrl}/verify/start`, {
@@ -84,7 +84,7 @@ export default function Home() {
         sessionStorage.setItem('phoneNumber', data.number_e164);
         sessionStorage.setItem('vanityUrl', data.vanity_url);
         
-        router.push(`/success?token=${encodeURIComponent(data.token)}`);
+        router.push(`/v/${encodeURIComponent(data.token)}`);
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred');

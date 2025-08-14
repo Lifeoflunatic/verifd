@@ -149,7 +149,8 @@ test.describe('verifd Web Verify E2E Tests', () => {
     // Submit the form
     await page.getByTestId('submit-button').click();
 
-    // Wait for navigation to success page
+    // Wait for navigation to success page at /v/[token]
+    await page.waitForURL(/\/v\/[^\/]+$/, { timeout: 10000 });
     await expect(page.getByTestId('success-page')).toBeVisible({ timeout: 10000 });
     
     // Wait for pass status to load
@@ -190,7 +191,8 @@ test.describe('verifd Web Verify E2E Tests', () => {
     // Submit the form
     await page.getByTestId('submit-button').click();
 
-    // Wait for navigation to success page
+    // Wait for navigation to success page at /v/[token]
+    await page.waitForURL(/\/v\/[^\/]+$/, { timeout: 10000 });
     await expect(page.getByTestId('success-page')).toBeVisible({ timeout: 10000 });
     
     // Wait for pass status to load
