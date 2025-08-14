@@ -108,3 +108,10 @@ temp/
 .next/
 playwright-report/
 test-results/
+.vercel
+
+.vercel/
+.vercel/output/
+.next/
+playwright-report/
+test-results/
