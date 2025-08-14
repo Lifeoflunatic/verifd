@@ -211,10 +211,8 @@ class CallScreeningService : CallScreeningService() {
             .setSkipNotification(false)
             .setSilenceCall(false)
         
-        // Set caller display name if provided
-        response.callerDisplayName?.let { displayName ->
-            responseBuilder.setCallScreeningAppName(displayName)
-        }
+        // Note: CallResponse.Builder doesn't support setting custom caller display names
+        // This would need to be handled through Call Directory or other means
         
         respondToCall(callDetails, responseBuilder.build())
     }

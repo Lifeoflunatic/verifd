@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 
 export default function Home() {
   const [formData, setFormData] = useState({
@@ -14,15 +14,12 @@ export default function Home() {
   const [error, setError] = useState('');
   const [token, setToken] = useState<string | null>(null);
   const router = useRouter();
-  const searchParams = useSearchParams();
 
   useEffect(() => {
     // Check if we have a token in the URL (from vanity redirect)
-    const urlToken = searchParams.get('t');
-    if (urlToken) {
-      setToken(urlToken);
-    }
-  }, [searchParams]);
+    // This is now handled by route params in /v/[code]
+    // Legacy support removed to avoid useSearchParams
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -59,7 +56,7 @@ export default function Home() {
         sessionStorage.setItem('passGranted', data.passGranted ? 'true' : 'false');
         sessionStorage.setItem('passId', data.passId || '');
         
-        router.push(`/success?token=${encodeURIComponent(token)}&granted=${data.passGranted}`);
+        router.push(`/v/${encodeURIComponent(token)}`);
       } else {
         // No token - start a new verification request
         const response = await fetch(`${apiUrl}/verify/start`, {
@@ -87,7 +84,7 @@ export default function Home() {
         sessionStorage.setItem('phoneNumber', data.number_e164);
         sessionStorage.setItem('vanityUrl', data.vanity_url);
         
-        router.push(`/success?token=${encodeURIComponent(data.token)}`);
+        router.push(`/v/${encodeURIComponent(data.token)}`);
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred');

@@ -26,9 +26,16 @@ android {
     }
 
     buildTypes {
+        debug {
+            buildConfigField "String", "VERIFY_ORIGIN", "\"https://verify.getpryvacy.com\""
+        }
+        staging {
+            buildConfigField "String", "VERIFY_ORIGIN", "\"https://verify.getpryvacy.com\""
+        }
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            buildConfigField "String", "VERIFY_ORIGIN", "\"https://verify.getpryvacy.com\""
         }
     }
     
@@ -43,6 +50,7 @@ android {
 
     buildFeatures {
         viewBinding true
+        buildConfig true
     }
 }
 

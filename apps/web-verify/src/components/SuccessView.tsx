@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useSearchParams } from 'next/navigation';
 import type { PassCheckResponse } from '@verifd/shared';
 
 interface PassCheckState {
@@ -10,8 +9,11 @@ interface PassCheckState {
   error: string | null;
 }
 
-export default function SuccessPage() {
-  const searchParams = useSearchParams();
+interface SuccessViewProps {
+  code?: string;
+}
+
+export default function SuccessView({ code }: SuccessViewProps) {
   const [passCheck, setPassCheck] = useState<PassCheckState>({
     loading: true,
     data: null,
@@ -24,15 +26,16 @@ export default function SuccessPage() {
     phoneNumber: '',
     passGranted: false,
     passId: '',
-    vanityUrl: ''
+    vanityUrl: '',
+    code: code || ''
   });
 
   useEffect(() => {
-    // Get verification data from URL params and sessionStorage
-    const token = searchParams.get('token') || sessionStorage.getItem('verifyToken') || '';
+    // Get verification data from sessionStorage and code prop
+    const token = code || sessionStorage.getItem('verifyToken') || '';
     const callerName = sessionStorage.getItem('callerName') || '';
     const phoneNumber = sessionStorage.getItem('phoneNumber') || '';
-    const passGranted = searchParams.get('granted') === 'true' || sessionStorage.getItem('passGranted') === 'true';
+    const passGranted = sessionStorage.getItem('passGranted') === 'true';
     const passId = sessionStorage.getItem('passId') || '';
     const vanityUrl = sessionStorage.getItem('vanityUrl') || '';
     
@@ -42,7 +45,8 @@ export default function SuccessPage() {
       phoneNumber, 
       passGranted,
       passId,
-      vanityUrl
+      vanityUrl,
+      code: code || ''
     });
 
     // Check pass status
@@ -55,7 +59,7 @@ export default function SuccessPage() {
         error: 'Missing phone number for pass check'
       });
     }
-  }, [searchParams]);
+  }, [code]);
 
   const checkPassStatus = async (phoneNumber: string) => {
     try {
@@ -148,6 +152,11 @@ export default function SuccessPage() {
               </>
             )}
           </p>
+          {verificationData.code && (
+            <p className="text-sm text-gray-500 mt-2">
+              Verification code: {verificationData.code}
+            </p>
+          )}
         </div>
 
         <div className="border-t border-gray-200 pt-6">
@@ -264,7 +273,8 @@ export default function SuccessPage() {
           <div className="mt-4 p-3 bg-gray-100 rounded text-xs text-gray-600" data-testid="debug-info">
             <strong>Debug Info:</strong><br />
             Token: {verificationData.token.substring(0, 16)}...<br />
-            Phone: {verificationData.phoneNumber}
+            Phone: {verificationData.phoneNumber}<br />
+            Code: {verificationData.code}
           </div>
         )}
 

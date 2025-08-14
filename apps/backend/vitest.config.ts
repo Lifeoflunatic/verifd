@@ -1,4 +1,5 @@
 import { defineConfig } from 'vitest/config';
+import { resolve } from 'path';
 
 export default defineConfig({
   test: {
@@ -20,7 +21,7 @@ export default defineConfig({
   },
   resolve: {
     alias: {
-      '@verifd/shared': '/Users/harshilpatel/Desktop/Claude_Projects/verifd/packages/shared/dist/index.js'
+      '@verifd/shared': resolve(__dirname, '../../packages/shared/dist/index.js')
     }
   }
 });
