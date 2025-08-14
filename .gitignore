@@ -103,3 +103,8 @@ temp/
 
 # Package managers
 .pnpm-debug.log*
+.vercel/
+.vercel/output/
+.next/
+playwright-report/
+test-results/
