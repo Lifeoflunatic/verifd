@@ -2,12 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
-// TODO: Revert to `import type { PassCheckResponse } from '@verifd/shared'` after proper package exports
-type PassCheckResponse = { 
-  allowed: boolean; 
-  scope?: '30m' | '24h' | '30d'; 
-  expires_at?: string;
-};
+import type { PassCheckResponse } from '@verifd/shared';
 
 interface PassCheckState {
   loading: boolean;
