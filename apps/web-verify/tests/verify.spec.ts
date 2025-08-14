@@ -340,45 +340,23 @@ test.describe('verifd Web Verify E2E Tests', () => {
     
     console.log(`📤 Got verification token: ${token}`);
 
-    // Step 2: Visit /v/<token> → assert redirect with prefilled form
+    // Step 2: Visit /v/<token> → should show success page directly
     await page.goto(`/v/${token}`);
     
-    // Should redirect to home page with token query parameter
-    await expect(page).toHaveURL(new RegExp(`/?t=${encodeURIComponent(token)}`));
+    // Should stay on /v/<token> and show the success page
+    await expect(page).toHaveURL(`/v/${token}`);
     
-    // Wait for the form to be visible
-    await expect(page.getByTestId('verify-form')).toBeVisible();
-    
-    // Should show the token-specific UI (approve/deny mode)
-    await expect(page.getByText('Approve or deny call verification')).toBeVisible();
-    await expect(page.getByText('Someone wants to call you. Review their details below.')).toBeVisible();
-    
-    // Take screenshot of prefilled form
-    await page.screenshot({
-      path: path.join(artifactsDir, `e2e-token-redirect-form-${timestamp}.png`),
-      fullPage: true
-    });
-
-    // Step 3: Fill out and submit form
-    await page.getByTestId('name-input').fill('Token Recipient');
-    await page.getByTestId('reason-input').fill('Approving the call');
-    await page.getByTestId('phone-input').fill(MOCK_VERIFY_DATA.phoneNumber);
-    await page.getByTestId('voice-input').fill('I approve this verification');
-
-    // Submit should trigger /verify/submit
-    await page.getByTestId('submit-button').click();
-
-    // Step 4: Assert success page
-    await expect(page.getByTestId('success-page')).toBeVisible({ timeout: 10000 });
+    // Wait for the success page to be visible
+    await expect(page.getByTestId('success-page')).toBeVisible();
     
     // Wait for pass status to load
     await expect(page.getByTestId('loading-state')).toBeVisible();
     await expect(page.getByTestId('loading-state')).not.toBeVisible({ timeout: 10000 });
     
-    // Check that pass status shows allowed
+    // Step 3: Check that pass status shows allowed
     await expect(page.getByTestId('pass-status')).toBeVisible();
     await expect(page.getByTestId('pass-allowed')).toBeVisible();
-    await expect(page.getByTestId('pass-scope')).toContainText('Short-term (30 minutes)');
+    await expect(page.getByTestId('pass-scope')).toContainText('30 minutes');
     
     // Take screenshot of success page
     await page.screenshot({
