@@ -123,7 +123,7 @@ class PostCallActivity : AppCompatActivity() {
     private fun showSendPingDialog() {
         val builder = AlertDialog.Builder(this)
         builder.setTitle("Send Identity Ping")
-        builder.setMessage("Send verification request to ${PhoneNumberUtils.format(phoneNumber!)}?\n\nThis will open your SMS app with a pre-filled message.")
+        builder.setMessage("Send verification request to ${PhoneNumberUtils.format(phoneNumber!!)}?\n\nThis will open your SMS app with a pre-filled message.")
         
         builder.setPositiveButton("Open SMS") { _, _ ->
             sendIdentityPing()
