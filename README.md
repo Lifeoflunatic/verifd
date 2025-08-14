@@ -162,6 +162,25 @@ pnpm dev
 pnpm test
 ```
 
+## Deployment Notes
+
+### Vercel Monorepo Configuration
+
+This project uses a specific configuration to deploy the web-verify Next.js app from a pnpm monorepo to Vercel:
+
+#### Why Next.js is in Root devDependencies
+Vercel's framework detection happens **before** configuration is applied. For monorepos, Vercel only checks the root `package.json` for framework dependencies. Without Next.js in the root, Vercel falls back to the Build Output API instead of using the Next.js builder.
+
+This is a temporary workaround until Vercel improves monorepo framework detection. The Next.js version in root is pinned to match the version in `apps/web-verify/package.json`.
+
+#### Deployment Configuration
+- **Deploy from**: Repository root (never set Root Directory in Vercel)
+- **Package naming**: `@verifd/web-verify` (must match pnpm filter exactly)
+- **Build command**: Uses pnpm workspace filters to build dependencies
+- **Install command**: Must use `pnpm install` (not npm/yarn)
+
+See `OPS/WEB_VERIFY_DEPLOYMENT.md` for complete deployment documentation.
+
 ## License
 
 MIT

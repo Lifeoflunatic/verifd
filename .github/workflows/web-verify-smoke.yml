@@ -1,0 +1,45 @@
+name: web-verify smoke
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  build-and-smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with: 
+          version: 9.5.0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: 'pnpm'
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm -w --filter @verifd/shared build
+      - run: |
+          pnpm -w --filter @verifd/web-verify build 2>&1 | tee .nextBuildLog.txt
+      - run: node scripts/assert-next-routes.js .nextBuildLog.txt
+
+  post-deploy-check:
+    runs-on: ubuntu-latest
+    if: ${{ github.ref == 'refs/heads/main' }}
+    steps:
+      - name: Get latest deployment url
+        id: get
+        run: |
+          echo "VURL=$(echo '${{ secrets.VERCEL_DEPLOYMENT_URL }}')" >> $GITHUB_OUTPUT
+      - name: Curl checks (hash)
+        run: |
+          URL="${{ steps.get.outputs.VURL }}"
+          [ -z "$URL" ] && echo "No VERCEL_DEPLOYMENT_URL secret set" && exit 1
+          curl -s -o /dev/null -w "%{http_code}\n" "$URL/" | grep -q '^200'
+          curl -s -o /dev/null -w "%{http_code}\n" "$URL/v/test123" | grep -q '^200'
+          curl -s -o /dev/null -w "%{http_code}\n" "$URL/does-not-exist" | grep -q '^404'
+      - name: Curl checks (custom domain)
+        run: |
+          curl -s -o /dev/null -w "%{http_code}\n" https://verify.getpryvacy.com/ | grep -q '^200'
+          curl -s -o /dev/null -w "%{http_code}\n" https://verify.getpryvacy.com/v/test123 | grep -q '^200'
+          curl -s -o /dev/null -w "%{http_code}\n" https://verify.getpryvacy.com/does-not-exist | grep -q '^404'

@@ -1,6 +1,5 @@
 {
-  "buildCommand": "pnpm --filter @verifd/shared build && pnpm --filter @verifd/web-verify build",
-  "outputDirectory": "apps/web-verify/.next",
   "installCommand": "pnpm install",
+  "buildCommand": "pnpm --filter @verifd/shared build && pnpm --filter @verifd/web-verify build",
   "framework": "nextjs"
 }

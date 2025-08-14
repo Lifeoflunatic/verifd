@@ -18,10 +18,8 @@
     "check-in": "git add -A && git commit -m \"PM: approved & applied\" && git tag -f approved-latest",
     "gen-pr": "git push -u origin HEAD && gh pr create -f || true"
   },
-  "dependencies": {
-    "next": "^14.2.5"
-  },
   "devDependencies": {
+    "next": "^14.2.5",
     "prettier": "^3.3.3",
     "turbo": "^2.0.0",
     "typescript": "^5.5.0"
