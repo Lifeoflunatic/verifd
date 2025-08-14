@@ -155,9 +155,15 @@ test.describe('verifd Web Verify E2E Tests', () => {
     await page.waitForURL(/\/v\/[^\/]+$/, { timeout: 10000 });
     await expect(page.getByTestId('success-page')).toBeVisible({ timeout: 10000 });
     
-    // Wait for pass status to load
-    await expect(page.getByTestId('loading-state')).toBeVisible();
-    await expect(page.getByTestId('loading-state')).not.toBeVisible({ timeout: 10000 });
+    // Wait for pass status to load (may be very fast with mocks, so check both states)
+    const loadingState = page.getByTestId('loading-state');
+    const passStatus = page.getByTestId('pass-status');
+    
+    // Either loading is visible and then disappears, or pass status is already visible
+    await Promise.race([
+      loadingState.waitFor({ state: 'hidden', timeout: 10000 }).catch(() => {}),
+      passStatus.waitFor({ state: 'visible', timeout: 10000 })
+    ]);
     
     // Check that pass status shows allowed
     await expect(page.getByTestId('pass-status')).toBeVisible();
@@ -349,9 +355,15 @@ test.describe('verifd Web Verify E2E Tests', () => {
     // Wait for the success page to be visible
     await expect(page.getByTestId('success-page')).toBeVisible();
     
-    // Wait for pass status to load
-    await expect(page.getByTestId('loading-state')).toBeVisible();
-    await expect(page.getByTestId('loading-state')).not.toBeVisible({ timeout: 10000 });
+    // Wait for pass status to load (may be very fast with mocks, so check both states)
+    const loadingState = page.getByTestId('loading-state');
+    const passStatus = page.getByTestId('pass-status');
+    
+    // Either loading is visible and then disappears, or pass status is already visible
+    await Promise.race([
+      loadingState.waitFor({ state: 'hidden', timeout: 10000 }).catch(() => {}),
+      passStatus.waitFor({ state: 'visible', timeout: 10000 })
+    ]);
     
     // Step 3: Check that pass status shows allowed
     await expect(page.getByTestId('pass-status')).toBeVisible();
