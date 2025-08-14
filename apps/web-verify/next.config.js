@@ -1,5 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  transpilePackages: ['@verifd/shared'],
   experimental: {
     typedRoutes: true
   },
