@@ -1,16 +1,25 @@
 name: Android Staging APK Build
 
 on:
+  workflow_dispatch:
+    inputs:
+      release_tag:
+        description: 'Release tag (e.g., v1.3.0-rc1-staging.19)'
+        required: false
+        type: string
   push:
-    branches: [staging, main]
+    branches: 
+      - 'release/staging-*'
+      - 'staging'
+      - 'main'
     paths:
       - 'apps/android/**'
       - '.github/workflows/android-staging-apk.yml'
   pull_request:
-    branches: [main, staging]
+    branches: [main, staging, 'release/staging-*']
     paths:
       - 'apps/android/**'
-  workflow_dispatch:
+      - '.github/workflows/android-staging-apk.yml'
 
 jobs:
   build:
