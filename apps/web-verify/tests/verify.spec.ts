@@ -41,7 +41,7 @@ function ensureArtifactsDir(): string {
 }
 
 // Helper function to wait for API readiness
-async function waitForApiReady(page: Page, endpoint: string = '/healthz', maxRetries: number = 30): Promise<void> {
+async function waitForApiReady(page: Page, endpoint: string = '/health/healthz', maxRetries: number = 30): Promise<void> {
   for (let i = 0; i < maxRetries; i++) {
     try {
       const response = await page.request.get(`${API_BASE_URL}${endpoint}`);
@@ -114,14 +114,13 @@ async function setupApiMocks(page: Page, allowPassCheck: boolean = false) {
 
 test.describe('verifd Web Verify E2E Tests', () => {
   test.beforeEach(async ({ page }) => {
-    // Wait for backend to be ready using both /health/z and /healthz
+    // Wait for backend to be ready
     console.log('🔍 Checking API readiness...');
     
-    // Test both endpoints
-    await waitForApiReady(page, '/health/z');
-    await waitForApiReady(page, '/healthz');
+    // Test the health endpoint
+    await waitForApiReady(page, '/health/healthz');
     
-    console.log('✅ Both /health/z and /healthz endpoints are ready');
+    console.log('✅ API ready at http://localhost:3001/health/healthz');
   });
 
   test('should complete full verification flow with active pass', async ({ page }) => {
