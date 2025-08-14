@@ -55,13 +55,24 @@ vi.mock('../src/db/index.js', () => ({
         return { changes: 1 };
       },
       get: (...args: any[]) => {
-        if (sql.includes('SELECT * FROM verification_attempts')) {
+        if (sql.includes('SELECT status, expires_at, completed_at, number_e164, name, id, reason')) {
           const [token] = args;
-          return mockVerificationAttempts.find(a => 
+          const attempt = mockVerificationAttempts.find(a => 
             a.verification_token === token && 
             a.status === 'pending' && 
             a.expires_at > Math.floor(Date.now() / 1000)
           );
+          if (attempt) {
+            return {
+              status: attempt.status,
+              expires_at: attempt.expires_at,
+              completed_at: null,
+              number_e164: attempt.number_e164,
+              name: attempt.name,
+              id: attempt.id,
+              reason: attempt.reason
+            };
+          }
         }
         return undefined;
       }
