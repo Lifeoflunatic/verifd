@@ -1,0 +1,586 @@
+name: Release Train
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version (e.g., 1.2.3)'
+        required: true
+        type: string
+      candidate:
+        description: 'Release candidate number'
+        required: true
+        default: '1'
+        type: string
+      deploy_env:
+        description: 'Target environment'
+        required: true
+        type: choice
+        options:
+          - staging
+          - production
+        default: staging
+
+env:
+  RELEASE_VERSION: v${{ inputs.version }}-rc${{ inputs.candidate }}
+
+jobs:
+  prepare-release:
+    runs-on: ubuntu-latest
+    outputs:
+      release_tag: ${{ steps.tag.outputs.tag }}
+      build_id: ${{ steps.build.outputs.id }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 8
+
+      - name: Lock dependencies
+        run: |
+          # Create dependency snapshot
+          pnpm install --frozen-lockfile
+          
+          # Generate lock hash
+          LOCK_HASH=$(sha256sum pnpm-lock.yaml | cut -d' ' -f1)
+          echo "LOCK_HASH=${LOCK_HASH}" >> $GITHUB_ENV
+          
+          # Save snapshot
+          mkdir -p .release
+          cp pnpm-lock.yaml .release/pnpm-lock-${RELEASE_VERSION}.yaml
+          echo "${LOCK_HASH}" > .release/lock-hash-${RELEASE_VERSION}.txt
+
+      - name: Create release tag
+        id: tag
+        run: |
+          git config user.name "Release Bot"
+          git config user.email "release@verifd.com"
+          
+          # Create annotated tag
+          git tag -a "${RELEASE_VERSION}" -m "Release ${RELEASE_VERSION}
+          
+          Environment: ${{ inputs.deploy_env }}
+          Lock Hash: ${LOCK_HASH}
+          Build ID: ${{ github.run_id }}-${{ github.run_attempt }}
+          Triggered by: ${{ github.actor }}"
+          
+          # Push tag
+          git push origin "${RELEASE_VERSION}"
+          echo "tag=${RELEASE_VERSION}" >> $GITHUB_OUTPUT
+
+      - name: Generate build metadata
+        id: build
+        run: |
+          BUILD_ID="${{ github.run_id }}-${{ github.run_attempt }}"
+          echo "id=${BUILD_ID}" >> $GITHUB_OUTPUT
+          
+          # Create build manifest
+          cat > .release/build-manifest.json << EOF
+          {
+            "version": "${RELEASE_VERSION}",
+            "buildId": "${BUILD_ID}",
+            "timestamp": "$(date -u +%Y-%m-%dT%H:%M:%SZ)",
+            "commit": "${{ github.sha }}",
+            "branch": "${{ github.ref_name }}",
+            "lockHash": "${LOCK_HASH}",
+            "environment": "${{ inputs.deploy_env }}",
+            "triggeredBy": "${{ github.actor }}"
+          }
+          EOF
+
+      - name: Upload release artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: release-metadata-${{ env.RELEASE_VERSION }}
+          path: .release/
+
+  build-android:
+    needs: prepare-release
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.prepare-release.outputs.release_tag }}
+
+      - name: Setup Java
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Restore dependency lock
+        uses: actions/download-artifact@v3
+        with:
+          name: release-metadata-${{ env.RELEASE_VERSION }}
+          path: .release/
+
+      - name: Build Android APK
+        working-directory: apps/android
+        run: |
+          # Use locked dependencies
+          cp ../../.release/pnpm-lock-${RELEASE_VERSION}.yaml ../../pnpm-lock.yaml
+          
+          # Build with locked versions
+          ./gradlew assembleRelease \
+            -PversionName="${{ inputs.version }}" \
+            -PversionCode=${{ github.run_number }} \
+            --no-daemon \
+            --console=plain
+
+      - name: Generate Android SBOM
+        run: |
+          # Install CycloneDX
+          npm install -g @cyclonedx/bom
+          
+          # Generate SBOM for Android
+          cd apps/android
+          cyclonedx-bom -o ../../.release/sbom-android-${RELEASE_VERSION}.json
+
+      - name: Sign Android APK
+        env:
+          ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: |
+          # Decode keystore
+          echo "${ANDROID_KEYSTORE_BASE64}" | base64 -d > signing.keystore
+          
+          # Sign APK
+          jarsigner -verbose \
+            -sigalg SHA256withRSA \
+            -digestalg SHA-256 \
+            -keystore signing.keystore \
+            -storepass "${ANDROID_KEY_PASSWORD}" \
+            apps/android/app/build/outputs/apk/release/app-release-unsigned.apk \
+            "${ANDROID_KEY_ALIAS}"
+          
+          # Verify signature
+          jarsigner -verify -verbose -certs \
+            apps/android/app/build/outputs/apk/release/app-release-unsigned.apk
+          
+          # Align APK
+          zipalign -v 4 \
+            apps/android/app/build/outputs/apk/release/app-release-unsigned.apk \
+            verifd-${RELEASE_VERSION}.apk
+
+      - name: Generate checksums
+        run: |
+          sha256sum verifd-${RELEASE_VERSION}.apk > verifd-${RELEASE_VERSION}.apk.sha256
+          sha512sum verifd-${RELEASE_VERSION}.apk > verifd-${RELEASE_VERSION}.apk.sha512
+
+      - name: Upload Android artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: android-release-${{ env.RELEASE_VERSION }}
+          path: |
+            verifd-*.apk
+            verifd-*.apk.sha256
+            verifd-*.apk.sha512
+            .release/sbom-android-*.json
+
+  build-ios:
+    needs: prepare-release
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.prepare-release.outputs.release_tag }}
+
+      - name: Setup Xcode
+        uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: '15.0'
+
+      - name: Restore dependency lock
+        uses: actions/download-artifact@v3
+        with:
+          name: release-metadata-${{ env.RELEASE_VERSION }}
+          path: .release/
+
+      - name: Install dependencies
+        run: |
+          cd apps/ios
+          pod install --repo-update
+
+      - name: Build iOS IPA
+        env:
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+        run: |
+          cd apps/ios
+          
+          # Build archive
+          xcodebuild archive \
+            -workspace verifd.xcworkspace \
+            -scheme verifd \
+            -configuration Release \
+            -archivePath ../verifd.xcarchive \
+            -destination 'generic/platform=iOS' \
+            MARKETING_VERSION="${{ inputs.version }}" \
+            CURRENT_PROJECT_VERSION="${{ github.run_number }}" \
+            DEVELOPMENT_TEAM="${APPLE_TEAM_ID}"
+
+      - name: Export IPA
+        env:
+          EXPORT_OPTIONS_BASE64: ${{ secrets.IOS_EXPORT_OPTIONS_BASE64 }}
+        run: |
+          # Decode export options
+          echo "${EXPORT_OPTIONS_BASE64}" | base64 -d > ExportOptions.plist
+          
+          # Export IPA
+          xcodebuild -exportArchive \
+            -archivePath verifd.xcarchive \
+            -exportPath . \
+            -exportOptionsPlist ExportOptions.plist
+          
+          # Rename IPA
+          mv verifd.ipa verifd-${RELEASE_VERSION}.ipa
+
+      - name: Generate iOS SBOM
+        run: |
+          # Install CycloneDX
+          npm install -g @cyclonedx/bom
+          
+          # Generate SBOM for iOS
+          cd apps/ios
+          cyclonedx-bom -o ../../.release/sbom-ios-${RELEASE_VERSION}.json
+
+      - name: Generate checksums
+        run: |
+          shasum -a 256 verifd-${RELEASE_VERSION}.ipa > verifd-${RELEASE_VERSION}.ipa.sha256
+          shasum -a 512 verifd-${RELEASE_VERSION}.ipa > verifd-${RELEASE_VERSION}.ipa.sha512
+
+      - name: Upload iOS artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: ios-release-${{ env.RELEASE_VERSION }}
+          path: |
+            verifd-*.ipa
+            verifd-*.ipa.sha256
+            verifd-*.ipa.sha512
+            .release/sbom-ios-*.json
+
+  generate-attestation:
+    needs: [prepare-release, build-android, build-ios]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      attestations: write
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download all artifacts
+        uses: actions/download-artifact@v3
+        with:
+          path: artifacts/
+
+      - name: Generate combined SBOM
+        run: |
+          # Merge SBOMs
+          npm install -g @cyclonedx/cli
+          
+          cyclonedx merge \
+            --input-files artifacts/android-release-*/sbom-android-*.json \
+                         artifacts/ios-release-*/sbom-ios-*.json \
+            --output-file sbom-combined-${RELEASE_VERSION}.json
+
+      - name: Generate provenance
+        uses: actions/attest-build-provenance@v1
+        with:
+          subject-path: |
+            artifacts/android-release-*/*.apk
+            artifacts/ios-release-*/*.ipa
+
+      - name: Generate SLSA attestation
+        uses: slsa-framework/slsa-github-generator@v1.9.0
+        with:
+          subjects: |
+            artifacts/android-release-*/*.apk
+            artifacts/ios-release-*/*.ipa
+          provenance-name: verifd-${RELEASE_VERSION}-attestation.json
+
+      - name: Create release bundle
+        run: |
+          # Create release directory
+          mkdir -p release-${RELEASE_VERSION}
+          
+          # Copy artifacts
+          cp artifacts/android-release-*/*.apk release-${RELEASE_VERSION}/
+          cp artifacts/android-release-*/*.sha* release-${RELEASE_VERSION}/
+          cp artifacts/ios-release-*/*.ipa release-${RELEASE_VERSION}/
+          cp artifacts/ios-release-*/*.sha* release-${RELEASE_VERSION}/
+          cp sbom-combined-*.json release-${RELEASE_VERSION}/
+          
+          # Add release notes
+          cat > release-${RELEASE_VERSION}/RELEASE_NOTES.md << EOF
+          # verifd ${RELEASE_VERSION}
+          
+          ## Build Information
+          - Version: ${{ inputs.version }}
+          - Release Candidate: ${{ inputs.candidate }}
+          - Build ID: ${{ needs.prepare-release.outputs.build_id }}
+          - Commit: ${{ github.sha }}
+          - Built: $(date -u +%Y-%m-%dT%H:%M:%SZ)
+          
+          ## Checksums
+          \`\`\`
+          $(cat release-${RELEASE_VERSION}/*.sha256)
+          \`\`\`
+          
+          ## Verification
+          To verify artifacts:
+          \`\`\`bash
+          sha256sum -c verifd-${RELEASE_VERSION}.apk.sha256
+          shasum -a 256 -c verifd-${RELEASE_VERSION}.ipa.sha256
+          \`\`\`
+          
+          ## SBOM
+          Software Bill of Materials included as \`sbom-combined-${RELEASE_VERSION}.json\`
+          
+          ## Attestation
+          Build provenance and SLSA attestations are attached to this release.
+          EOF
+          
+          # Create tarball
+          tar -czf release-${RELEASE_VERSION}.tar.gz release-${RELEASE_VERSION}/
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ env.RELEASE_VERSION }}
+          name: Release ${{ env.RELEASE_VERSION }}
+          body_path: release-${{ env.RELEASE_VERSION }}/RELEASE_NOTES.md
+          draft: true
+          prerelease: true
+          files: |
+            release-${{ env.RELEASE_VERSION }}/*.apk
+            release-${{ env.RELEASE_VERSION }}/*.ipa
+            release-${{ env.RELEASE_VERSION }}/*.sha256
+            release-${{ env.RELEASE_VERSION }}/*.sha512
+            release-${{ env.RELEASE_VERSION }}/sbom-*.json
+            release-${{ env.RELEASE_VERSION }}.tar.gz
+
+  capture-screenshots:
+    needs: [build-android, build-ios]
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup simulators
+        run: |
+          # Install iOS simulators
+          xcrun simctl create "iPhone 15 Pro" \
+            "com.apple.CoreSimulator.SimDeviceType.iPhone-15-Pro" \
+            "com.apple.CoreSimulator.SimRuntime.iOS-17-0"
+          
+          # Install Android emulator
+          sdkmanager "system-images;android-34;google_apis;x86_64"
+          echo no | avdmanager create avd \
+            -n "Pixel_7_Pro" \
+            -k "system-images;android-34;google_apis;x86_64"
+
+      - name: Download builds
+        uses: actions/download-artifact@v3
+        with:
+          path: artifacts/
+
+      - name: Capture iOS screenshots
+        run: |
+          # Boot iOS simulator
+          xcrun simctl boot "iPhone 15 Pro"
+          
+          # Install app
+          xcrun simctl install "iPhone 15 Pro" \
+            artifacts/ios-release-*/*.ipa
+          
+          # Launch app
+          xcrun simctl launch "iPhone 15 Pro" com.verifd.app
+          
+          # Wait for app to load
+          sleep 10
+          
+          # Capture screenshots
+          mkdir -p screenshots/ios
+          xcrun simctl io "iPhone 15 Pro" screenshot \
+            screenshots/ios/home-${RELEASE_VERSION}.png
+          
+          # Navigate to verify screen
+          xcrun simctl openurl "iPhone 15 Pro" "verifd://verify"
+          sleep 3
+          xcrun simctl io "iPhone 15 Pro" screenshot \
+            screenshots/ios/verify-${RELEASE_VERSION}.png
+          
+          # Navigate to success screen
+          xcrun simctl openurl "iPhone 15 Pro" "verifd://success"
+          sleep 3
+          xcrun simctl io "iPhone 15 Pro" screenshot \
+            screenshots/ios/success-${RELEASE_VERSION}.png
+
+      - name: Capture Android screenshots
+        run: |
+          # Start emulator
+          emulator -avd Pixel_7_Pro -no-window -no-audio &
+          adb wait-for-device
+          
+          # Install APK
+          adb install artifacts/android-release-*/*.apk
+          
+          # Launch app
+          adb shell am start -n com.verifd.android/.MainActivity
+          
+          # Wait for app to load
+          sleep 10
+          
+          # Capture screenshots
+          mkdir -p screenshots/android
+          adb shell screencap -p /sdcard/home.png
+          adb pull /sdcard/home.png screenshots/android/home-${RELEASE_VERSION}.png
+          
+          # Navigate to verify screen
+          adb shell am start -a android.intent.action.VIEW \
+            -d "verifd://verify"
+          sleep 3
+          adb shell screencap -p /sdcard/verify.png
+          adb pull /sdcard/verify.png screenshots/android/verify-${RELEASE_VERSION}.png
+          
+          # Navigate to success screen
+          adb shell am start -a android.intent.action.VIEW \
+            -d "verifd://success"
+          sleep 3
+          adb shell screencap -p /sdcard/success.png
+          adb pull /sdcard/success.png screenshots/android/success-${RELEASE_VERSION}.png
+
+      - name: Upload screenshots
+        uses: actions/upload-artifact@v3
+        with:
+          name: screenshots-${{ env.RELEASE_VERSION }}
+          path: screenshots/
+
+  smoke-test:
+    needs: [build-android, build-ios]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download builds
+        uses: actions/download-artifact@v3
+        with:
+          path: artifacts/
+
+      - name: Smoke test checklist
+        run: |
+          cat > smoke-test-checklist.md << EOF
+          # Smoke Test Checklist - ${RELEASE_VERSION}
+          
+          ## Android
+          - [ ] APK installs successfully
+          - [ ] App launches without crash
+          - [ ] Verify flow completes
+          - [ ] vPass grants successfully
+          - [ ] Call screening works
+          - [ ] Post-call sheet appears
+          
+          ## iOS
+          - [ ] IPA installs via TestFlight
+          - [ ] App launches without crash
+          - [ ] Verify flow completes
+          - [ ] vPass grants successfully
+          - [ ] Call Directory updates
+          - [ ] Shortcuts integration works
+          
+          ## Backend
+          - [ ] Health check passes
+          - [ ] Metrics endpoint responds
+          - [ ] Rate limiting enforced
+          - [ ] CORS headers correct
+          
+          ## Security
+          - [ ] Config signatures valid
+          - [ ] Device auth working
+          - [ ] Privacy telemetry enabled
+          - [ ] No PII in logs
+          
+          ## Store Requirements
+          - [ ] Screenshots captured
+          - [ ] Privacy manifest included
+          - [ ] Permissions justified
+          - [ ] Data safety complete
+          
+          ---
+          Build ID: ${{ github.run_id }}-${{ github.run_attempt }}
+          Tester: ________________
+          Date: ________________
+          EOF
+          
+          echo "::notice::Smoke test checklist generated at smoke-test-checklist.md"
+
+      - name: Upload checklist
+        uses: actions/upload-artifact@v3
+        with:
+          name: smoke-test-${{ env.RELEASE_VERSION }}
+          path: smoke-test-checklist.md
+
+  notify-release:
+    needs: [generate-attestation, capture-screenshots, smoke-test]
+    runs-on: ubuntu-latest
+    if: success()
+    steps:
+      - name: Send Slack notification
+        env:
+          SLACK_WEBHOOK: ${{ secrets.RELEASE_SLACK_WEBHOOK }}
+        run: |
+          curl -X POST "${SLACK_WEBHOOK}" \
+            -H 'Content-Type: application/json' \
+            -d "{
+              \"text\": \"🚂 Release Train ${RELEASE_VERSION} Ready\",
+              \"attachments\": [{
+                \"color\": \"good\",
+                \"fields\": [
+                  {
+                    \"title\": \"Version\",
+                    \"value\": \"${{ inputs.version }}-rc${{ inputs.candidate }}\",
+                    \"short\": true
+                  },
+                  {
+                    \"title\": \"Environment\",
+                    \"value\": \"${{ inputs.deploy_env }}\",
+                    \"short\": true
+                  },
+                  {
+                    \"title\": \"Build ID\",
+                    \"value\": \"${{ github.run_id }}-${{ github.run_attempt }}\",
+                    \"short\": true
+                  },
+                  {
+                    \"title\": \"Artifacts\",
+                    \"value\": \"✅ Android APK\\n✅ iOS IPA\\n✅ SBOMs\\n✅ Attestations\\n✅ Screenshots\",
+                    \"short\": false
+                  }
+                ],
+                \"actions\": [
+                  {
+                    \"type\": \"button\",
+                    \"text\": \"View Release\",
+                    \"url\": \"https://github.com/${{ github.repository }}/releases/tag/${RELEASE_VERSION}\"
+                  },
+                  {
+                    \"type\": \"button\",
+                    \"text\": \"Download Artifacts\",
+                    \"url\": \"https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}\"
+                  }
+                ]
+              }]
+            }"

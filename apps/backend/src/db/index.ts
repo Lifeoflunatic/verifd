@@ -1,6 +1,14 @@
 import fs from 'node:fs';
 import path from 'node:path';
-import Database from 'better-sqlite3';
+// Try to import better-sqlite3, will throw if not installed
+let Database: any;
+try {
+  const module = await import('better-sqlite3');
+  Database = module.default;
+} catch (error) {
+  console.error('[verifd] better-sqlite3 not available, use mock DB instead');
+  throw new Error('better-sqlite3 not installed. Run with USE_MOCK_DB=true or install native dependencies.');
+}
 import { readFileSync } from 'fs';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
@@ -8,7 +16,7 @@ import { config } from '../config.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
-let db: Database.Database;
+let db: import('better-sqlite3').Database;
 
 export async function initDatabase() {
   // Default to 'var/db/verifd.sqlite' relative to backend package root

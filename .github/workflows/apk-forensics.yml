@@ -1,0 +1,222 @@
+name: APK Forensics Analysis
+
+on:
+  workflow_dispatch:
+    inputs:
+      release_tag:
+        description: 'Release tag to analyze (e.g., v1.3.0-rc1-staging+5)'
+        required: false
+        default: 'v1.3.0-rc1-staging+5'
+        type: string
+
+jobs:
+  forensics:
+    name: Analyze APK Contents
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Install Dependencies
+        run: |
+          echo "📦 Installing analysis tools..."
+          sudo apt-get update
+          sudo apt-get install -y aapt unzip grep
+
+      - name: Download APK from Release
+        id: download
+        run: |
+          RELEASE_TAG="${{ github.event.inputs.release_tag || 'v1.3.0-rc1-staging+5' }}"
+          echo "🎯 Analyzing release: $RELEASE_TAG"
+          
+          # Download APK
+          APK_URL="https://github.com/${{ github.repository }}/releases/download/$RELEASE_TAG/verifd-staging.apk"
+          echo "⬇️ Downloading APK from: $APK_URL"
+          
+          curl -L -o verifd-staging.apk "$APK_URL" || {
+            echo "❌ Failed to download APK from release $RELEASE_TAG"
+            exit 1
+          }
+          
+          ls -la verifd-staging.apk
+          echo "release_tag=$RELEASE_TAG" >> $GITHUB_OUTPUT
+
+      - name: Extract APK for Analysis
+        run: |
+          echo "📂 Extracting APK contents..."
+          mkdir -p apk-contents
+          unzip -q verifd-staging.apk -d apk-contents || {
+            echo "❌ Failed to extract APK"
+            exit 1
+          }
+          
+          echo "📊 APK structure:"
+          ls -la apk-contents/ | head -20
+
+      - name: Analyze Permissions
+        id: permissions
+        run: |
+          echo "🔍 Checking permissions..."
+          
+          # Use aapt to dump permissions
+          echo "=== AAPT Badging ===" > forensics.txt
+          aapt dump badging verifd-staging.apk >> forensics.txt 2>&1
+          
+          echo "" >> forensics.txt
+          echo "=== Permissions Analysis ===" >> forensics.txt
+          
+          # Check for POST_NOTIFICATIONS permission
+          PERM_CHECK=$(aapt dump permissions verifd-staging.apk | grep -c "android.permission.POST_NOTIFICATIONS" || true)
+          
+          if [ "$PERM_CHECK" -gt 0 ]; then
+            echo "✅ POST_NOTIFICATIONS permission: PRESENT" | tee -a forensics.txt
+            echo "post_notifications=✅" >> $GITHUB_OUTPUT
+          else
+            echo "❌ POST_NOTIFICATIONS permission: MISSING" | tee -a forensics.txt
+            echo "post_notifications=❌" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Check Application Class
+        id: app_class
+        run: |
+          echo "🔍 Checking Application class..."
+          echo "" >> forensics.txt
+          echo "=== Application Class Analysis ===" >> forensics.txt
+          
+          # Parse AndroidManifest for App class
+          if [ -f apk-contents/AndroidManifest.xml ]; then
+            # Try to find App class reference in binary manifest
+            APP_CLASS_CHECK=$(strings apk-contents/AndroidManifest.xml | grep -c "com.verifd.android.App" || true)
+            
+            if [ "$APP_CLASS_CHECK" -gt 0 ]; then
+              echo "✅ Application class (com.verifd.android.App): PRESENT" | tee -a forensics.txt
+              echo "app_class=✅" >> $GITHUB_OUTPUT
+            else
+              echo "⚠️ Application class not found in manifest strings" | tee -a forensics.txt
+              echo "app_class=⚠️" >> $GITHUB_OUTPUT
+            fi
+          else
+            echo "❌ AndroidManifest.xml not found" | tee -a forensics.txt
+            echo "app_class=❌" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Check DebugPanelActivity
+        id: debug_panel
+        run: |
+          echo "🔍 Checking DebugPanelActivity..."
+          echo "" >> forensics.txt
+          echo "=== DebugPanelActivity Analysis ===" >> forensics.txt
+          
+          # Check for DebugPanelActivity class
+          DEBUG_PANEL_CHECK=$(find apk-contents -name "*.dex" -exec strings {} \; | grep -c "DebugPanelActivity" || true)
+          
+          if [ "$DEBUG_PANEL_CHECK" -gt 0 ]; then
+            echo "✅ DebugPanelActivity class: PRESENT" | tee -a forensics.txt
+            echo "debug_panel=✅" >> $GITHUB_OUTPUT
+          else
+            echo "❌ DebugPanelActivity class: MISSING" | tee -a forensics.txt
+            echo "debug_panel=❌" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Check Menu Resource
+        id: menu_resource
+        run: |
+          echo "🔍 Checking menu resources..."
+          echo "" >> forensics.txt
+          echo "=== Menu Resource Analysis ===" >> forensics.txt
+          
+          # Check for menu_main.xml
+          MENU_CHECK=$(find apk-contents -path "*/res/*" -name "*.xml" | grep -c "menu" || true)
+          
+          if [ "$MENU_CHECK" -gt 0 ]; then
+            echo "✅ Menu resources: PRESENT ($MENU_CHECK menu files found)" | tee -a forensics.txt
+            echo "menu_main=✅" >> $GITHUB_OUTPUT
+          else
+            echo "❌ Menu resources: MISSING" | tee -a forensics.txt
+            echo "menu_main=❌" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Generate Summary Table
+        id: summary
+        run: |
+          echo "" >> forensics.txt
+          echo "=== FORENSICS SUMMARY ===" >> forensics.txt
+          echo "" >> forensics.txt
+          echo "| Component | Status |" >> forensics.txt
+          echo "|-----------|--------|" >> forensics.txt
+          echo "| POST_NOTIFICATIONS permission | ${{ steps.permissions.outputs.post_notifications }} |" >> forensics.txt
+          echo "| Application class (App.kt) | ${{ steps.app_class.outputs.app_class }} |" >> forensics.txt
+          echo "| DebugPanelActivity | ${{ steps.debug_panel.outputs.debug_panel }} |" >> forensics.txt
+          echo "| Menu resources | ${{ steps.menu_resource.outputs.menu_main }} |" >> forensics.txt
+          echo "" >> forensics.txt
+          echo "Release analyzed: ${{ steps.download.outputs.release_tag }}" >> forensics.txt
+          echo "Analysis date: $(date -u +"%Y-%m-%d %H:%M:%S UTC")" >> forensics.txt
+          
+          # Check if all components are present
+          FAILURES=0
+          
+          if [ "${{ steps.permissions.outputs.post_notifications }}" != "✅" ]; then
+            echo "❌ Missing POST_NOTIFICATIONS permission" | tee -a forensics.txt
+            FAILURES=$((FAILURES + 1))
+          fi
+          
+          if [ "${{ steps.debug_panel.outputs.debug_panel }}" != "✅" ]; then
+            echo "❌ Missing DebugPanelActivity" | tee -a forensics.txt
+            FAILURES=$((FAILURES + 1))
+          fi
+          
+          if [ "${{ steps.menu_resource.outputs.menu_main }}" != "✅" ]; then
+            echo "❌ Missing menu resources" | tee -a forensics.txt
+            FAILURES=$((FAILURES + 1))
+          fi
+          
+          echo "failures=$FAILURES" >> $GITHUB_OUTPUT
+          
+          if [ "$FAILURES" -gt 0 ]; then
+            echo "" >> forensics.txt
+            echo "⚠️ FORENSICS FAILED: $FAILURES components missing or not detected" >> forensics.txt
+          else
+            echo "" >> forensics.txt
+            echo "✅ FORENSICS PASSED: All critical components present" >> forensics.txt
+          fi
+
+      - name: Upload Forensics Report
+        uses: actions/upload-artifact@v3
+        with:
+          name: apk-forensics-report
+          path: forensics.txt
+
+      - name: Post Results to Summary
+        run: |
+          echo "# 🔬 APK Forensics Report" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Release Tag**: \`${{ steps.download.outputs.release_tag }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "## Component Analysis" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Component | Status | Details |" >> $GITHUB_STEP_SUMMARY
+          echo "|-----------|--------|---------|" >> $GITHUB_STEP_SUMMARY
+          echo "| POST_NOTIFICATIONS | ${{ steps.permissions.outputs.post_notifications }} | Android 13+ notification permission |" >> $GITHUB_STEP_SUMMARY
+          echo "| App.kt Application | ${{ steps.app_class.outputs.app_class }} | Custom Application class for channel setup |" >> $GITHUB_STEP_SUMMARY
+          echo "| DebugPanelActivity | ${{ steps.debug_panel.outputs.debug_panel }} | QA panel for testing |" >> $GITHUB_STEP_SUMMARY
+          echo "| Menu Resources | ${{ steps.menu_resource.outputs.menu_main }} | Overflow menu configuration |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          
+          if [ "${{ steps.summary.outputs.failures }}" -eq 0 ]; then
+            echo "## ✅ Result: PASSED" >> $GITHUB_STEP_SUMMARY
+            echo "All critical components detected in APK" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "## ❌ Result: FAILED" >> $GITHUB_STEP_SUMMARY
+            echo "${{ steps.summary.outputs.failures }} components missing or not detected" >> $GITHUB_STEP_SUMMARY
+          fi
+          
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "📄 [Download full forensics report](../actions/runs/${{ github.run_id }})" >> $GITHUB_STEP_SUMMARY
+
+      - name: Validate Results
+        run: |
+          if [ "${{ steps.summary.outputs.failures }}" -gt 0 ]; then
+            echo "❌ Forensics validation failed!"
+            cat forensics.txt
+            exit 1
+          else
+            echo "✅ All components successfully verified!"
+          fi

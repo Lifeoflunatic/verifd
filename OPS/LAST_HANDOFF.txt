@@ -1,34 +1,21 @@
 ---HANDOFF---
-Task: verifd – Zod row typing + health/metrics documentation
-When: 2025-08-10T17:49:00Z
-Branch: feat/zod-row-typing
+Task: (auto) Fallback handoff — assistant reply had no explicit ---HANDOFF---
+When: 2025-08-13T21:26:55Z
+Branch: release/staging-17
 
 Diff Summary:
- HANDOFF.md                        | 137 +++++-----
- OPS/HANDOFF_HISTORY.md            | 536 ++++++++++++++++++++++++++++++++++++++
- OPS/LAST_HANDOFF.txt              |  30 +--
- apps/backend/src/routes/health.ts |   7 +-
- apps/backend/src/server.ts        |   5 +-
- 5 files changed, 613 insertions(+), 102 deletions(-)
+ OPS/HANDOFF_HISTORY.md                             | 315 +++++++++++++++++++--
+ OPS/LAST_HANDOFF.txt                               |  11 +-
+ .../com/verifd/android/ui/QAPanelV2Activity.kt     |   2 +-
+ 3 files changed, 299 insertions(+), 29 deletions(-)
 
 Files Touched:
-HANDOFF.md
 OPS/HANDOFF_HISTORY.md
 OPS/LAST_HANDOFF.txt
-apps/backend/src/routes/health.ts
-apps/backend/src/server.ts
+apps/android/app/src/main/java/com/verifd/android/ui/QAPanelV2Activity.kt
 
 Last Commit:
-c94af3f typing: Zod-validate DB rows in pass.ts & verify.ts; fix SELECTs
-
-## Today's Summary (2025-08-10)
-- Branch created: feat/zod-row-typing (pushed to GitHub)
-- DB path fix: var/db/verifd.sqlite with auto-mkdir
-- Zod typing: DB rows validated at query boundaries in pass.ts and verify.ts
-- Health aliases: /health, /health/health, /healthz all working
-- PORT support: Backend respects PORT env variable (default 3000)
-- Metrics: Available at /health/metrics (not /metrics)
-- TypeScript: Build passes with zero errors
+ab3a1f8 fix(ci): remove duplicate name fields in workflow files
 
 Commands/Tests Run (tail):
 

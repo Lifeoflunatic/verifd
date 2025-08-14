@@ -1,5 +1,6 @@
 import { FastifyPluginAsync } from 'fastify';
 import { z } from 'zod';
+import { nanoid } from 'nanoid';
 import { getDb } from '../db/index.js';
 import { normalizePhoneNumber, isValidPhoneNumber } from '@verifd/shared';
 import type { PassCheckResponse } from '@verifd/shared';
@@ -21,6 +22,18 @@ const PassRowSchema = z.object({
 });
 
 type PassRow = z.infer<typeof PassRowSchema>;
+
+// Schema for sync endpoint
+const SyncPassRowSchema = z.object({
+  id: z.string(),
+  number_e164: z.string(),
+  granted_to_name: z.string(),
+  expires_at: z.number(),
+  created_at: z.number(),
+  channel: z.string()
+});
+
+type SyncPassRow = z.infer<typeof SyncPassRowSchema>;
 
 // Rate limiting stores
 const ipRateLimits = new Map<string, { count: number; resetAt: number }>();
@@ -58,7 +71,7 @@ export const passRoutes: FastifyPluginAsync = async (server) => {
   server.get<{
     Querystring: { number_e164?: string; phoneNumber?: string };
     Reply: PassCheckResponse | { error: string };
-  }>('/check', async (request, reply) => {
+  }>('/check', async (request, reply: any) => {
     // Extract IP for rate limiting
     const clientIp = request.ip;
     
@@ -134,7 +147,7 @@ export const passRoutes: FastifyPluginAsync = async (server) => {
   // Check if a valid pass exists
   server.post<{
     Body: CheckPassBody;
-  }>('/check', async (request, reply) => {
+  }>('/check', async (request, reply: any) => {
     const body = CheckPassSchema.parse(request.body);
     
     const db = getDb();
@@ -191,7 +204,7 @@ export const passRoutes: FastifyPluginAsync = async (server) => {
   });
   
   // List active passes for a phone number
-  server.get('/list/:phoneNumber', async (request, reply) => {
+  server.get('/list/:phoneNumber', async (request, reply: any) => {
     const { phoneNumber } = request.params as { phoneNumber: string };
     
     const db = getDb();
@@ -218,7 +231,7 @@ export const passRoutes: FastifyPluginAsync = async (server) => {
   });
   
   // Revoke a pass
-  server.delete('/:passId', async (request, reply) => {
+  server.delete('/:passId', async (request, reply: any) => {
     const { passId } = request.params as { passId: string };
     
     const db = getDb();
@@ -233,5 +246,149 @@ export const passRoutes: FastifyPluginAsync = async (server) => {
     }
     
     return { success: true, revoked: passId };
+  });
+  
+  // Grant a pass directly (device-initiated)
+  server.post('/grant', {
+    preHandler: async (request, reply: any) => {
+      // Require device authentication
+      const { verifyDeviceAuth } = await import('../middleware/auth.js');
+      await verifyDeviceAuth(request, reply);
+    }
+  }, async (request, reply: any) => {
+    const GrantPassSchema = z.object({
+      number_e164: z.string().regex(/^\+[1-9]\d{1,14}$/),
+      scope: z.enum(['30m', '24h', '30d']).default('24h'),
+      granted_to_name: z.string().min(1).max(100).optional(),
+      reason: z.string().min(1).max(500).optional(),
+      channel: z.enum(['device', 'sms', 'wa', 'voice']).default('device')
+    });
+    
+    try {
+      const body = GrantPassSchema.parse(request.body);
+      const deviceId = (request as any).deviceId;
+      
+      // Calculate expiry based on scope
+      const now = Math.floor(Date.now() / 1000);
+      let expiresAt: number;
+      switch (body.scope) {
+        case '30m':
+          expiresAt = now + (30 * 60);
+          break;
+        case '24h':
+          expiresAt = now + (24 * 60 * 60);
+          break;
+        case '30d':
+          expiresAt = now + (30 * 24 * 60 * 60);
+          break;
+        default:
+          expiresAt = now + (24 * 60 * 60);
+      }
+      
+      const passId = nanoid();
+      const db = getDb();
+      
+      db.prepare(`
+        INSERT INTO passes (
+          id, number_e164, granted_to_name, reason, 
+          expires_at, created_at, granted_by, channel
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+      `).run(
+        passId,
+        body.number_e164,
+        body.granted_to_name || 'Device User',
+        body.reason || 'Granted via device',
+        expiresAt,
+        now,
+        deviceId || 'device',
+        body.channel
+      );
+      
+      // Set security headers
+      reply.header('Cache-Control', 'no-store');
+      reply.header('Vary', 'Origin');
+      
+      return {
+        success: true,
+        pass_id: passId,
+        expires_at: new Date(expiresAt * 1000).toISOString(),
+        scope: body.scope
+      };
+      
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return reply.status(400).send({
+          success: false,
+          error: 'validation_error',
+          details: error.errors
+        });
+      }
+      
+      server.log.error(error);
+      return reply.status(500).send({
+        success: false,
+        error: 'internal_error'
+      });
+    }
+  });
+  
+  // Get passes since timestamp (for sync)
+  server.get('/since', {
+    preHandler: async (request, reply: any) => {
+      // Require device authentication
+      const { verifyDeviceAuth } = await import('../middleware/auth.js');
+      await verifyDeviceAuth(request, reply);
+    }
+  }, async (request, reply: any) => {
+    const query = request.query as { ts?: string };
+    const timestamp = parseInt(query.ts || '0', 10);
+    
+    if (isNaN(timestamp)) {
+      return reply.status(400).send({
+        success: false,
+        error: 'invalid_timestamp'
+      });
+    }
+    
+    const deviceId = (request as any).deviceId;
+    const db = getDb();
+    
+    // Get passes created or modified since timestamp
+    const passesRaw = db.prepare(`
+      SELECT 
+        id,
+        number_e164,
+        granted_to_name,
+        expires_at,
+        created_at,
+        channel
+      FROM passes
+      WHERE created_at > ?
+      AND expires_at > unixepoch()
+      AND (granted_by = ? OR channel = 'device')
+      ORDER BY created_at DESC
+      LIMIT 100
+    `).all(timestamp, deviceId) as unknown[];
+    
+    // Parse with Zod
+    const passes = passesRaw.map(row => SyncPassRowSchema.parse(row));
+    
+    // Set security headers
+    reply.header('Cache-Control', 'no-store');
+    reply.header('Vary', 'Origin');
+    
+    return {
+      success: true,
+      passes: passes.map(p => ({
+        id: p.id,
+        number_e164: p.number_e164,
+        name: p.granted_to_name,
+        expires_at: new Date(p.expires_at * 1000).toISOString(),
+        created_at: new Date(p.created_at * 1000).toISOString(),
+        channel: p.channel
+      })),
+      count: passes.length,
+      timestamp: Math.floor(Date.now() / 1000)
+    };
   });
 };

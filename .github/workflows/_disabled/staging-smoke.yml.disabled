@@ -1,0 +1,234 @@
+name: Staging Smoke Tests
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  deploy-and-test:
+    name: Deploy to Staging & Smoke Test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - uses: pnpm/action-setup@v2
+        with:
+          version: 8
+          
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+          
+      - name: Install dependencies
+        run: pnpm install --ignore-scripts
+        
+      - name: Build shared packages
+        run: pnpm -F @verifd/shared build
+        
+      - name: Build backend
+        run: pnpm -F @verifd/backend build
+        
+      - name: Build web-verify
+        run: pnpm -F web-verify build || true
+        
+      - name: Deploy to staging (mock)
+        run: |
+          echo "📦 Deploying to staging environment..."
+          # In real deployment, this would:
+          # - Build Docker images
+          # - Push to registry
+          # - Deploy to staging k8s/ECS
+          # For now, we'll simulate with local server
+          
+      - name: Start staging server
+        run: |
+          cd apps/backend
+          USE_MOCK_DB=true NODE_ENV=staging PORT=3001 node dist/server.js &
+          SERVER_PID=$!
+          echo "SERVER_PID=$SERVER_PID" >> $GITHUB_ENV
+          sleep 5
+          
+      - name: Run smoke tests
+        id: smoke
+        run: |
+          echo "🔥 Running staging smoke tests..."
+          
+          # Create smoke test script
+          cat > smoke-test.js << 'EOF'
+          const https = require('https');
+          const http = require('http');
+          
+          const STAGING_URL = process.env.STAGING_URL || 'http://localhost:3001';
+          const isHttps = STAGING_URL.startsWith('https');
+          const client = isHttps ? https : http;
+          
+          async function request(method, path, body = null) {
+            return new Promise((resolve, reject) => {
+              const url = new URL(STAGING_URL + path);
+              const options = {
+                hostname: url.hostname,
+                port: url.port,
+                path: url.pathname + url.search,
+                method,
+                headers: {
+                  'Content-Type': 'application/json'
+                }
+              };
+              
+              const req = client.request(options, (res) => {
+                let data = '';
+                res.on('data', chunk => data += chunk);
+                res.on('end', () => {
+                  resolve({
+                    status: res.statusCode,
+                    headers: res.headers,
+                    body: data ? JSON.parse(data) : null
+                  });
+                });
+              });
+              
+              req.on('error', reject);
+              if (body) req.write(JSON.stringify(body));
+              req.end();
+            });
+          }
+          
+          async function runSmokeTests() {
+            const results = [];
+            console.log('Starting smoke tests...\n');
+            
+            // Test 1: Health check
+            console.log('1. Testing /health endpoint...');
+            try {
+              const health = await request('GET', '/health');
+              console.log(`   Status: ${health.status}`);
+              console.log(`   Body: ${JSON.stringify(health.body)}`);
+              results.push({
+                test: 'health',
+                passed: health.status === 200 && health.body.status === 'healthy',
+                response: health
+              });
+            } catch (err) {
+              console.error(`   Error: ${err.message}`);
+              results.push({ test: 'health', passed: false, error: err.message });
+            }
+            
+            // Test 2: Verify start
+            console.log('\n2. Testing /verify/start...');
+            let verifyToken;
+            try {
+              const verify = await request('POST', '/verify/start', {
+                phoneNumber: '+15551234567',
+                name: 'Smoke Test',
+                reason: 'Automated test'
+              });
+              console.log(`   Status: ${verify.status}`);
+              console.log(`   Token: ${verify.body.token?.substring(0, 20)}...`);
+              verifyToken = verify.body.token;
+              results.push({
+                test: 'verify_start',
+                passed: verify.status === 200 && verify.body.success === true,
+                response: verify
+              });
+            } catch (err) {
+              console.error(`   Error: ${err.message}`);
+              results.push({ test: 'verify_start', passed: false, error: err.message });
+            }
+            
+            // Test 3: Verify submit
+            console.log('\n3. Testing /verify/submit...');
+            if (verifyToken) {
+              try {
+                const submit = await request('POST', '/verify/submit', {
+                  token: verifyToken,
+                  recipientPhone: '+15559876543',
+                  grantPass: true
+                });
+                console.log(`   Status: ${submit.status}`);
+                console.log(`   Pass granted: ${submit.body.passGranted}`);
+                results.push({
+                  test: 'verify_submit',
+                  passed: submit.status === 200 && submit.body.success === true,
+                  response: submit
+                });
+              } catch (err) {
+                console.error(`   Error: ${err.message}`);
+                results.push({ test: 'verify_submit', passed: false, error: err.message });
+              }
+            } else {
+              results.push({ test: 'verify_submit', passed: false, error: 'No token from verify/start' });
+            }
+            
+            // Test 4: Pass check
+            console.log('\n4. Testing /pass/check...');
+            try {
+              const pass = await request('GET', '/pass/check?number_e164=%2B15559876543');
+              console.log(`   Status: ${pass.status}`);
+              console.log(`   Allowed: ${pass.body.allowed}`);
+              results.push({
+                test: 'pass_check',
+                passed: pass.status === 200 && pass.body.allowed === true,
+                response: pass
+              });
+            } catch (err) {
+              console.error(`   Error: ${err.message}`);
+              results.push({ test: 'pass_check', passed: false, error: err.message });
+            }
+            
+            // Summary
+            console.log('\n📊 Smoke Test Results:');
+            console.log('=' .repeat(40));
+            const passed = results.filter(r => r.passed).length;
+            const failed = results.filter(r => !r.passed).length;
+            
+            results.forEach(r => {
+              console.log(`${r.passed ? '✅' : '❌'} ${r.test}`);
+            });
+            
+            console.log('=' .repeat(40));
+            console.log(`Passed: ${passed}/${results.length}`);
+            
+            // Save results
+            require('fs').writeFileSync('smoke-results.json', JSON.stringify(results, null, 2));
+            
+            return failed === 0;
+          }
+          
+          runSmokeTests().then(success => {
+            process.exit(success ? 0 : 1);
+          }).catch(err => {
+            console.error('Fatal error:', err);
+            process.exit(1);
+          });
+          EOF
+          
+          node smoke-test.js
+          
+      - name: Stop staging server
+        if: always()
+        run: |
+          if [ ! -z "$SERVER_PID" ]; then
+            kill $SERVER_PID || true
+          fi
+          
+      - name: Upload smoke test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: smoke-test-results
+          path: smoke-results.json
+          
+      - name: Gate production deployment
+        if: success()
+        run: |
+          echo "✅ Staging smoke tests passed!"
+          echo "Production deployment can proceed"
+          
+      - name: Notify on failure
+        if: failure()
+        run: |
+          echo "❌ Staging smoke tests failed!"
+          echo "Production deployment blocked"
+          exit 1

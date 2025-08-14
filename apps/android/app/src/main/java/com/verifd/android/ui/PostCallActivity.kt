@@ -12,6 +12,7 @@ import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import com.verifd.android.R
+import com.verifd.android.data.BackendClient
 import com.verifd.android.data.ContactRepository
 import com.verifd.android.data.model.VPassEntry
 import com.verifd.android.databinding.ActivityPostCallBinding
@@ -123,7 +124,7 @@ class PostCallActivity : AppCompatActivity() {
     private fun showSendPingDialog() {
         val builder = AlertDialog.Builder(this)
         builder.setTitle("Send Identity Ping")
-        builder.setMessage("Send verification request to ${PhoneNumberUtils.format(phoneNumber!)}?\n\nThis will open your SMS app with a pre-filled message.")
+        builder.setMessage("Send verification request to $phoneNumber?\n\nThis will open your SMS app with a pre-filled message.")
         
         builder.setPositiveButton("Open SMS") { _, _ ->
             sendIdentityPing()
@@ -199,33 +200,98 @@ class PostCallActivity : AppCompatActivity() {
     private fun grantVPass(duration: VPassEntry.Duration) {
         lifecycleScope.launch {
             try {
-                val expiresAt = when (duration) {
-                    VPassEntry.Duration.HOURS_24 -> Date(System.currentTimeMillis() + 24 * 60 * 60 * 1000)
-                    VPassEntry.Duration.DAYS_30 -> Date(System.currentTimeMillis() + 30 * 24 * 60 * 60 * 1000)
-                    else -> Date(System.currentTimeMillis() + 24 * 60 * 60 * 1000)
+                val scope = when (duration) {
+                    VPassEntry.Duration.HOURS_24 -> "24h"
+                    VPassEntry.Duration.DAYS_30 -> "30d"
+                    else -> "24h"
                 }
                 
-                val vPassEntry = VPassEntry(
+                // Try to grant via backend first
+                val backendClient = BackendClient.getInstance(this@PostCallActivity)
+                val grantResult = backendClient.grantPass(
                     phoneNumber = phoneNumber!!,
-                    name = "Unknown Caller", // Default name
-                    duration = duration,
-                    createdAt = Date(),
-                    expiresAt = expiresAt
+                    scope = scope,
+                    name = "Unknown Caller",
+                    reason = "Post-call approval"
                 )
                 
-                repository.insertVPass(vPassEntry)
-                
-                val durationText = when (duration) {
-                    VPassEntry.Duration.HOURS_24 -> "24 hours"
-                    VPassEntry.Duration.DAYS_30 -> "30 days"
-                    else -> "unknown duration"
+                when (grantResult) {
+                    is BackendClient.GrantPassResult.Success -> {
+                        Log.d(TAG, "Backend pass granted: ${grantResult.passId}")
+                        
+                        // Also save locally for fast access
+                        val expiresAt = when (duration) {
+                            VPassEntry.Duration.HOURS_24 -> Date(System.currentTimeMillis() + 24 * 60 * 60 * 1000)
+                            VPassEntry.Duration.DAYS_30 -> Date(System.currentTimeMillis() + 30 * 24 * 60 * 60 * 1000)
+                            else -> Date(System.currentTimeMillis() + 24 * 60 * 60 * 1000)
+                        }
+                        
+                        val vPassEntry = VPassEntry(
+                            phoneNumber = phoneNumber!!,
+                            name = "Unknown Caller",
+                            duration = duration,
+                            createdAt = Date(),
+                            expiresAt = expiresAt
+                        )
+                        
+                        repository.insertVPass(vPassEntry)
+                        
+                        val durationText = when (duration) {
+                            VPassEntry.Duration.HOURS_24 -> "24 hours"
+                            VPassEntry.Duration.DAYS_30 -> "30 days"
+                            else -> "unknown duration"
+                        }
+                        
+                        Toast.makeText(
+                            this@PostCallActivity,
+                            "vPass granted for $durationText",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    }
+                    
+                    is BackendClient.GrantPassResult.Error -> {
+                        Log.e(TAG, "Backend grant failed: ${grantResult.message}")
+                        
+                        // Fall back to local-only
+                        val expiresAt = when (duration) {
+                            VPassEntry.Duration.HOURS_24 -> Date(System.currentTimeMillis() + 24 * 60 * 60 * 1000)
+                            VPassEntry.Duration.DAYS_30 -> Date(System.currentTimeMillis() + 30 * 24 * 60 * 60 * 1000)
+                            else -> Date(System.currentTimeMillis() + 24 * 60 * 60 * 1000)
+                        }
+                        
+                        val vPassEntry = VPassEntry(
+                            phoneNumber = phoneNumber!!,
+                            name = "Unknown Caller",
+                            duration = duration,
+                            createdAt = Date(),
+                            expiresAt = expiresAt
+                        )
+                        
+                        repository.insertVPass(vPassEntry)
+                        
+                        val durationText = when (duration) {
+                            VPassEntry.Duration.HOURS_24 -> "24 hours"
+                            VPassEntry.Duration.DAYS_30 -> "30 days"
+                            else -> "unknown duration"
+                        }
+                        
+                        Toast.makeText(
+                            this@PostCallActivity,
+                            "vPass granted locally for $durationText",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    }
+                    
+                    BackendClient.GrantPassResult.RateLimited -> {
+                        Log.w(TAG, "Backend rate limited")
+                        Toast.makeText(
+                            this@PostCallActivity,
+                            "Rate limited, try later",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                        return@launch
+                    }
                 }
-                
-                Toast.makeText(
-                    this@PostCallActivity,
-                    "vPass granted for $durationText",
-                    Toast.LENGTH_SHORT
-                ).show()
                 
                 finish()
                 

@@ -15,6 +15,38 @@ class VerifdPassManager {
     // MARK: - Temp Contact Management (30-day passes only)
     
     func createTempContact(phoneNumber: String, name: String, passType: PassType, completion: @escaping (Bool) -> Void) {
+        // First, try to grant pass via backend
+        let scope = passType.toBackendScope()
+        
+        Task {
+            let grantResult = await BackendClient.shared.grantPass(
+                phoneNumber: phoneNumber,
+                scope: scope,
+                name: name,
+                reason: "iOS app approval"
+            )
+            
+            switch grantResult {
+            case .success(let passId, let expiresAt):
+                print("Backend pass granted: \(passId), expires: \(expiresAt)")
+                
+                // Continue with local storage and contact creation
+                await MainActor.run {
+                    self.createLocalPassAndContact(phoneNumber: phoneNumber, name: name, passType: passType, completion: completion)
+                }
+                
+            case .error(let message):
+                print("Backend grant failed: \(message), falling back to local-only")
+                
+                // Fall back to local-only mode
+                await MainActor.run {
+                    self.createLocalPassAndContact(phoneNumber: phoneNumber, name: name, passType: passType, completion: completion)
+                }
+            }
+        }
+    }
+    
+    private func createLocalPassAndContact(phoneNumber: String, name: String, passType: PassType, completion: @escaping (Bool) -> Void) {
         // Only create temp contacts for 30-day passes
         guard passType == .thirtyDays else {
             // For shorter passes, just store in shared container for Call Directory

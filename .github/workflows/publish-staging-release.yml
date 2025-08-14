@@ -7,6 +7,9 @@ on:
     types: [completed]
     branches: [main]
 
+permissions:
+  contents: write  # Required for creating releases
+
 jobs:
   publish-release:
     name: Create GitHub Release with APK
@@ -241,33 +244,20 @@ jobs:
           
           APK_URL="${{ steps.generate_url.outputs.apk_url }}"
           
-          # Check if make_qr.js script exists
-          if [ -f "scripts/make_qr.js" ]; then
-            # Install dependencies
-            npm install --no-save qrcode canvas
+          # Always use fallback method for now (ESM issue with script)
+          npm install -g qrcode
+          qrcode -o qr-verifd-staging.png -w 512 "$APK_URL"
+          
+          if [ -f "qr-verifd-staging.png" ]; then
+            echo "✅ QR code generated successfully"
+            echo "qr_generated=true" >> $GITHUB_OUTPUT
             
-            # Generate QR
-            node scripts/make_qr.js "$APK_URL" qr-verifd-staging.png
-            
-            if [ -f "qr-verifd-staging.png" ]; then
-              echo "✅ QR code generated successfully"
-              echo "qr_generated=true" >> $GITHUB_OUTPUT
-            else
-              echo "⚠️ QR generation failed"
-              echo "qr_generated=false" >> $GITHUB_OUTPUT
-            fi
+            # Display QR info
+            echo "QR Code generated for URL: $APK_URL"
+            ls -la qr-verifd-staging.png
           else
-            # Fallback: Use npm qrcode directly
-            npm install -g qrcode
-            qrcode -o qr-verifd-staging.png -w 512 "$APK_URL"
-            
-            if [ -f "qr-verifd-staging.png" ]; then
-              echo "✅ QR code generated (fallback method)"
-              echo "qr_generated=true" >> $GITHUB_OUTPUT
-            else
-              echo "⚠️ QR generation failed"
-              echo "qr_generated=false" >> $GITHUB_OUTPUT
-            fi
+            echo "⚠️ QR generation failed"
+            echo "qr_generated=false" >> $GITHUB_OUTPUT
           fi
       
       - name: Update Release with QR Code

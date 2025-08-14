@@ -1,19 +1,32 @@
 package com.verifd.android.ui
 
 import android.Manifest
+import android.content.Intent
 import android.content.pm.PackageManager
+import android.os.Build
 import android.os.Bundle
+import android.provider.Settings
 import android.util.Log
+import android.view.View
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.google.android.material.snackbar.Snackbar
 import com.verifd.android.R
 import com.verifd.android.data.ContactRepository
 import com.verifd.android.databinding.ActivityMainBinding
 import com.verifd.android.ui.adapter.VPassAdapter
 import kotlinx.coroutines.launch
+import android.view.Menu
+import android.view.MenuItem
+import com.verifd.android.BuildConfig
+import com.google.android.material.floatingactionbutton.FloatingActionButton
+import android.widget.FrameLayout
+import android.view.Gravity
+import androidx.coordinatorlayout.widget.CoordinatorLayout
 
 /**
  * Main activity showing vPass list and app controls
@@ -24,7 +37,7 @@ class MainActivity : AppCompatActivity() {
         private const val TAG = "MainActivity"
         private val REQUIRED_PERMISSIONS = arrayOf(
             Manifest.permission.READ_PHONE_STATE,
-            Manifest.permission.CALL_LOG,
+            Manifest.permission.READ_CALL_LOG,
             Manifest.permission.SEND_SMS,
             Manifest.permission.READ_SMS
         )
@@ -33,6 +46,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
     private lateinit var repository: ContactRepository
     private lateinit var vPassAdapter: VPassAdapter
+    private var notificationSnackbar: Snackbar? = null
 
     private val permissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestMultiplePermissions()
@@ -44,6 +58,21 @@ class MainActivity : AppCompatActivity() {
         } else {
             Log.w(TAG, "Some permissions denied: $permissions")
             showPermissionError()
+        }
+    }
+    
+    // Separate launcher for notification permission (Android 13+)
+    private val notificationPermissionLauncher = registerForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { isGranted ->
+        if (isGranted) {
+            Log.d(TAG, "Notification permission granted")
+            notificationSnackbar?.dismiss()
+            notificationSnackbar = null
+        } else {
+            Log.w(TAG, "Notification permission denied - showing sticky Snackbar")
+            // Show sticky Snackbar with 'Open settings' action
+            showNotificationPermissionBanner()
         }
     }
 
@@ -59,12 +88,86 @@ class MainActivity : AppCompatActivity() {
         checkPermissions()
     }
     
+    override fun onStart() {
+        super.onStart()
+        
+        // FORCE notification permission check on Android 13+ EVERY launch
+        // This ensures Samsung One UI 7.0 / Android 15 enables the toggle
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (!areNotificationsEnabled()) {
+                // Always request if not enabled - critical for Android 15
+                Log.w(TAG, "Notifications disabled - requesting permission (Android 15 requirement)")
+                notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+                // Also show persistent banner
+                showNotificationPermissionBanner()
+            }
+        }
+    }
+    
     override fun onResume() {
         super.onResume()
         loadVPasses()
+        
+        // Feature C: Update First-Run setup card status
+        if (BuildConfig.BUILD_TYPE == "staging") {
+            binding.firstRunSetupCard.updateStatus()
+            if (binding.firstRunSetupCard.shouldShow()) {
+                binding.firstRunSetupCard.visibility = View.VISIBLE
+            }
+        }
+        
+        // Runtime POST_NOTIFICATIONS prompt on Android 13+ (Feature 3)
+        // Check on EVERY resume, not just once
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (!areNotificationsEnabled()) {
+                // Request permission using ActivityResult launcher
+                if (ContextCompat.checkSelfPermission(
+                        this,
+                        Manifest.permission.POST_NOTIFICATIONS
+                    ) != PackageManager.PERMISSION_GRANTED
+                ) {
+                    // Only launch permission request once per session
+                    if (notificationSnackbar == null) {
+                        notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+                    }
+                } else {
+                    // Permission granted but notifications disabled in settings
+                    showNotificationPermissionBanner()
+                }
+            } else {
+                // Notifications enabled, dismiss any banner
+                notificationSnackbar?.dismiss()
+                notificationSnackbar = null
+            }
+        }
     }
 
     private fun setupUI() {
+        // Feature D: Enhanced staging watermark with version
+        if (BuildConfig.BUILD_TYPE == "staging") {
+            // Enhanced watermark for staging builds
+            binding.appTitle.text = "[STAGING] verifd"
+            binding.appTitle.setTextColor(ContextCompat.getColor(this, android.R.color.holo_orange_dark))
+            
+            // Add version as subtitle text
+            binding.statusText.text = "v${BuildConfig.VERSION_NAME} • Build ${BuildConfig.VERSION_CODE}"
+            binding.statusText.setTextColor(ContextCompat.getColor(this, android.R.color.holo_orange_dark))
+        } else {
+            // Normal production display
+            binding.appTitle.text = "verifd • ${BuildConfig.VERSION_NAME}"
+        }
+        
+        // Feature B: Add FAB and button for QA Panel in staging builds
+        if (BuildConfig.BUILD_TYPE == "staging") {
+            addQAPanelFAB()
+            
+            // Make QA Panel button visible and wire click
+            binding.btnQaPanel.visibility = View.VISIBLE
+            binding.btnQaPanel.setOnClickListener {
+                openQAPanel()
+            }
+        }
+        
         // Setup RecyclerView for vPass list
         vPassAdapter = VPassAdapter { vPass ->
             // Handle vPass item click (e.g., show details or remove)
@@ -127,16 +230,21 @@ class MainActivity : AppCompatActivity() {
                 val vPasses = repository.getAllValidVPasses()
                 vPassAdapter.submitList(vPasses)
                 
-                // Update status
-                binding.statusText.text = if (vPasses.isEmpty()) {
-                    "No active vPasses"
-                } else {
-                    "${vPasses.size} active vPass${if (vPasses.size == 1) "" else "es"}"
+                // Update status (preserve staging watermark if present)
+                if (BuildConfig.BUILD_TYPE != "staging") {
+                    binding.statusText.text = if (vPasses.isEmpty()) {
+                        "No active vPasses"
+                    } else {
+                        "${vPasses.size} active vPass${if (vPasses.size == 1) "" else "es"}"
+                    }
                 }
+                // For staging, the watermark remains as set in setupUI()
                 
             } catch (e: Exception) {
                 Log.e(TAG, "Error loading vPasses", e)
-                binding.statusText.text = "Error loading vPasses"
+                if (BuildConfig.BUILD_TYPE != "staging") {
+                    binding.statusText.text = "Error loading vPasses"
+                }
             } finally {
                 binding.loadingIndicator.visibility = android.view.View.GONE
             }
@@ -182,5 +290,171 @@ class MainActivity : AppCompatActivity() {
                 Log.e(TAG, "Error cleaning up expired vPasses", e)
             }
         }
+    }
+    
+    /**
+     * Check if notifications are enabled for the app
+     */
+    private fun areNotificationsEnabled(): Boolean {
+        return NotificationManagerCompat.from(this).areNotificationsEnabled()
+    }
+    
+    /**
+     * Check and request notification permission on Android 13+
+     */
+    private fun checkNotificationPermission() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            when {
+                ContextCompat.checkSelfPermission(
+                    this,
+                    Manifest.permission.POST_NOTIFICATIONS
+                ) == PackageManager.PERMISSION_GRANTED -> {
+                    // Permission already granted
+                    Log.d(TAG, "Notification permission already granted")
+                    notificationSnackbar?.dismiss()
+                }
+                shouldShowRequestPermissionRationale(Manifest.permission.POST_NOTIFICATIONS) -> {
+                    // User has previously denied the permission
+                    showNotificationPermissionBanner()
+                }
+                else -> {
+                    // First time asking
+                    notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+                }
+            }
+        }
+    }
+    
+    /**
+     * Show banner when notifications are disabled
+     */
+    private fun showNotificationPermissionBanner() {
+        // Dismiss any existing Snackbar first
+        notificationSnackbar?.dismiss()
+        
+        notificationSnackbar = Snackbar.make(
+            binding.root,
+            "Notifications disabled. Missed call actions won't work.",
+            Snackbar.LENGTH_INDEFINITE
+        ).setAction("Open Settings") {
+            // Open app notification settings
+            openNotificationSettings()
+        }.setBackgroundTint(
+            ContextCompat.getColor(this, android.R.color.holo_orange_dark)
+        ).apply {
+            show()
+        }
+    }
+    
+    /**
+     * Open app notification settings
+     */
+    private fun openNotificationSettings() {
+        val intent = Intent().apply {
+            when {
+                Build.VERSION.SDK_INT >= Build.VERSION_CODES.O -> {
+                    action = Settings.ACTION_APP_NOTIFICATION_SETTINGS
+                    putExtra(Settings.EXTRA_APP_PACKAGE, packageName)
+                }
+                else -> {
+                    action = Settings.ACTION_APPLICATION_DETAILS_SETTINGS
+                    data = android.net.Uri.parse("package:$packageName")
+                }
+            }
+        }
+        startActivity(intent)
+    }
+    
+    /**
+     * Create options menu
+     */
+    override fun onCreateOptionsMenu(menu: Menu): Boolean {
+        menuInflater.inflate(R.menu.menu_main, menu)
+        
+        // ALWAYS show QA Panel in staging builds (no hidden menu logic)
+        val qaMenuItem = menu.findItem(R.id.action_qa_panel)
+        qaMenuItem?.isVisible = BuildConfig.BUILD_TYPE == "staging" || BuildConfig.DEBUG
+        
+        return true
+    }
+    
+    /**
+     * Handle menu item selection
+     */
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        return when (item.itemId) {
+            R.id.action_qa_panel -> {
+                openQAPanel()
+                true
+            }
+            R.id.action_settings -> {
+                openSettings()
+                true
+            }
+            else -> super.onOptionsItemSelected(item)
+        }
+    }
+    
+    /**
+     * Open QA Debug Panel
+     */
+    private fun openQAPanel() {
+        val intent = Intent(this, QAPanelV2Activity::class.java)
+        startActivity(intent)
+    }
+    
+    /**
+     * Open Settings (placeholder for now)
+     */
+    private fun openSettings() {
+        // For now, just open app settings
+        openNotificationSettings()
+    }
+    
+    /**
+     * Add a Floating Action Button for QA Panel access in staging builds
+     * This provides a fallback when OEM overflow menus are quirky
+     */
+    private fun addQAPanelFAB() {
+        // Get the root view
+        val rootView = binding.root as? android.view.ViewGroup ?: return
+        
+        // Create FAB programmatically
+        val fab = FloatingActionButton(this).apply {
+            setImageResource(android.R.drawable.ic_menu_manage)
+            setBackgroundTintList(android.content.res.ColorStateList.valueOf(
+                ContextCompat.getColor(this@MainActivity, android.R.color.holo_purple)
+            ))
+            contentDescription = "Open QA Panel"
+            
+            setOnClickListener {
+                openQAPanel()
+            }
+        }
+        
+        // Create layout params for bottom-right positioning
+        val params = if (rootView is CoordinatorLayout) {
+            CoordinatorLayout.LayoutParams(
+                CoordinatorLayout.LayoutParams.WRAP_CONTENT,
+                CoordinatorLayout.LayoutParams.WRAP_CONTENT
+            ).apply {
+                gravity = Gravity.BOTTOM or Gravity.END
+                setMargins(16, 16, 16, 16)
+            }
+        } else {
+            // Fallback for other layouts
+            FrameLayout.LayoutParams(
+                FrameLayout.LayoutParams.WRAP_CONTENT,
+                FrameLayout.LayoutParams.WRAP_CONTENT
+            ).apply {
+                gravity = Gravity.BOTTOM or Gravity.END
+                setMargins(32, 32, 32, 32)
+            }
+        }
+        
+        fab.layoutParams = params
+        
+        // Add FAB to the root view
+        rootView.addView(fab)
     }
 }

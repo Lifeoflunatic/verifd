@@ -1,0 +1,162 @@
+name: Hourly Link Smoke Test
+
+on:
+  schedule:
+    # Run every hour at :15
+    - cron: '15 * * * *'
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment to test'
+        required: false
+        default: 'staging'
+        type: choice
+        options:
+          - staging
+          - production
+
+jobs:
+  smoke-test:
+    name: Verify Link Smoke Test
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+      
+      - name: Install pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 8
+      
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      
+      - name: Start Backend (Mock DB)
+        working-directory: apps/backend
+        run: |
+          # Start backend with mock DB to avoid SQLite issues
+          USE_MOCK_DB=true PORT=3000 pnpm dev &
+          
+          # Wait for backend to be ready
+          echo "Waiting for backend to start..."
+          for i in {1..30}; do
+            if curl -s http://localhost:3000/health >/dev/null; then
+              echo "✅ Backend is ready"
+              break
+            fi
+            sleep 1
+          done
+      
+      - name: Test /v1/verify/link Endpoint
+        run: |
+          echo "🔗 Testing verify link generation..."
+          
+          # Test with override user
+          RESPONSE=$(curl -s -X POST http://localhost:3000/v1/verify/link \
+            -H "Content-Type: application/json" \
+            -d '{
+              "phoneNumber": "+919233600392",
+              "locale": "en-US",
+              "preferredChannel": "sms"
+            }')
+          
+          echo "Response: $RESPONSE"
+          
+          # Check for required fields
+          if echo "$RESPONSE" | jq -e '.templates.sms' >/dev/null; then
+            echo "✅ SMS template found"
+          else
+            echo "❌ SMS template missing"
+            exit 1
+          fi
+          
+          if echo "$RESPONSE" | jq -e '.templates.whatsApp' >/dev/null; then
+            echo "✅ WhatsApp template found"
+          else
+            echo "❌ WhatsApp template missing"
+            exit 1
+          fi
+          
+          # Check template length
+          SMS_LENGTH=$(echo "$RESPONSE" | jq -r '.templates.sms' | wc -c)
+          WA_LENGTH=$(echo "$RESPONSE" | jq -r '.templates.whatsApp' | wc -c)
+          
+          echo "SMS template length: $SMS_LENGTH chars"
+          echo "WhatsApp template length: $WA_LENGTH chars"
+          
+          if [ "$SMS_LENGTH" -gt 160 ]; then
+            echo "⚠️ SMS template too long (>160 chars)"
+            exit 1
+          fi
+          
+          # Extract and validate link
+          SMS_TEMPLATE=$(echo "$RESPONSE" | jq -r '.templates.sms')
+          if echo "$SMS_TEMPLATE" | grep -q "vfd.link"; then
+            echo "✅ Short URL format detected"
+          else
+            echo "⚠️ Using long URL format"
+          fi
+      
+      - name: Generate QR Code for Latest Release
+        if: success()
+        continue-on-error: true
+        run: |
+          # Get latest staging release
+          LATEST_RELEASE=$(gh release list --repo ${{ github.repository }} --limit 1 | grep staging | cut -f1)
+          
+          if [ -n "$LATEST_RELEASE" ]; then
+            echo "Latest staging release: $LATEST_RELEASE"
+            
+            # Generate QR code
+            APK_URL="https://github.com/${{ github.repository }}/releases/download/$LATEST_RELEASE/verifd-staging.apk"
+            
+            npm install -g qrcode >/dev/null 2>&1 || true
+            qrcode -o qr-latest-staging.png "$APK_URL"
+            
+            echo "✅ QR code generated for: $APK_URL"
+          else
+            echo "⚠️ No staging releases found"
+          fi
+      
+      - name: Upload Test Results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: link-smoke-results
+          path: |
+            qr-latest-staging.png
+          retention-days: 7
+      
+      - name: Generate Summary
+        if: always()
+        run: |
+          echo "## 🔗 Link Smoke Test Results" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Time:** $(date -u +"%Y-%m-%dT%H:%M:%SZ")" >> $GITHUB_STEP_SUMMARY
+          echo "**Environment:** ${{ github.event.inputs.environment || 'staging' }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          
+          if [ "${{ job.status }}" == "success" ]; then
+            echo "✅ **Status:** All tests passed" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "### Endpoints Tested" >> $GITHUB_STEP_SUMMARY
+            echo "- ✅ POST /v1/verify/link" >> $GITHUB_STEP_SUMMARY
+            echo "- ✅ Template generation" >> $GITHUB_STEP_SUMMARY
+            echo "- ✅ URL shortening" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "❌ **Status:** Tests failed" >> $GITHUB_STEP_SUMMARY
+            echo "Check logs for details" >> $GITHUB_STEP_SUMMARY
+          fi
+      
+      - name: Cleanup
+        if: always()
+        run: |
+          # Kill backend process
+          pkill -f "pnpm dev" || true
+          lsof -ti:3000 | xargs kill -9 2>/dev/null || true

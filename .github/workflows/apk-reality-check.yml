@@ -21,11 +21,24 @@ jobs:
         run: |
           echo "🔍 Finding latest successful android-staging-apk.yml run..."
           
-          # Get latest successful run
+          # Get latest successful run (check current branch first, then main)
+          CURRENT_BRANCH="${{ github.ref_name }}"
+          echo "Checking branch: $CURRENT_BRANCH"
+          
           RUNS_JSON=$(curl -s \
             -H "Authorization: token $GITHUB_TOKEN" \
             -H "Accept: application/vnd.github.v3+json" \
-            "https://api.github.com/repos/${{ github.repository }}/actions/workflows/android-staging-apk.yml/runs?branch=main&status=success&per_page=1")
+            "https://api.github.com/repos/${{ github.repository }}/actions/workflows/android-staging-apk.yml/runs?branch=$CURRENT_BRANCH&status=success&per_page=1")
+          
+          # If no runs on current branch, check main
+          RUN_COUNT=$(echo "$RUNS_JSON" | jq -r '.total_count')
+          if [ "$RUN_COUNT" -eq 0 ] && [ "$CURRENT_BRANCH" != "main" ]; then
+            echo "No successful runs on $CURRENT_BRANCH, checking main branch..."
+            RUNS_JSON=$(curl -s \
+              -H "Authorization: token $GITHUB_TOKEN" \
+              -H "Accept: application/vnd.github.v3+json" \
+              "https://api.github.com/repos/${{ github.repository }}/actions/workflows/android-staging-apk.yml/runs?branch=main&status=success&per_page=1")
+          fi
           
           # Save for evidence
           echo "$RUNS_JSON" > run_listing.json

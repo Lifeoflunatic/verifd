@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/firstRunSetupCard"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_margin="16dp"
+    app:cardCornerRadius="8dp"
+    app:cardElevation="4dp"
+    app:cardBackgroundColor="@android:color/holo_orange_light">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="16dp">
+
+        <!-- Header -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Setup Required"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            android:textColor="@android:color/black"
+            android:layout_marginBottom="12dp" />
+
+        <!-- Call Screener Setup -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginBottom="12dp">
+
+            <ImageView
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:src="@android:drawable/ic_menu_call"
+                android:tint="@android:color/black"
+                android:layout_marginEnd="12dp" />
+
+            <TextView
+                android:id="@+id/roleStatusText"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Set as default call screener"
+                android:textColor="@android:color/black"
+                android:textSize="16sp" />
+
+            <Button
+                android:id="@+id/btnSetCallScreener"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="SET"
+                android:textSize="12sp"
+                style="?android:attr/buttonStyleSmall" />
+
+        </LinearLayout>
+
+        <!-- Notifications Setup -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginBottom="12dp">
+
+            <ImageView
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:src="@android:drawable/ic_popup_reminder"
+                android:tint="@android:color/black"
+                android:layout_marginEnd="12dp" />
+
+            <TextView
+                android:id="@+id/notificationStatusText"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Enable notifications"
+                android:textColor="@android:color/black"
+                android:textSize="16sp" />
+
+            <Button
+                android:id="@+id/btnEnableNotifications"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="ENABLE"
+                android:textSize="12sp"
+                style="?android:attr/buttonStyleSmall" />
+
+        </LinearLayout>
+
+        <!-- Dismiss button (hidden by default, shown when both complete) -->
+        <Button
+            android:id="@+id/btnDismissSetup"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="DISMISS"
+            android:visibility="gone"
+            android:layout_marginTop="8dp" />
+
+    </LinearLayout>
+
+</androidx.cardview.widget.CardView>

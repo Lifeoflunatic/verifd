@@ -88,6 +88,26 @@ export interface PassCheckResponse {
   expires_at?: string; // ISO8601 format
 }
 
+// vPass scope types
+export type VPassScope = '30m' | '24h' | '30d';
+
+// Channel types
+export type VerificationChannel = 'sms' | 'wa' | 'voice';
+
+// Voice ping types
+export interface VoicePingRequest {
+  phoneNumber: string;
+  reason: string;
+}
+
+export interface VoicePingResponse {
+  success: boolean;
+  voicePingId?: string;
+  message?: string;
+  expiresAt?: string;
+  error?: string;
+}
+
 // SMS Templates
 export interface IdentityPingTemplate {
   name: string;

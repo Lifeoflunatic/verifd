@@ -5,18 +5,38 @@ plugins {
     id 'kotlin-kapt'
 }
 
+// Read release tag from Gradle property or environment variable
+def relTag = (project.findProperty("releaseTag") ?: System.getenv("RELEASE_TAG")) ?: ""
+def isReleaseBuild = gradle.startParameter.taskNames.join(' ').contains("assembleRelease") || gradle.startParameter.taskNames.join(' ').contains("bundleRelease")
+
+// Get Git metadata
+def gitBranch = 'git rev-parse --abbrev-ref HEAD'.execute().text.trim() ?: "unknown"
+def gitSha = 'git rev-parse HEAD'.execute().text.trim() ?: "unknown"
+def gitTag = 'git describe --tags --exact-match 2>/dev/null'.execute().text.trim() ?: relTag
+
 android {
     namespace 'com.verifd.android'
     compileSdk 34
+
+    buildFeatures {
+        buildConfig true
+    }
 
     defaultConfig {
         applicationId "com.verifd.android"
         minSdk 26
         targetSdk 34
-        versionCode 1
-        versionName "1.0"
+        // Use date-based versionCode: YYYYMMDDHH (fits 32-bit)
+        versionCode Integer.parseInt(new Date().format("yyyyMMddHH"))
+        // Pin versionName to release tag (strip 'v' prefix if present)
+        versionName relTag?.startsWith("v") ? relTag.substring(1) : (relTag ?: "1.0-dev")
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        
+        // Git metadata fields
+        buildConfigField "String", "GIT_BRANCH", "\"${gitBranch}\""
+        buildConfigField "String", "GIT_SHA", "\"${gitSha}\""
+        buildConfigField "String", "BUILD_TAG", "\"${gitTag}\""
 
         javaCompileOptions {
             annotationProcessorOptions {
@@ -26,9 +46,29 @@ android {
     }
 
     buildTypes {
+        debug {
+            // Explicitly no versionNameSuffix - controlled by releaseTag
+            versionNameSuffix ""
+            buildConfigField "String", "BASE_URL", "\"http://10.0.2.2:3000\""  // Android emulator localhost
+            buildConfigField "String", "BUILD_VARIANT", "\"debug\""
+        }
+        staging {
+            initWith debug
+            applicationIdSuffix ".staging"
+            // Explicitly no versionNameSuffix - controlled by releaseTag
+            versionNameSuffix ""
+            resValue "string", "app_name", "verifd Staging"
+            buildConfigField "String", "BASE_URL", "\"https://staging.api.verifd.com\""
+            buildConfigField "String", "BUILD_VARIANT", "\"staging\""
+            buildConfigField "boolean", "IS_STAGING", "true"
+        }
         release {
+            // Explicitly no versionNameSuffix - controlled by releaseTag
+            versionNameSuffix ""
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            buildConfigField "String", "BASE_URL", "\"https://api.verifd.com\""
+            buildConfigField "String", "BUILD_VARIANT", "\"release\""
         }
     }
     
@@ -46,12 +86,19 @@ android {
     }
 }
 
+// Enforce release tag for release builds
+if (isReleaseBuild && relTag.trim().isEmpty()) {
+    throw new GradleException("Missing releaseTag/RELEASE_TAG for release build. Pass -PreleaseTag=<tag> or set RELEASE_TAG environment variable")
+}
+
 dependencies {
     implementation 'androidx.core:core-ktx:1.12.0'
     implementation 'androidx.appcompat:appcompat:1.6.1'
     implementation 'com.google.android.material:material:1.11.0'
     implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
     implementation 'androidx.cardview:cardview:1.0.0'
+    implementation 'androidx.security:security-crypto:1.1.0-alpha06'
+    implementation 'androidx.recyclerview:recyclerview:1.3.2'
     
     // Architecture Components
     implementation 'androidx.lifecycle:lifecycle-viewmodel-ktx:2.7.0'

@@ -1,0 +1,171 @@
+{
+  "data_safety": {
+    "data_shared": [],
+    "data_collected": [
+      {
+        "category": "Personal info",
+        "sub_category": "Phone number",
+        "data_types": ["Phone number"],
+        "purposes": ["App functionality", "Fraud prevention, security, and compliance"],
+        "is_optional": false,
+        "is_encrypted": true,
+        "is_deletable": true,
+        "retention_period": "Until pass expires (max 30 days)",
+        "user_control": "Users can delete via in-app settings"
+      },
+      {
+        "category": "Personal info",
+        "sub_category": "Name",
+        "data_types": ["Name"],
+        "purposes": ["App functionality"],
+        "is_optional": true,
+        "is_encrypted": true,
+        "is_deletable": true,
+        "retention_period": "Until pass expires (max 30 days)",
+        "user_control": "Automatically deleted after expiry"
+      },
+      {
+        "category": "App activity",
+        "sub_category": "App interactions",
+        "data_types": ["App interactions"],
+        "purposes": ["Analytics"],
+        "is_optional": true,
+        "is_encrypted": true,
+        "is_deletable": false,
+        "is_anonymized": true,
+        "privacy_method": "Differential privacy with Laplace noise",
+        "retention_period": "Aggregated only, no individual data retained"
+      },
+      {
+        "category": "Device or other IDs",
+        "sub_category": "Device or other IDs",
+        "data_types": [],
+        "note": "No device IDs collected"
+      }
+    ],
+    "security_practices": {
+      "data_encrypted_in_transit": true,
+      "data_encrypted_at_rest": true,
+      "uses_differential_privacy": true,
+      "privacy_budget": 1.0,
+      "epsilon_value": 0.1,
+      "auto_delete_expired_data": true,
+      "no_third_party_sharing": true,
+      "gdpr_compliant": true,
+      "ccpa_compliant": true,
+      "coppa_compliant": true
+    },
+    "privacy_policy": {
+      "url": "https://verifd.com/privacy",
+      "last_updated": "2025-08-11",
+      "contact_email": "privacy@verifd.com",
+      "data_protection_officer": "dpo@verifd.com"
+    },
+    "app_functionality_summary": {
+      "core_purpose": "Call verification and temporary pass management",
+      "data_minimization": "Only essential data for verification",
+      "user_benefits": [
+        "Identify legitimate callers",
+        "Reduce spam calls",
+        "Control who can reach you",
+        "Time-limited permissions"
+      ],
+      "privacy_features": [
+        "Automatic data deletion",
+        "No user tracking",
+        "Differential privacy telemetry",
+        "Local-only message filtering",
+        "Encrypted storage"
+      ]
+    },
+    "permissions_usage": {
+      "ANSWER_PHONE_CALLS": {
+        "purpose": "Screen incoming calls to identify verified callers",
+        "is_required": true,
+        "alternatives": "App cannot function without call screening"
+      },
+      "READ_PHONE_STATE": {
+        "purpose": "Detect incoming calls and dual-SIM configuration",
+        "is_required": true,
+        "alternatives": "Cannot identify calls without this permission"
+      },
+      "POST_NOTIFICATIONS": {
+        "purpose": "Show missed call actions and expecting windows",
+        "is_required": false,
+        "alternatives": "Features work but user won't see notifications"
+      },
+      "SEND_SMS": {
+        "purpose": "Send verification links in Power Mode (opt-in only)",
+        "is_required": false,
+        "alternatives": "User can manually share verification link"
+      },
+      "READ_CONTACTS": {
+        "purpose": "Check if caller is existing contact (30-day passes)",
+        "is_required": false,
+        "alternatives": "Use Call Directory without contacts"
+      },
+      "WRITE_CONTACTS": {
+        "purpose": "Create temporary contacts for 30-day passes",
+        "is_required": false,
+        "alternatives": "Shorter duration passes work without contacts"
+      }
+    },
+    "telemetry_details": {
+      "collection_method": "Privacy-safe counters only",
+      "aggregation": "Client-side with differential privacy",
+      "noise_addition": "Laplace distribution (ε=0.1)",
+      "privacy_budget": "Daily reset, max 1.0",
+      "metrics_collected": [
+        "Feature usage counts",
+        "API latency (bucketed)",
+        "Error rates (aggregated)",
+        "vPass grant/check counts"
+      ],
+      "never_collected": [
+        "User identifiers",
+        "Device identifiers",
+        "IP addresses",
+        "Precise location",
+        "Call recordings",
+        "Message content"
+      ]
+    },
+    "data_deletion": {
+      "automatic": {
+        "vpass_data": "Deleted after expiry (30m/24h/30d)",
+        "verification_attempts": "Deleted after 24 hours",
+        "cached_calls": "Deleted after 24 hours",
+        "telemetry": "Aggregated only, no raw data stored"
+      },
+      "user_requested": {
+        "method": "In-app settings > Privacy > Delete My Data",
+        "processing_time": "Immediate for local data, 24h for server",
+        "confirmation": "Email sent when deletion complete"
+      }
+    },
+    "children_privacy": {
+      "age_gate": false,
+      "coppa_compliant": true,
+      "parental_consent": "Not required - no child-specific features",
+      "age_restriction": "13+ (Teen rating)"
+    },
+    "compliance_certifications": {
+      "gdpr": {
+        "compliant": true,
+        "lawful_basis": "Legitimate interest & consent",
+        "data_controller": "verifd Inc.",
+        "data_processor": "None (self-hosted)"
+      },
+      "ccpa": {
+        "compliant": true,
+        "do_not_sell": true,
+        "opt_out_available": true,
+        "categories_collected": ["Identifiers", "Internet activity"]
+      },
+      "iso_27001": {
+        "certified": false,
+        "security_measures": "Industry standard encryption and practices"
+      }
+    }
+  }
+}

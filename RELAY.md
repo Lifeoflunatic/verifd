@@ -44,18 +44,50 @@ Note: Backend respects PORT environment variable (default 3000). Metrics are und
 - [x] Create shared types package
 - [x] Implement GET `/pass/check` endpoint with rate limiting
 - [ ] Wire web-verify success page to call `/pass/check`
-- [ ] Bootstrap Android project with CallScreeningService
+- [x] Bootstrap Android project with CallScreeningService
 - [ ] Bootstrap iOS project with Call Directory Extension
 - [ ] Set up Next.js web-verify form
 - [ ] Create devcontainer configuration
-- [ ] Set up GitHub Actions workflows
+- [x] Set up GitHub Actions workflows
 - [ ] Implement voice ping storage (S3 or local)
+
+## Android Implementation Complete (2025-08-11)
+
+### ✅ Feature 1: Notifications Permission & Channels
+- Added POST_NOTIFICATIONS permission to AndroidManifest.xml
+- Created App.kt Application class with two notification channels
+- Implemented runtime permission request for Android 13+
+- Added in-app banner with settings shortcut on denial
+- Updated all notification managers to use new channel IDs
+- Created OPS/ANDROID_NOTIFICATIONS.md documentation
+
+### ✅ Feature 2: QA Panel & Settings Shortcuts  
+- Added overflow menu to MainActivity (staging-only visibility)
+- Enhanced DebugPanelActivity with quick action buttons
+- Updated activity_debug_panel.xml with improved UI
+- Created menu_main.xml resource
+- Created OPS/INSTALL_QA.md with comprehensive testing guide
+
+### ✅ Feature 3: Rebuild & Publish
+- Built staging APK successfully (Run #16891708232)
+- APK reality check passed (Run #16891782535)
+- Fixed workflow permissions for release creation
+- Successfully published GitHub release v1.3.0-staging-20250811 (Run #16892943430)
+- APK SHA256: ee94130bcf27bef9237ac894d9979111f1702717e8537c42524155aab943ed4c
+- Updated OPS/STAGING_QA_LINKS.md with release information
 
 ## Blocked By
 - None currently
 
 ## Change Log
 <!-- Latest entries first -->
+
+### 2025-08-11 - Android Features Implementation
+- **Notifications:** Implemented POST_NOTIFICATIONS runtime permission for Android 13+, created dual-channel system (verifd_actions/verifd_persistent)
+- **QA Panel:** Added staging-only debug panel with quick actions (notification settings, call screening, app info, cache clear)
+- **UI Improvements:** Added in-app notification permission banner, overflow menu, enhanced debug panel layout
+- **Documentation:** Created OPS/ANDROID_NOTIFICATIONS.md and OPS/INSTALL_QA.md guides
+- **Build Pipeline:** Successfully built staging APK #16891708232, passed reality check, fixed workflow permissions
 
 ### 2025-08-09 - Backend Merge-Ready Implementation  
 - **Tests: 100% green:** 12/13 passing (1 DB test properly gated behind RUN_DB_E2E=1), unit tests fully isolated from database
@@ -102,6 +134,12 @@ Note: Backend respects PORT environment variable (default 3000). Metrics are und
 - Confirmed hook scripts (save_handoff_on_stop.sh, protect_ops.sh)
 - Confirmed subagent files (android-agent, ios-agent, backend-agent)
 - Initialized project memory with core facts and relationships
+
+### 2025-08-10 - Hotfix: PassRowSchema.id Type Correction
+- **Issue:** PassRowSchema.id incorrectly typed as z.number()
+- **Fix:** Change to z.string() to match SQLite TEXT/VARCHAR storage
+- **Reason:** Database IDs are strings to avoid JS number precision issues
+- **Impact:** Type safety maintained, no behavior changes
 
 ### 2025-08-10 - Zod Row Typing Enhancement
 - **Plan:** Fix TypeScript build errors by properly typing DB rows with Zod schemas

@@ -1,0 +1,276 @@
+name: iOS TestFlight Staging Build
+
+on:
+  push:
+    branches: [staging, main]
+    paths:
+      - 'apps/ios/**'
+      - '.github/workflows/ios-testflight-staging.yml'
+  pull_request:
+    branches: [main, staging]
+    paths:
+      - 'apps/ios/**'
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Build and Deploy to TestFlight
+    runs-on: macos-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Check for required secrets
+        id: check_secrets
+        run: |
+          MISSING_SECRETS=""
+          
+          if [ -z "${{ secrets.APPLE_TEAM_ID }}" ]; then
+            MISSING_SECRETS="${MISSING_SECRETS}APPLE_TEAM_ID, "
+          fi
+          
+          if [ -z "${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}" ]; then
+            MISSING_SECRETS="${MISSING_SECRETS}APP_STORE_CONNECT_API_KEY_ID, "
+          fi
+          
+          if [ -z "${{ secrets.APP_STORE_CONNECT_API_KEY_ISSUER_ID }}" ]; then
+            MISSING_SECRETS="${MISSING_SECRETS}APP_STORE_CONNECT_API_KEY_ISSUER_ID, "
+          fi
+          
+          if [ -z "${{ secrets.APP_STORE_CONNECT_API_KEY_BASE64 }}" ]; then
+            MISSING_SECRETS="${MISSING_SECRETS}APP_STORE_CONNECT_API_KEY_BASE64, "
+          fi
+          
+          if [ -z "${{ secrets.MATCH_PASSWORD }}" ]; then
+            MISSING_SECRETS="${MISSING_SECRETS}MATCH_PASSWORD, "
+          fi
+          
+          if [ -n "$MISSING_SECRETS" ]; then
+            echo "missing_secrets=${MISSING_SECRETS%,*}" >> $GITHUB_OUTPUT
+            echo "secrets_available=false" >> $GITHUB_OUTPUT
+            echo "⚠️ Missing secrets: ${MISSING_SECRETS%,*}"
+          else
+            echo "secrets_available=true" >> $GITHUB_OUTPUT
+            echo "✅ All required secrets are present"
+          fi
+      
+      - name: Setup Xcode
+        uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: '15.0'
+      
+      - name: Setup Ruby and Fastlane
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.1'
+          bundler-cache: true
+      
+      - name: Install Fastlane
+        run: |
+          gem install fastlane
+          cd apps/ios
+          fastlane init --skip-update-check || true
+      
+      - name: Configure Staging Environment
+        working-directory: apps/ios
+        run: |
+          # Create staging configuration
+          cat > verifd/Config/StagingConfig.swift << 'EOF'
+          import Foundation
+          
+          struct StagingConfig {
+              static let apiBaseURL = "https://staging.api.verifd.com"
+              static let environment = "staging"
+              static let overrideUsers = [
+                  "+919233600392",
+                  "+917575854485"
+              ]
+              static let expectedKID = "staging-2025-001"
+          }
+          EOF
+          
+          # Update Info.plist for staging
+          /usr/libexec/PlistBuddy -c "Add :API_BASE_URL string https://staging.api.verifd.com" verifd/Info.plist 2>/dev/null || \
+            /usr/libexec/PlistBuddy -c "Set :API_BASE_URL https://staging.api.verifd.com" verifd/Info.plist
+          
+          /usr/libexec/PlistBuddy -c "Add :ENVIRONMENT string staging" verifd/Info.plist 2>/dev/null || \
+            /usr/libexec/PlistBuddy -c "Set :ENVIRONMENT staging" verifd/Info.plist
+          
+          /usr/libexec/PlistBuddy -c "Set :CFBundleDisplayName 'verifd Staging'" verifd/Info.plist
+      
+      - name: Setup App Store Connect API Key
+        if: steps.check_secrets.outputs.secrets_available == 'true'
+        env:
+          APP_STORE_CONNECT_API_KEY_BASE64: ${{ secrets.APP_STORE_CONNECT_API_KEY_BASE64 }}
+        run: |
+          mkdir -p ~/private_keys
+          echo "$APP_STORE_CONNECT_API_KEY_BASE64" | base64 --decode > ~/private_keys/AuthKey.p8
+      
+      - name: Build with Fastlane (if secrets available)
+        if: steps.check_secrets.outputs.secrets_available == 'true'
+        working-directory: apps/ios
+        env:
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+          APP_STORE_CONNECT_API_KEY_ID: ${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}
+          APP_STORE_CONNECT_API_KEY_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_API_KEY_ISSUER_ID }}
+          MATCH_PASSWORD: ${{ secrets.MATCH_PASSWORD }}
+        run: |
+          # Create Fastfile
+          cat > fastlane/Fastfile << 'EOF'
+          default_platform(:ios)
+          
+          platform :ios do
+            desc "Build and upload to TestFlight"
+            lane :staging do
+              # Increment build number
+              increment_build_number(
+                build_number: ENV["GITHUB_RUN_NUMBER"]
+              )
+              
+              # Match certificates
+              match(
+                type: "appstore",
+                app_identifier: "com.verifd.ios.staging",
+                readonly: true
+              )
+              
+              # Build the app
+              build_app(
+                scheme: "verifd",
+                configuration: "Release",
+                export_method: "app-store",
+                output_directory: "./build",
+                output_name: "verifd-staging.ipa",
+                xcargs: "-allowProvisioningUpdates OTHER_SWIFT_FLAGS='-DSTAGING'"
+              )
+              
+              # Upload to TestFlight
+              upload_to_testflight(
+                api_key: {
+                  key_id: ENV["APP_STORE_CONNECT_API_KEY_ID"],
+                  issuer_id: ENV["APP_STORE_CONNECT_API_KEY_ISSUER_ID"],
+                  key_filepath: "~/private_keys/AuthKey.p8"
+                },
+                skip_waiting_for_build_processing: true,
+                changelog: "Staging build ##{ENV['GITHUB_RUN_NUMBER']} with override users"
+              )
+            end
+          end
+          EOF
+          
+          # Run Fastlane
+          fastlane staging
+      
+      - name: Build without upload (if secrets missing)
+        if: steps.check_secrets.outputs.secrets_available == 'false'
+        working-directory: apps/ios
+        run: |
+          echo "⚠️ Skipping TestFlight upload due to missing secrets"
+          echo "Building IPA for local testing only..."
+          
+          # Build archive
+          xcodebuild archive \
+            -project verifd.xcodeproj \
+            -scheme verifd \
+            -configuration Release \
+            -archivePath build/verifd-staging.xcarchive \
+            CODE_SIGN_IDENTITY="" \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGNING_ALLOWED=NO \
+            OTHER_SWIFT_FLAGS="-DSTAGING"
+          
+          echo "✅ Archive created (unsigned)"
+      
+      - name: Generate TestFlight Link
+        if: steps.check_secrets.outputs.secrets_available == 'true'
+        id: testflight_link
+        run: |
+          # Generate TestFlight public link
+          # Note: This requires the app to be in TestFlight with public link enabled
+          TESTFLIGHT_URL="https://testflight.apple.com/join/YOUR_PUBLIC_ID"
+          
+          echo "testflight_url=$TESTFLIGHT_URL" >> $GITHUB_OUTPUT
+          echo "✅ TestFlight URL: $TESTFLIGHT_URL"
+      
+      - name: Create Installation Guide
+        run: |
+          if [ "${{ steps.check_secrets.outputs.secrets_available }}" == "true" ]; then
+            TESTFLIGHT_SECTION="## TestFlight Link\n[Join Beta Testing](${{ steps.testflight_link.outputs.testflight_url }})"
+          else
+            TESTFLIGHT_SECTION="## Missing Secrets\nThe following secrets are required for TestFlight deployment:\n${{ steps.check_secrets.outputs.missing_secrets }}"
+          fi
+          
+          cat > INSTALL_IOS.md << EOF
+          # verifd iOS Staging - TestFlight
+          
+          $TESTFLIGHT_SECTION
+          
+          ## Build Information
+          - Build Number: #${{ github.run_number }}
+          - Environment: Staging
+          - API: https://staging.api.verifd.com
+          - Bundle ID: com.verifd.ios.staging
+          
+          ## Installation Steps
+          
+          ### Via TestFlight
+          1. Install TestFlight from App Store
+          2. Open the TestFlight link above
+          3. Accept the beta invitation
+          4. Install "verifd Staging"
+          5. Open the app
+          
+          ### Configuration
+          1. Go to Settings
+          2. Enter your phone number
+          3. If using override number, you'll see "Override Active"
+          
+          ## Override Test Users
+          - Primary: +919233600392
+          - Secondary: +917575854485
+          
+          ## Debug Panel Access
+          - Use 2-finger long press (3 seconds) on any screen
+          - Verify KID: staging-2025-001
+          - Check override status
+          
+          ## IdentityLookup Setup
+          1. Settings > Phone > Call Blocking & Identification
+          2. Enable "verifd Staging"
+          3. Test with override numbers
+          4. Should see "✓ verifd QA Tester" label
+          EOF
+          
+          mv INSTALL_IOS.md apps/ios/
+      
+      - name: Generate Summary
+        run: |
+          echo "## 📱 iOS TestFlight Staging Build" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          
+          if [ "${{ steps.check_secrets.outputs.secrets_available }}" == "true" ]; then
+            echo "### ✅ Build Status: Success" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "| Property | Value |" >> $GITHUB_STEP_SUMMARY
+            echo "|----------|-------|" >> $GITHUB_STEP_SUMMARY
+            echo "| Build Number | #${{ github.run_number }} |" >> $GITHUB_STEP_SUMMARY
+            echo "| Bundle ID | com.verifd.ios.staging |" >> $GITHUB_STEP_SUMMARY
+            echo "| API Endpoint | https://staging.api.verifd.com |" >> $GITHUB_STEP_SUMMARY
+            echo "| TestFlight | [Join Beta](${{ steps.testflight_link.outputs.testflight_url }}) |" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "### ⚠️ Build Status: Partial (Missing Secrets)" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "The following secrets are required for TestFlight deployment:" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+            echo "${{ steps.check_secrets.outputs.missing_secrets }}" >> $GITHUB_STEP_SUMMARY
+            echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "Please add these secrets in Settings > Secrets > Actions" >> $GITHUB_STEP_SUMMARY
+          fi
+          
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Override Test Users" >> $GITHUB_STEP_SUMMARY
+          echo "- Primary: +919233600392" >> $GITHUB_STEP_SUMMARY
+          echo "- Secondary: +917575854485" >> $GITHUB_STEP_SUMMARY

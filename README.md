@@ -1,6 +1,10 @@
 # verifd
 
+![Coverage](https://img.shields.io/badge/coverage-40%25-yellow)
+![Tests](https://img.shields.io/badge/tests-25%20passing-success)
 [![CI](https://github.com/verifd/verifd/actions/workflows/ci.yml/badge.svg)](https://github.com/verifd/verifd/actions/workflows/ci.yml)
+[![Staging](https://img.shields.io/github/actions/workflow/status/verifd/verifd/staging-smoke.yml?branch=main&label=staging)](https://github.com/verifd/verifd/actions/workflows/staging-smoke.yml)
+[![Nightly](https://img.shields.io/github/actions/workflow/status/verifd/verifd/nightly-smoke.yml?label=nightly)](https://github.com/verifd/verifd/actions/workflows/nightly-smoke.yml)
 
 A privacy-preserving call verification system that bridges unknown callers with recipients through secure, temporary verification passes.
 
@@ -149,17 +153,38 @@ WEB_VERIFY_DEV_ORIGIN=http://localhost:3000
 LOG_SALT=your-custom-salt-here
 ```
 
+## 🔒 Release URL Safety
+
+The CI/CD pipeline enforces production URL validation to prevent accidental deployment of debug builds:
+
+| Environment | Backend URL | CI Protection |
+|-------------|------------|---------------|
+| **Debug** | `http://localhost:3000` | Development only |
+| **Staging** | `https://staging-api.verifd.com` | Validated in CI |
+| **Release** | `https://api.verifd.com` | **Enforced - CI fails if wrong** |
+
+**⚠️ Release builds will fail CI if URLs ≠ `https://api.verifd.com`**
+
+This protection includes:
+- Android `BuildConfig.API_BASE_URL` validation
+- iOS `Info.plist` and `Config.swift` checks
+- Unit tests that verify release configurations
+- CI gates that block non-production URLs
+
 ## Development
 
 ```bash
 # Install dependencies
 pnpm install
 
-# Start development
-pnpm dev
+# Start development with mock DB (no SQLite needed)
+USE_MOCK_DB=true pnpm -F @verifd/backend dev
 
-# Run tests
-pnpm test
+# Run tests with coverage
+USE_MOCK_DB=true pnpm -F @verifd/backend vitest run --coverage
+
+# Update coverage badges
+./scripts/update-badges.sh
 ```
 
 ## License

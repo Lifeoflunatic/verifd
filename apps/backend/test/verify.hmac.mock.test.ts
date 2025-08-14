@@ -1,4 +1,5 @@
 import { describe, it, expect, beforeAll, afterAll, beforeEach, vi } from 'vitest';
+import { tick } from './helpers/async.js';
 import Fastify from 'fastify';
 import type { VerifyStartResponse } from '@verifd/shared';
 
@@ -19,6 +20,7 @@ let mockVerificationAttempts: Array<{
   verification_token: string;
   status: string;
   expires_at: number;
+  completed_at: number | null;
 }> = [];
 
 // Mock passes store
@@ -40,7 +42,8 @@ vi.mock('../src/db/index.js', () => ({
           const [id, number_e164, name, reason, verification_token, expires_at] = args;
           mockVerificationAttempts.push({
             id, number_e164, name, reason, verification_token, expires_at,
-            status: 'pending'
+            status: 'pending',
+            completed_at: null
           });
         } else if (sql.includes('INSERT INTO passes')) {
           const [id, number_e164, granted_by, granted_to_name, reason, expires_at] = args;
@@ -50,12 +53,15 @@ vi.mock('../src/db/index.js', () => ({
         } else if (sql.includes('UPDATE verification_attempts')) {
           const [id] = args;
           const attempt = mockVerificationAttempts.find(a => a.id === id);
-          if (attempt) attempt.status = 'completed';
+          if (attempt) {
+            attempt.status = 'completed';
+            attempt.completed_at = Math.floor(Date.now() / 1000);
+          }
         }
         return { changes: 1 };
       },
       get: (...args: any[]) => {
-        if (sql.includes('SELECT * FROM verification_attempts')) {
+        if (sql.includes('FROM verification_attempts')) {
           const [token] = args;
           return mockVerificationAttempts.find(a => 
             a.verification_token === token && 
@@ -73,6 +79,9 @@ describe('HMAC Token Security in /verify (Mocked)', () => {
   let app: ReturnType<typeof Fastify>;
 
   beforeAll(async () => {
+    // Set HMAC_SECRET for testing
+    process.env.HMAC_SECRET = process.env.HMAC_SECRET || 'test-hmac-secret';
+    
     // Import after mocking
     const { verifyRoutes } = await import('../src/routes/verify.js');
     
@@ -181,6 +190,12 @@ describe('HMAC Token Security in /verify (Mocked)', () => {
 
     expect(startResponse.statusCode).toBe(200);
     const startBody: VerifyStartResponse = JSON.parse(startResponse.body);
+    
+    console.log('Start response:', startBody);
+    console.log('Token:', startBody.token);
+    
+    // Allow time for async DB operations to complete
+    await tick(10);
 
     // Submit verification (should succeed first time)
     const submitResponse = await app.inject({
@@ -193,6 +208,9 @@ describe('HMAC Token Security in /verify (Mocked)', () => {
       }
     });
 
+    if (submitResponse.statusCode !== 200) {
+      console.log('Submit error:', submitResponse.body);
+    }
     expect(submitResponse.statusCode).toBe(200);
     const submitBody = JSON.parse(submitResponse.body);
     expect(submitBody.success).toBe(true);

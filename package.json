@@ -2,6 +2,7 @@
   "name": "verifd",
   "version": "0.1.1",
   "private": true,
+  "type": "module",
   "description": "Privacy-preserving call verification system",
   "scripts": {
     "dev": "turbo dev",

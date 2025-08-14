@@ -3,7 +3,7 @@ import Fastify from 'fastify';
 import helmet from '@fastify/helmet';
 import rateLimit from '@fastify/rate-limit';
 import { setupRoutes } from './routes/index.js';
-import { initDatabase } from './db/index.js';
+import { initDatabase } from './db/db-selector.js';
 import { startBackgroundJobs } from './jobs/index.js';
 import { config } from './config.js';
 import { corsPlugin } from './plugins/cors.js';
@@ -48,7 +48,10 @@ async function start() {
       host: '0.0.0.0'
     });
 
-    console.log(`Server running at http://localhost:${config.port}`);
+    // Clear PORT logging at boot
+    console.log(`[verifd] Server listening on PORT=${config.port}`);
+    console.log(`[verifd] Health check: curl http://localhost:${config.port}/health`);
+    console.log(`[verifd] Environment: ${config.isDev ? 'development' : 'production'}`);
   } catch (err) {
     server.log.error(err);
     process.exit(1);

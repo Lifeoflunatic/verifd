@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>NSPrivacyTracking</key>
+    <false/>
+    
+    <key>NSPrivacyTrackingDomains</key>
+    <array/>
+    
+    <key>NSPrivacyCollectedDataTypes</key>
+    <array>
+        <dict>
+            <key>NSPrivacyCollectedDataType</key>
+            <string>NSPrivacyCollectedDataTypePhoneNumber</string>
+            <key>NSPrivacyCollectedDataTypeLinked</key>
+            <false/>
+            <key>NSPrivacyCollectedDataTypeTracking</key>
+            <false/>
+            <key>NSPrivacyCollectedDataTypePurposes</key>
+            <array>
+                <string>NSPrivacyCollectedDataTypePurposeAppFunctionality</string>
+            </array>
+        </dict>
+        <dict>
+            <key>NSPrivacyCollectedDataType</key>
+            <string>NSPrivacyCollectedDataTypeName</string>
+            <key>NSPrivacyCollectedDataTypeLinked</key>
+            <false/>
+            <key>NSPrivacyCollectedDataTypeTracking</key>
+            <false/>
+            <key>NSPrivacyCollectedDataTypePurposes</key>
+            <array>
+                <string>NSPrivacyCollectedDataTypePurposeAppFunctionality</string>
+            </array>
+        </dict>
+        <dict>
+            <key>NSPrivacyCollectedDataType</key>
+            <string>NSPrivacyCollectedDataTypeOtherUsageData</string>
+            <key>NSPrivacyCollectedDataTypeLinked</key>
+            <false/>
+            <key>NSPrivacyCollectedDataTypeTracking</key>
+            <false/>
+            <key>NSPrivacyCollectedDataTypePurposes</key>
+            <array>
+                <string>NSPrivacyCollectedDataTypePurposeAnalytics</string>
+            </array>
+        </dict>
+    </array>
+    
+    <key>NSPrivacyAccessedAPITypes</key>
+    <array>
+        <dict>
+            <key>NSPrivacyAccessedAPIType</key>
+            <string>NSPrivacyAccessedAPICategoryUserDefaults</string>
+            <key>NSPrivacyAccessedAPITypeReasons</key>
+            <array>
+                <string>CA92.1</string>
+                <!-- Access user defaults to store app settings -->
+            </array>
+        </dict>
+        <dict>
+            <key>NSPrivacyAccessedAPIType</key>
+            <string>NSPrivacyAccessedAPICategoryFileTimestamp</string>
+            <key>NSPrivacyAccessedAPITypeReasons</key>
+            <array>
+                <string>C617.1</string>
+                <!-- Access file timestamps for cache management -->
+            </array>
+        </dict>
+        <dict>
+            <key>NSPrivacyAccessedAPIType</key>
+            <string>NSPrivacyAccessedAPICategorySystemBootTime</string>
+            <key>NSPrivacyAccessedAPITypeReasons</key>
+            <array>
+                <string>35F9.1</string>
+                <!-- Calculate elapsed time for feature timers -->
+            </array>
+        </dict>
+    </array>
+    
+    <!-- Data Use Disclosure -->
+    <key>NSPrivacyDataUse</key>
+    <dict>
+        <key>NSPrivacyDataUseDescription</key>
+        <string>verifd collects minimal data to provide call verification services. Phone numbers are used to verify callers and grant temporary passes. Names are encrypted and deleted after pass expiry. Anonymous telemetry uses differential privacy to protect user privacy.</string>
+        
+        <key>NSPrivacyDataUsePurpose</key>
+        <string>Call verification and temporary pass management</string>
+        
+        <key>NSPrivacyDataUseCategories</key>
+        <array>
+            <string>Contact Info</string>
+            <string>Identifiers</string>
+            <string>Usage Data</string>
+        </array>
+    </dict>
+    
+    <!-- Nutrition Labels -->
+    <key>NSPrivacyNutritionData</key>
+    <dict>
+        <key>NSPrivacyNutritionDataTypes</key>
+        <array>
+            <dict>
+                <key>NSPrivacyNutritionDataType</key>
+                <string>Phone Number</string>
+                <key>NSPrivacyNutritionDataPurpose</key>
+                <string>App Functionality</string>
+                <key>NSPrivacyNutritionDataOptional</key>
+                <false/>
+            </dict>
+            <dict>
+                <key>NSPrivacyNutritionDataType</key>
+                <string>Name</string>
+                <key>NSPrivacyNutritionDataPurpose</key>
+                <string>App Functionality</string>
+                <key>NSPrivacyNutritionDataOptional</key>
+                <true/>
+            </dict>
+            <dict>
+                <key>NSPrivacyNutritionDataType</key>
+                <string>Usage Data</string>
+                <key>NSPrivacyNutritionDataPurpose</key>
+                <string>Analytics</string>
+                <key>NSPrivacyNutritionDataOptional</key>
+                <true/>
+            </dict>
+        </array>
+    </dict>
+</dict>
+</plist>

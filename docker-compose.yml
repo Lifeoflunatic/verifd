@@ -1,0 +1,29 @@
+version: '3.8'
+
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: apps/backend/Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=development
+      - PORT=3000
+      - DB_DRIVER=sqlite  # sqlite | mock
+      - DB_PATH=/app/var/db/verifd.sqlite
+      - HMAC_SECRET=dev-secret-change-in-production
+      - WEB_VERIFY_DEV_ORIGIN=http://localhost:3001
+      - VOICE_PING_MAX_PER_DAY=3
+      - VOICE_PING_BUSINESS_HOURS_ONLY=true
+      - VOICE_PING_BUSINESS_START=09:00
+      - VOICE_PING_BUSINESS_END=17:00
+      - VPASS_DEFAULT_SCOPE=24h
+      - VPASS_SCOPES=30m,24h,30d
+    volumes:
+      # Mount source code for hot reload
+      - ./apps/backend:/app/apps/backend
+      - ./packages:/app/packages
+      # Persist database
+      - ./apps/backend/var/db:/app/apps/backend/var/db
+    command: ["pnpm", "dev"]

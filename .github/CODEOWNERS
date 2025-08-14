@@ -1,0 +1,34 @@
+# GitHub CODEOWNERS
+# These owners will be requested for review when someone opens a pull request.
+# https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
+
+# Global owners (fallback for any file not matched below)
+* @Lifeoflunatic
+
+# Workflows require core review
+.github/workflows/ @Lifeoflunatic
+
+# Android app requires core review
+/apps/android/ @Lifeoflunatic
+
+# Backend requires core review
+/apps/backend/ @Lifeoflunatic
+
+# Shared packages
+/packages/shared/ @Lifeoflunatic
+
+# Operations and handoff documentation
+/OPS/ @Lifeoflunatic
+RELAY.md @Lifeoflunatic
+CLAUDE.md @Lifeoflunatic
+
+# CI/CD and build configuration
+*.yml @Lifeoflunatic
+*.yaml @Lifeoflunatic
+build.gradle @Lifeoflunatic
+gradle.properties @Lifeoflunatic
+
+# Security-sensitive files
+**/secrets/ @Lifeoflunatic
+**/*.keystore @Lifeoflunatic
+**/*.jks @Lifeoflunatic

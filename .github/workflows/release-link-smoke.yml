@@ -12,6 +12,8 @@ jobs:
   validate-release-links:
     name: Validate Release APK Links
     runs-on: ubuntu-latest
+    # Only run if triggered by successful publish workflow or manual dispatch
+    if: github.event_name == 'workflow_dispatch' || (github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success')
     
     steps:
       - name: Checkout code
@@ -19,6 +21,7 @@ jobs:
       
       - name: Get Latest Release
         id: get_release
+        continue-on-error: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
@@ -55,8 +58,16 @@ jobs:
           echo "sha_url=$SHA_URL" >> $GITHUB_OUTPUT
           echo "meta_url=$META_URL" >> $GITHUB_OUTPUT
       
+      - name: Check Release Found
+        if: steps.get_release.outcome == 'failure'
+        run: |
+          echo "⚠️ No staging releases found to validate"
+          echo "This is expected if no releases have been published yet"
+          exit 0
+      
       - name: Validate APK Download Link
         id: validate_apk
+        if: steps.get_release.outcome == 'success'
         run: |
           APK_URL="${{ steps.get_release.outputs.apk_url }}"
           
@@ -93,6 +104,7 @@ jobs:
           echo "apk_size=$APK_SIZE" >> $GITHUB_OUTPUT
       
       - name: Validate SHA256
+        if: steps.get_release.outcome == 'success'
         run: |
           SHA_URL="${{ steps.get_release.outputs.sha_url }}"
           
@@ -118,6 +130,7 @@ jobs:
           fi
       
       - name: Validate Metadata
+        if: steps.get_release.outcome == 'success'
         run: |
           META_URL="${{ steps.get_release.outputs.meta_url }}"
           
@@ -237,6 +250,16 @@ jobs:
       - name: Generate Summary
         if: always()
         run: |
+          # Skip summary if no release was found
+          if [ "${{ steps.get_release.outcome }}" == "failure" ]; then
+            echo "# Release Link Validation" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "⚠️ No staging releases found to validate" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "This is expected if no releases have been published yet." >> $GITHUB_STEP_SUMMARY
+            exit 0
+          fi
+          
           if [ "${{ job.status }}" == "success" ]; then
             echo "## ✅ Release Links Validated" >> $GITHUB_STEP_SUMMARY
             echo "" >> $GITHUB_STEP_SUMMARY

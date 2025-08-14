@@ -16,7 +16,31 @@ export default defineConfig({
       '**/dist/**',
       '**/build/**',
       '.git/**'
-    ]
+    ],
+    coverage: {
+      provider: 'v8',
+      reporter: ['text', 'lcov', 'html'],
+      reportsDirectory: './coverage',
+      exclude: [
+        'node_modules/**',
+        'dist/**',
+        '**/*.test.ts',
+        '**/*.spec.ts',
+        '**/test/**',
+        '**/tests/**',
+        'src/server-mock.ts',
+        'src/db/mock.ts',
+        'src/db/pure-mock.ts',
+        'src/db/index-mock.ts',
+        'src/routes/test-helpers.ts'
+      ],
+      thresholds: {
+        lines: 40,
+        functions: 35,
+        branches: 30,
+        statements: 40
+      }
+    }
   },
   resolve: {
     alias: {

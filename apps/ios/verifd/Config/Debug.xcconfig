@@ -1,0 +1,11 @@
+// Debug Configuration
+// For development and testing
+
+// Backend API URL - localhost for simulator, replace with machine IP for device testing
+BACKEND_URL = http://localhost:3000
+
+// Build variant identifier
+BUILD_VARIANT = debug
+
+// Enable debug logging
+DEBUG_LOGGING_ENABLED = YES

@@ -143,6 +143,15 @@ enum PassType: String, Codable {
     case thirtyMinutes = "30m"
     case twentyFourHours = "24h"
     case thirtyDays = "30d"
+    
+    func toBackendScope() -> String {
+        switch self {
+        case .fifteenMinutes: return "15m"
+        case .thirtyMinutes: return "30m"
+        case .twentyFourHours: return "24h"
+        case .thirtyDays: return "30d"
+        }
+    }
 }
 
 enum VerifdExtensionError: Error {

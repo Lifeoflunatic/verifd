@@ -1,0 +1,12 @@
+{
+  "build_time": "2025-08-13T00:40:44Z",
+  "sha256": "bb6d5979121670033cf7bcbb363988e33041d5b215c5d1678dab95d765e5a69f",
+  "size": "7.7M",
+  "version": "1.0.0-staging",
+  "api_endpoint": "https://staging.api.verifd.com",
+  "override_users": [
+    "+919233600392",
+    "+917575854485"
+  ],
+  "kid": "staging-2025-001"
+}

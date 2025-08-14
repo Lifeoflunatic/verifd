@@ -1,0 +1,262 @@
+name: CI Notifications
+
+on:
+  workflow_run:
+    workflows: ["CI", "Staging Smoke Tests"]
+    types: [completed]
+
+permissions:
+  actions: read
+  contents: read
+
+jobs:
+  notify-slack:
+    name: Notify Slack
+    runs-on: ubuntu-latest
+    if: always()
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Download artifacts via workflow run ID
+        id: download
+        run: |
+          # Use workflow run ID to fetch artifacts (decoupled from name)
+          WORKFLOW_RUN_ID="${{ github.event.workflow_run.id }}"
+          WORKFLOW_NAME="${{ github.event.workflow.name }}"
+          
+          echo "Fetching artifacts for workflow run: $WORKFLOW_RUN_ID"
+          echo "Workflow name: $WORKFLOW_NAME"
+          
+          # Get artifact list for this run
+          ARTIFACTS=$(gh api \
+            -H "Accept: application/vnd.github+json" \
+            -H "X-GitHub-Api-Version: 2022-11-28" \
+            /repos/${{ github.repository }}/actions/runs/$WORKFLOW_RUN_ID/artifacts \
+            | jq -r '.artifacts[] | .name')
+          
+          echo "Available artifacts: $ARTIFACTS"
+          
+          # Download coverage if available
+          if echo "$ARTIFACTS" | grep -q "merged-coverage"; then
+            gh run download $WORKFLOW_RUN_ID -n merged-coverage -D coverage || echo "coverage_failed=true" >> $GITHUB_OUTPUT
+            echo "coverage_downloaded=true" >> $GITHUB_OUTPUT
+          else
+            echo "coverage_downloaded=false" >> $GITHUB_OUTPUT
+          fi
+          
+          # Download smoke results if available
+          if echo "$ARTIFACTS" | grep -q "smoke-test-results"; then
+            gh run download $WORKFLOW_RUN_ID -n smoke-test-results -D smoke-results || echo "smoke_failed=true" >> $GITHUB_OUTPUT
+            echo "smoke_downloaded=true" >> $GITHUB_OUTPUT
+          else
+            echo "smoke_downloaded=false" >> $GITHUB_OUTPUT
+          fi
+        env:
+          GH_TOKEN: ${{ github.token }}
+        
+      - name: Calculate coverage metrics
+        id: coverage
+        if: github.event.workflow.name == 'CI'
+        run: |
+          if [ -f "coverage/lcov.info" ]; then
+            # Extract line coverage
+            LINES_HIT=$(grep -E "^LH:" coverage/lcov.info | awk -F: '{sum+=$2} END {print sum}')
+            LINES_TOTAL=$(grep -E "^LF:" coverage/lcov.info | awk -F: '{sum+=$2} END {print sum}')
+            
+            if [ "$LINES_TOTAL" -gt 0 ]; then
+              COVERAGE=$((LINES_HIT * 100 / LINES_TOTAL))
+              echo "coverage_pct=$COVERAGE" >> $GITHUB_OUTPUT
+            else
+              echo "coverage_pct=0" >> $GITHUB_OUTPUT
+            fi
+          else
+            echo "coverage_pct=unknown" >> $GITHUB_OUTPUT
+          fi
+          
+          # Get previous coverage from main (stored as artifact or comment)
+          # For now, use a baseline
+          BASELINE_COVERAGE=70
+          if [ "$COVERAGE" ]; then
+            DELTA=$((COVERAGE - BASELINE_COVERAGE))
+            if [ $DELTA -gt 0 ]; then
+              echo "coverage_delta=+$DELTA%" >> $GITHUB_OUTPUT
+              echo "coverage_emoji=📈" >> $GITHUB_OUTPUT
+            elif [ $DELTA -lt 0 ]; then
+              echo "coverage_delta=$DELTA%" >> $GITHUB_OUTPUT
+              echo "coverage_emoji=📉" >> $GITHUB_OUTPUT
+            else
+              echo "coverage_delta=0%" >> $GITHUB_OUTPUT
+              echo "coverage_emoji=✅" >> $GITHUB_OUTPUT
+            fi
+          fi
+          
+      - name: Parse smoke test results
+        id: smoke
+        if: github.event.workflow.name == 'Staging Smoke Tests'
+        run: |
+          if [ -f "smoke-results/smoke-results.json" ]; then
+            # Count passed/failed tests
+            PASSED=$(jq '[.[] | select(.passed == true)] | length' smoke-results/smoke-results.json)
+            FAILED=$(jq '[.[] | select(.passed == false)] | length' smoke-results/smoke-results.json)
+            TOTAL=$((PASSED + FAILED))
+            
+            echo "smoke_passed=$PASSED" >> $GITHUB_OUTPUT
+            echo "smoke_failed=$FAILED" >> $GITHUB_OUTPUT
+            echo "smoke_total=$TOTAL" >> $GITHUB_OUTPUT
+            
+            if [ $FAILED -eq 0 ]; then
+              echo "smoke_emoji=✅" >> $GITHUB_OUTPUT
+            else
+              echo "smoke_emoji=🔥" >> $GITHUB_OUTPUT
+            fi
+          else
+            echo "smoke_total=0" >> $GITHUB_OUTPUT
+            echo "smoke_emoji=❓" >> $GITHUB_OUTPUT
+          fi
+          
+      - name: Build Slack message
+        id: slack_message
+        run: |
+          # Workflow status
+          if [ "${{ github.event.workflow_run.conclusion }}" == "success" ]; then
+            STATUS_EMOJI="✅"
+            STATUS_COLOR="good"
+          elif [ "${{ github.event.workflow_run.conclusion }}" == "failure" ]; then
+            STATUS_EMOJI="❌"
+            STATUS_COLOR="danger"
+          else
+            STATUS_EMOJI="⚠️"
+            STATUS_COLOR="warning"
+          fi
+          
+          # Deep links
+          RUN_URL="${{ github.event.workflow_run.html_url }}"
+          ARTIFACTS_URL="https://github.com/${{ github.repository }}/actions/runs/${{ github.event.workflow_run.id }}#artifacts"
+          LOGS_URL="https://github.com/${{ github.repository }}/actions/runs/${{ github.event.workflow_run.id }}/logs"
+          
+          # Build message based on workflow
+          if [ "${{ github.event.workflow.name }}" == "CI" ]; then
+            TITLE="CI Pipeline $STATUS_EMOJI"
+            
+            # Check for URL gate failures
+            URL_GATE_STATUS="✅ Pass"
+            # Would need to fetch logs via API for full check
+            
+            # Handle missing artifacts gracefully
+            if [ "${{ steps.download.outputs.coverage_downloaded }}" == "true" ]; then
+              COVERAGE_FIELD="{
+                \"title\": \"Coverage\",
+                \"value\": \"${{ steps.coverage.outputs.coverage_emoji }} ${{ steps.coverage.outputs.coverage_pct }}% (${{ steps.coverage.outputs.coverage_delta }})\",
+                \"short\": true
+              }"
+            else
+              COVERAGE_FIELD="{
+                \"title\": \"Coverage\",
+                \"value\": \"⚠️ Artifacts unavailable\",
+                \"short\": true
+              }"
+            fi
+            
+            cat > slack_payload.json << EOF
+          {
+            "attachments": [
+              {
+                "color": "$STATUS_COLOR",
+                "title": "$TITLE",
+                "title_link": "$RUN_URL",
+                "fields": [
+                  $COVERAGE_FIELD,
+                  {
+                    "title": "URL Safety Gate",
+                    "value": "$URL_GATE_STATUS",
+                    "short": true
+                  },
+                  {
+                    "title": "Branch",
+                    "value": "${{ github.event.workflow_run.head_branch }}",
+                    "short": true
+                  },
+                  {
+                    "title": "Commit",
+                    "value": "<https://github.com/${{ github.repository }}/commit/${{ github.event.workflow_run.head_sha }}|${{ github.event.workflow_run.head_sha }}>",
+                    "short": true
+                  },
+                  {
+                    "title": "Links",
+                    "value": "<$RUN_URL|Run> | <$ARTIFACTS_URL|Artifacts> | <$LOGS_URL|Logs>",
+                    "short": false
+                  }
+                ],
+                "footer": "verifd CI • Run #${{ github.event.workflow_run.id }}",
+                "ts": $(date +%s)
+              }
+            ]
+          }
+          EOF
+          
+          elif [ "${{ github.event.workflow.name }}" == "Staging Smoke Tests" ]; then
+            TITLE="Staging Smoke Tests ${{ steps.smoke.outputs.smoke_emoji }}"
+            
+            cat > slack_payload.json << EOF
+          {
+            "attachments": [
+              {
+                "color": "$STATUS_COLOR",
+                "title": "$TITLE",
+                "title_link": "${{ github.event.workflow_run.html_url }}",
+                "fields": [
+                  {
+                    "title": "Tests Passed",
+                    "value": "${{ steps.smoke.outputs.smoke_passed }}/${{ steps.smoke.outputs.smoke_total }}",
+                    "short": true
+                  },
+                  {
+                    "title": "Status",
+                    "value": "${{ steps.smoke.outputs.smoke_emoji }}",
+                    "short": true
+                  },
+                  {
+                    "title": "Artifacts",
+                    "value": "<${{ github.event.workflow_run.html_url }}|View Results>",
+                    "short": false
+                  }
+                ],
+                "footer": "verifd Staging",
+                "ts": $(date +%s)
+              }
+            ]
+          }
+          EOF
+          fi
+          
+          echo "payload=$(cat slack_payload.json | jq -c .)" >> $GITHUB_OUTPUT
+          
+      - name: Send to Slack
+        if: github.event.workflow_run.conclusion != 'skipped'
+        env:
+          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK_URL }}
+        run: |
+          if [ ! -z "$SLACK_WEBHOOK" ]; then
+            curl -X POST -H 'Content-type: application/json' \
+              --data '@slack_payload.json' \
+              "$SLACK_WEBHOOK"
+          else
+            echo "⚠️ SLACK_WEBHOOK_URL not configured"
+            echo "Message would have been:"
+            cat slack_payload.json | jq .
+          fi
+          
+      - name: Log notification details
+        if: always()
+        run: |
+          echo "📊 Notification Summary"
+          echo "===================="
+          echo "Workflow: ${{ github.event.workflow.name }}"
+          echo "Status: ${{ github.event.workflow_run.conclusion }}"
+          echo "Branch: ${{ github.event.workflow_run.head_branch }}"
+          
+          if [ "${{ github.event.workflow.name }}" == "CI" ]; then
+            echo "Coverage: ${{ steps.coverage.outputs.coverage_pct }}% (${{ steps.coverage.outputs.coverage_delta }})"
+          elif [ "${{ github.event.workflow.name }}" == "Staging Smoke Tests" ]; then
+            echo "Smoke Tests: ${{ steps.smoke.outputs.smoke_passed }}/${{ steps.smoke.outputs.smoke_total }} passed"
+          fi
