@@ -24,7 +24,7 @@ class MainActivity : AppCompatActivity() {
         private const val TAG = "MainActivity"
         private val REQUIRED_PERMISSIONS = arrayOf(
             Manifest.permission.READ_PHONE_STATE,
-            Manifest.permission.CALL_LOG,
+            Manifest.permission.READ_CALL_LOG,
             Manifest.permission.SEND_SMS,
             Manifest.permission.READ_SMS
         )
