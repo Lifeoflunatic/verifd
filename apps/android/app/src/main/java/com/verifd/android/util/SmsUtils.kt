@@ -9,6 +9,7 @@ import android.telephony.SubscriptionInfo
 import android.telephony.SubscriptionManager
 import android.util.Log
 import androidx.core.app.ActivityCompat
+import com.verifd.android.BuildConfig
 import com.verifd.android.R
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -240,14 +241,15 @@ object SmsUtils {
      * 
      * @param context Application context for string resources
      * @param yourName Your name to include in message
-     * @param verifyUrl The verification URL from backend
+     * @param code The verification code
      * @return Formatted SMS message
      */
     fun createIdentityPingMessage(
         context: Context,
         yourName: String,
-        verifyUrl: String
+        code: String
     ): String {
+        val verifyUrl = "${BuildConfig.VERIFY_ORIGIN}/v/$code"
         return context.getString(R.string.identity_ping_template, yourName, verifyUrl)
     }
     
@@ -283,10 +285,12 @@ object SmsUtils {
         }
         
         // Step 2: Create SMS message with dynamic link
+        // Extract code from the URL or use token
+        val code = verificationResponse.token ?: ""
         val smsMessage = createIdentityPingMessage(
             context,
             yourName,
-            verificationResponse.verifyUrl
+            code
         )
         
         // Step 3: Launch SMS composer
