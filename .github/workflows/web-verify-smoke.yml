@@ -32,8 +32,13 @@ jobs:
         shell: bash
         run: |
           if [ -n "${{ secrets.VERCEL_DEPLOYMENT_URL }}" ]; then
-            echo "BASE_URL=${{ secrets.VERCEL_DEPLOYMENT_URL }}" >> $GITHUB_ENV
-            echo "Using prod URL: ${{ secrets.VERCEL_DEPLOYMENT_URL }}"
+            URL="${{ secrets.VERCEL_DEPLOYMENT_URL }}"
+            # Add https:// if no protocol specified
+            if [[ ! "$URL" =~ ^https?:// ]]; then
+              URL="https://$URL"
+            fi
+            echo "BASE_URL=$URL" >> $GITHUB_ENV
+            echo "Using prod URL: $URL"
           else
             echo "Using local server at $BASE_URL"
           fi
