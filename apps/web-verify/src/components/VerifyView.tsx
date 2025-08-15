@@ -10,23 +10,9 @@ import {
   type PassCheckResponse 
 } from '@verifd/shared';
 
-interface VerifyViewProps {
-  code: string;
-  initialPhone?: string;
-}
+type Props = { code: string; initialPhone?: string };
 
-function normalizePhone(v?: string): string | undefined {
-  if (!v) return undefined;
-  try { 
-    v = decodeURIComponent(v); 
-  } catch {
-    // If decoding fails, use the original value
-  }
-  v = v.trim();
-  return v || undefined; // preserve leading '+'
-}
-
-export default function VerifyView({ code, initialPhone }: VerifyViewProps) {
+export default function VerifyView({ code, initialPhone }: Props) {
   const [status, setStatus] = useState<'loading' | 'pending' | 'verified' | 'expired' | 'error'>('loading');
   const [errorMessage, setErrorMessage] = useState<string>('');
   const [submitting, setSubmitting] = useState(false);
@@ -41,8 +27,15 @@ export default function VerifyView({ code, initialPhone }: VerifyViewProps) {
   const [verifiedName, setVerifiedName] = useState<string>('');
   const [verifiedReason, setVerifiedReason] = useState<string>('');
   
-  // Pass check state - initialize with normalized phone
-  const [phoneNumber] = useState<string | undefined>(() => normalizePhone(initialPhone));
+  // Pass check state - normalize phone once from props only
+  const norm = (v?: string) => {
+    if (!v) return undefined;
+    try { v = decodeURIComponent(v); } catch {}
+    v = v.trim();
+    return v || undefined; // keep '+'
+  };
+  const phoneNumber = norm(initialPhone);
+  
   const [passStatus, setPassStatus] = useState<PassCheckResponse | null>(null);
   const [passCheckLoading, setPassCheckLoading] = useState(false);
 
@@ -53,7 +46,7 @@ export default function VerifyView({ code, initialPhone }: VerifyViewProps) {
     checkStatus();
   }, [code]);
 
-  // Check pass status when phone number is present
+  // Check pass status only when phone number is present
   useEffect(() => {
     if (!phoneNumber) return;
     
@@ -67,13 +60,11 @@ export default function VerifyView({ code, initialPhone }: VerifyViewProps) {
     })
       .then(r => r.ok ? r.json() : Promise.reject(new Error(`HTTP ${r.status}`)))
       .then(setPassStatus)
-      .catch(err => { 
-        if (process.env.NODE_ENV !== 'production') {
-          console.warn('pass/check failed', err);
-        }
+      .catch(() => {
+        // Silently fail - no console logs, no error states
       })
       .finally(() => setPassCheckLoading(false));
-  }, [phoneNumber, code, apiUrl]);
+  }, [phoneNumber, apiUrl]);
 
   const checkStatus = async () => {
     try {
@@ -382,11 +373,6 @@ export default function VerifyView({ code, initialPhone }: VerifyViewProps) {
                 <p className="text-sm text-gray-500">Unable to check pass status</p>
               )}
             </div>
-          )}
-
-          {/* Debug Note - Only in development when no phone */}
-          {!phoneNumber && process.env.NODE_ENV !== 'production' && (
-            <p className="text-xs text-gray-400 mt-4">Debug: pass check hidden (no ?phone)</p>
           )}
 
           <div className="mt-6 text-center">
