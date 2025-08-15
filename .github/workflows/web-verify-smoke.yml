@@ -22,12 +22,37 @@ jobs:
           corepack prepare pnpm@9 --activate
       - name: Install deps
         run: pnpm install --frozen-lockfile
-      - name: Build shared + web-verify
+      - name: Build shared + backend + web-verify
         run: |
           pnpm -w --filter @verifd/shared build
+          pnpm -w --filter @verifd/backend build
           pnpm -w --filter @verifd/web-verify build
       - name: Install Playwright browsers
         run: pnpm -C apps/web-verify exec playwright install --with-deps
+      
+      # Start backend server for API calls (even with MOCK_API, some tests need backend)
+      - name: Start backend server
+        run: |
+          mkdir -p apps/backend/var/db
+          cd apps/backend && DB_PATH=./var/db/test.db JWT_SECRET=test-jwt-secret-123 HMAC_SECRET=test-hmac-secret-456 LOG_SALT=test-salt PORT=3001 pnpm dev &
+          echo "BACKEND_PID=$!" >> $GITHUB_ENV
+      
+      - name: Wait for backend health check
+        run: |
+          echo "Waiting for backend to be ready on port 3001..."
+          for i in {1..60}; do
+            if curl -s http://localhost:3001/health/healthz | grep -q "ready"; then
+              echo "✅ Backend is ready!"
+              break
+            fi
+            if [ $i -eq 60 ]; then
+              echo "❌ Backend failed to start within 60 seconds"
+              exit 1
+            fi
+            echo "Attempt $i/60: Backend not ready yet, waiting..."
+            sleep 1
+          done
+      
       - name: Choose BASE_URL (validate and use prod URL if reachable)
         shell: bash
         run: |
@@ -67,6 +92,16 @@ jobs:
         env:
           E2E_BASE_URL: ${{ env.BASE_URL }}
         run: pnpm -C apps/web-verify e2e:ci
+      
+      - name: Cleanup backend process
+        if: always()
+        run: |
+          if [ -n "$BACKEND_PID" ]; then
+            kill $BACKEND_PID || true
+          fi
+          # Ensure ports are freed
+          sudo fuser -k 3001/tcp || true
+      
       - name: Upload Playwright report
         if: always()
         uses: actions/upload-artifact@v4
