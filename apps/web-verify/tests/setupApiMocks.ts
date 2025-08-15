@@ -13,7 +13,10 @@ export async function setupApiMocks(page: Page) {
       status: 200,
       contentType: 'application/json',
       body: JSON.stringify({
-        code: 'TEST123',
+        token: 'TEST123',
+        code: 'TEST123',  // Keep for backward compatibility
+        number_e164: '+12345678901',
+        vanity_url: 'https://example.com/v/TEST123',
         expiresAt: in15,
       }),
     });
@@ -25,6 +28,9 @@ export async function setupApiMocks(page: Page) {
       contentType: 'application/json',
       body: JSON.stringify({
         ok: true,
+        passGranted: true,
+        passId: 'pass_123',
+        callerName: 'Test User',
         pass: {
           allowed: true,
           scope: 'outgoing',
