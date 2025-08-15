@@ -44,7 +44,9 @@ export function parseCorsOrigins(envVar?: string): string[] {
  */
 export function getCorsConfig(): CorsConfig {
   // Parse allowed origins from environment
-  const origins = parseCorsOrigins(process.env.CORS_ALLOWED_ORIGINS);
+  // Support both CORS_ALLOWED_ORIGINS and CORS_ORIGINS for compatibility
+  const corsEnv = process.env.CORS_ALLOWED_ORIGINS || process.env.CORS_ORIGINS;
+  const origins = parseCorsOrigins(corsEnv);
   
   // Add production domains if configured
   if (process.env.VERIFY_DOMAIN) {
