@@ -28,25 +28,29 @@ jobs:
           pnpm -w --filter @verifd/web-verify build
       - name: Install Playwright browsers
         run: pnpm -C apps/web-verify exec playwright install --with-deps
-      - name: Choose BASE_URL (prod if secret set)
+      - name: Choose BASE_URL (validate and use prod URL if reachable)
         shell: bash
         run: |
-          if [ -n "${{ secrets.VERCEL_DEPLOYMENT_URL }}" ] && [ "${{ secrets.VERCEL_DEPLOYMENT_URL }}" != "vercel_deployment_url" ]; then
+          # Try to use the secret if it's set
+          if [ -n "${{ secrets.VERCEL_DEPLOYMENT_URL }}" ]; then
             URL="${{ secrets.VERCEL_DEPLOYMENT_URL }}"
+            
             # Add https:// if no protocol specified
             if [[ ! "$URL" =~ ^https?:// ]]; then
               URL="https://$URL"
             fi
-            # Validate it's not a placeholder
-            if [[ "$URL" == *"vercel_deployment_url"* ]] || [[ "$URL" == *"example.com"* ]]; then
-              echo "::warning::VERCEL_DEPLOYMENT_URL appears to be a placeholder. Using local server instead."
-              echo "Using local server at $BASE_URL"
-            else
+            
+            # Test if URL is actually reachable (not a placeholder)
+            echo "Testing if deployment URL is reachable..."
+            if curl -s -o /dev/null -w "%{http_code}" --max-time 5 "$URL" | grep -qE "^[23]"; then
               echo "BASE_URL=$URL" >> $GITHUB_ENV
-              echo "Using prod URL: $URL"
+              echo "✅ Using production URL (reachable)"
+            else
+              echo "⚠️ VERCEL_DEPLOYMENT_URL is not reachable (likely a placeholder). Using local server."
+              echo "Using local server at $BASE_URL"
             fi
           else
-            echo "Using local server at $BASE_URL"
+            echo "No VERCEL_DEPLOYMENT_URL secret set. Using local server at $BASE_URL"
           fi
       - name: Start local server (only if using local BASE_URL)
         shell: bash
