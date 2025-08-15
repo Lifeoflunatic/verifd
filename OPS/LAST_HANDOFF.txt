@@ -1,19 +1,16 @@
 ---HANDOFF---
 Task: (auto) Fallback handoff — assistant reply had no explicit ---HANDOFF---
-When: 2025-08-15T02:18:32Z
+When: 2025-08-15T02:26:15Z
 Branch: main
 
 Diff Summary:
- OPS/HANDOFF_HISTORY.md | 273 +++++++++++++++++++++++++++++++++++++++++++++++++
- OPS/LAST_HANDOFF.txt   |  11 +-
- 2 files changed, 280 insertions(+), 4 deletions(-)
+
 
 Files Touched:
-OPS/HANDOFF_HISTORY.md
-OPS/LAST_HANDOFF.txt
+
 
 Last Commit:
-8220cc0 fix(web-verify): gate pass-check by ?phone and hide UI when absent (minimal)
+d9d614e feat(cors): wildcard preview origins via anchored regex + boot log
 
 Commands/Tests Run (tail):
 

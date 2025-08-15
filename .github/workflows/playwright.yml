@@ -1,0 +1,86 @@
+name: Playwright Tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+    paths:
+      - 'apps/web-verify/**'
+      - 'apps/backend/**'
+      - 'packages/shared/**'
+
+jobs:
+  playwright:
+    name: Playwright E2E Tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 9
+          
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+        
+      - name: Build shared package
+        run: pnpm -w --filter @verifd/shared build
+        
+      - name: Build backend
+        run: pnpm -w --filter @verifd/backend build
+        
+      - name: Build web-verify
+        run: pnpm -w --filter @verifd/web-verify build
+        
+      - name: Install Playwright browsers
+        run: pnpm -w --filter @verifd/web-verify exec playwright install --with-deps chromium
+        
+      - name: Install wait-on
+        run: npm i -g wait-on
+        
+      - name: Start backend server
+        run: |
+          PORT=3002 CORS_ALLOWED_ORIGINS=http://localhost:3000 pnpm -w --filter @verifd/backend start &
+        env:
+          PORT: 3002
+          CORS_ALLOWED_ORIGINS: http://localhost:3000
+          
+      - name: Start web-verify server
+        run: |
+          pnpm -w --filter @verifd/web-verify start -- --port 3000 &
+        env:
+          NEXT_PUBLIC_API_BASE_URL: http://localhost:3002
+          
+      - name: Wait for servers to be ready
+        run: |
+          echo "Waiting for backend at http://localhost:3002/healthz..."
+          wait-on http-get://localhost:3002/healthz --timeout 30000
+          echo "Backend is ready!"
+          
+          echo "Waiting for web-verify at http://localhost:3000..."
+          wait-on http-get://localhost:3000 --timeout 30000
+          echo "Web-verify is ready!"
+          
+      - name: Run Playwright tests
+        run: pnpm -w --filter @verifd/web-verify test
+        env:
+          NEXT_PUBLIC_API_BASE_URL: http://localhost:3002
+          CORS_ALLOWED_ORIGINS: http://localhost:3000
+          E2E_BASE_URL: http://localhost:3000
+          
+      - name: Upload test results
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: playwright-results
+          path: |
+            apps/web-verify/test-results/
+            apps/web-verify/playwright-report/
+          retention-days: 7

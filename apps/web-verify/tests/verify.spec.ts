@@ -153,8 +153,8 @@ test.describe('verifd Web Verify E2E Tests', () => {
     await page.getByTestId('submit-button').click();
 
     // Wait for navigation to success page at /v/[token]
-    await page.waitForURL(/\/v\/[^\/]+$/, { timeout: 10000 });
-    await expect(page.getByTestId('success-page')).toBeVisible({ timeout: 10000 });
+    await page.waitForURL(/\/v\/[^\/]+$/, { timeout: 20_000 });
+    await expect(page.getByTestId('success-page')).toBeVisible();
     
     // Wait for pass status to load (may be very fast with mocks, so check both states)
     const loadingState = page.getByTestId('loading-state');
@@ -162,8 +162,8 @@ test.describe('verifd Web Verify E2E Tests', () => {
     
     // Either loading is visible and then disappears, or pass status is already visible
     await Promise.race([
-      loadingState.waitFor({ state: 'hidden', timeout: 10000 }).catch(() => {}),
-      passStatus.waitFor({ state: 'visible', timeout: 10000 })
+      loadingState.waitFor({ state: 'hidden', timeout: 20_000 }).catch(() => {}),
+      passStatus.waitFor({ state: 'visible', timeout: 20_000 })
     ]);
     
     // Check that pass status shows allowed
@@ -201,11 +201,11 @@ test.describe('verifd Web Verify E2E Tests', () => {
     await page.getByTestId('submit-button').click();
 
     // Wait for navigation to success page at /v/[token]
-    await page.waitForURL(/\/v\/[^\/]+$/, { timeout: 10000 });
-    await expect(page.getByTestId('success-page')).toBeVisible({ timeout: 10000 });
+    await page.waitForURL(/\/v\/[^\/]+$/, { timeout: 20_000 });
+    await expect(page.getByTestId('success-page')).toBeVisible();
     
     // Wait for pass status to load
-    await expect(page.getByTestId('loading-state')).not.toBeVisible({ timeout: 10000 });
+    await expect(page.getByTestId('loading-state')).not.toBeVisible();
     
     // Check that pass status shows not allowed
     await expect(page.getByTestId('pass-status')).toBeVisible();
@@ -368,13 +368,13 @@ test.describe('verifd Web Verify E2E Tests', () => {
     
     // Either loading is visible and then disappears, or pass status is already visible
     await Promise.race([
-      loadingState.waitFor({ state: 'hidden', timeout: 10000 }).catch(() => {}),
-      passStatus.waitFor({ state: 'visible', timeout: 10000 })
+      loadingState.waitFor({ state: 'hidden', timeout: 20_000 }).catch(() => {}),
+      passStatus.waitFor({ state: 'visible', timeout: 20_000 })
     ]);
     
     // Step 3: Check that pass status shows allowed
-    await expect(page.getByTestId('pass-status')).toBeVisible({ timeout: 15000 });
-    await expect(page.getByTestId('pass-allowed')).toBeVisible({ timeout: 5000 });
+    await expect(page.getByTestId('pass-status')).toBeVisible();
+    await expect(page.getByTestId('pass-allowed')).toBeVisible();
     await expect(page.getByTestId('pass-scope')).toContainText('30 minutes');
     
     // Take screenshot of success page

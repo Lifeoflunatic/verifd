@@ -225,7 +225,7 @@ export default function VerifyView({ code, initialPhone }: Props) {
   if (status === 'loading') {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
-        <div className="bg-white rounded-lg shadow-xl p-8 max-w-md w-full">
+        <div className="bg-white rounded-lg shadow-xl p-8 max-w-md w-full" data-testid="loading-state">
           <div className="flex items-center justify-center">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
           </div>
@@ -289,7 +289,7 @@ export default function VerifyView({ code, initialPhone }: Props) {
   if (status === 'verified') {
     return (
       <div className="min-h-screen bg-gradient-to-br from-green-50 to-emerald-100 flex items-center justify-center p-4">
-        <div className="bg-white rounded-lg shadow-xl p-8 max-w-md w-full">
+        <div className="bg-white rounded-lg shadow-xl p-8 max-w-md w-full" data-testid="success-page">
           <div className="text-center mb-6">
             <div className="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-green-100">
               <svg className="h-8 w-8 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">

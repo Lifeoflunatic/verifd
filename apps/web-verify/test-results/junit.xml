@@ -1,2 +1,833 @@
-<testsuites id="" name="" tests="0" failures="0" skipped="0" errors="0" time="123.729552">
+<testsuites id="" name="" tests="33" failures="12" skipped="0" errors="0" time="76.332496">
+<testsuite name="simple.spec.ts" timestamp="2025-08-15T02:43:06.491Z" hostname="chromium" tests="3" failures="0" skipped="0" time="2.991" errors="0">
+<testcase name="Web Verify Basic Tests › should load the home page" classname="simple.spec.ts" time="0.953">
+<system-out>
+<![CDATA[✅ Home page loaded successfully
+]]>
+</system-out>
+</testcase>
+<testcase name="Web Verify Basic Tests › should validate form fields" classname="simple.spec.ts" time="0.989">
+<system-out>
+<![CDATA[✅ Form validation working
+]]>
+</system-out>
+</testcase>
+<testcase name="Web Verify Basic Tests › should fill form fields" classname="simple.spec.ts" time="1.049">
+<system-out>
+<![CDATA[✅ Form filling works correctly
+]]>
+</system-out>
+</testcase>
+</testsuite>
+<testsuite name="verify.spec.ts" timestamp="2025-08-15T02:43:06.491Z" hostname="chromium" tests="8" failures="4" skipped="0" time="88.068" errors="0">
+<testcase name="verifd Web Verify E2E Tests › should complete full verification flow with active pass" classname="verify.spec.ts" time="21.975">
+<failure message="verify.spec.ts:129:7 should complete full verification flow with active pass" type="FAILURE">
+<![CDATA[  [chromium] › verify.spec.ts:129:7 › verifd Web Verify E2E Tests › should complete full verification flow with active pass 
+
+    Error: Timed out 20000ms waiting for expect(locator).toBeVisible()
+
+    Locator: getByTestId('success-page')
+    Expected: visible
+    Received: <element(s) not found>
+    Call log:
+      - Expect "toBeVisible" with timeout 20000ms
+      - waiting for getByTestId('success-page')
+
+
+      155 |     // Wait for navigation to success page at /v/[token]
+      156 |     await page.waitForURL(/\/v\/[^\/]+$/, { timeout: 20_000 });
+    > 157 |     await expect(page.getByTestId('success-page')).toBeVisible();
+          |                                                    ^
+      158 |     
+      159 |     // Wait for pass status to load (may be very fast with mocks, so check both states)
+      160 |     const loadingState = page.getByTestId('loading-state');
+        at /Users/harshilpatel/Desktop/Claude_Projects/verifd/apps/web-verify/tests/verify.spec.ts:157:52
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/verify-verifd-Web-Verify-E-f361f-ation-flow-with-active-pass-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../test-results/verify-verifd-Web-Verify-E-f361f-ation-flow-with-active-pass-chromium/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../test-results/verify-verifd-Web-Verify-E-f361f-ation-flow-with-active-pass-chromium/trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace ../test-results/verify-verifd-Web-Verify-E-f361f-ation-flow-with-active-pass-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+]]>
+</failure>
+<system-out>
+<![CDATA[🔍 Checking API readiness...
+✅ API ready at http://localhost:3001/health/healthz
+✅ API ready at http://localhost:3001/health/healthz
+📤 Mocked /verify/start called with: {
+  phoneNumber: [32m'+1234567890'[39m,
+  name: [32m'John Doe'[39m,
+  reason: [32m'Test verification call'[39m,
+  voicePing: [32m'This is a test voice message'[39m
+}
+
+[[ATTACHMENT|verify-verifd-Web-Verify-E-f361f-ation-flow-with-active-pass-chromium/test-failed-1.png]]
+
+[[ATTACHMENT|verify-verifd-Web-Verify-E-f361f-ation-flow-with-active-pass-chromium/error-context.md]]
+
+[[ATTACHMENT|verify-verifd-Web-Verify-E-f361f-ation-flow-with-active-pass-chromium/trace.zip]]
+]]>
+</system-out>
+</testcase>
+<testcase name="verifd Web Verify E2E Tests › should complete verification flow with no active pass" classname="verify.spec.ts" time="21.97">
+<failure message="verify.spec.ts:184:7 should complete verification flow with no active pass" type="FAILURE">
+<![CDATA[  [chromium] › verify.spec.ts:184:7 › verifd Web Verify E2E Tests › should complete verification flow with no active pass 
+
+    Error: Timed out 20000ms waiting for expect(locator).toBeVisible()
+
+    Locator: getByTestId('success-page')
+    Expected: visible
+    Received: <element(s) not found>
+    Call log:
+      - Expect "toBeVisible" with timeout 20000ms
+      - waiting for getByTestId('success-page')
+
+
+      203 |     // Wait for navigation to success page at /v/[token]
+      204 |     await page.waitForURL(/\/v\/[^\/]+$/, { timeout: 20_000 });
+    > 205 |     await expect(page.getByTestId('success-page')).toBeVisible();
+          |                                                    ^
+      206 |     
+      207 |     // Wait for pass status to load
+      208 |     await expect(page.getByTestId('loading-state')).not.toBeVisible();
+        at /Users/harshilpatel/Desktop/Claude_Projects/verifd/apps/web-verify/tests/verify.spec.ts:205:52
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/verify-verifd-Web-Verify-E-b655a-on-flow-with-no-active-pass-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../test-results/verify-verifd-Web-Verify-E-b655a-on-flow-with-no-active-pass-chromium/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../test-results/verify-verifd-Web-Verify-E-b655a-on-flow-with-no-active-pass-chromium/trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace ../test-results/verify-verifd-Web-Verify-E-b655a-on-flow-with-no-active-pass-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+]]>
+</failure>
+<system-out>
+<![CDATA[🔍 Checking API readiness...
+✅ API ready at http://localhost:3001/health/healthz
+✅ API ready at http://localhost:3001/health/healthz
+📤 Mocked /verify/start called with: {
+  phoneNumber: [32m'+1987654321'[39m,
+  name: [32m'Jane Smith'[39m,
+  reason: [32m'Quick call'[39m
+}
+
+[[ATTACHMENT|verify-verifd-Web-Verify-E-b655a-on-flow-with-no-active-pass-chromium/test-failed-1.png]]
+
+[[ATTACHMENT|verify-verifd-Web-Verify-E-b655a-on-flow-with-no-active-pass-chromium/error-context.md]]
+
+[[ATTACHMENT|verify-verifd-Web-Verify-E-b655a-on-flow-with-no-active-pass-chromium/trace.zip]]
+]]>
+</system-out>
+</testcase>
+<testcase name="verifd Web Verify E2E Tests › should handle API errors gracefully" classname="verify.spec.ts" time="1.383">
+<system-out>
+<![CDATA[🔍 Checking API readiness...
+✅ API ready at http://localhost:3001/health/healthz
+✅ API ready at http://localhost:3001/health/healthz
+✅ Error screenshots saved to /Users/harshilpatel/Desktop/Claude_Projects/verifd/handoff/artifacts
+]]>
+</system-out>
+</testcase>
+<testcase name="verifd Web Verify E2E Tests › should verify LOG_SALT affects phone number hashing" classname="verify.spec.ts" time="0.403">
+<system-out>
+<![CDATA[🔍 Checking API readiness...
+✅ API ready at http://localhost:3001/health/healthz
+✅ API ready at http://localhost:3001/health/healthz
+✅ LOG_SALT functionality verified (endpoint responsive)
+]]>
+</system-out>
+</testcase>
+<testcase name="verifd Web Verify E2E Tests › should verify both /health/z and /healthz endpoints work" classname="verify.spec.ts" time="0.39">
+<system-out>
+<![CDATA[🔍 Checking API readiness...
+✅ API ready at http://localhost:3001/health/healthz
+✅ API ready at http://localhost:3001/health/healthz
+✅ /health/healthz endpoint verified
+]]>
+</system-out>
+</testcase>
+<testcase name="verifd Web Verify E2E Tests › should navigate back to home page from success page" classname="verify.spec.ts" time="20.79">
+<failure message="verify.spec.ts:295:7 should navigate back to home page from success page" type="FAILURE">
+<![CDATA[  [chromium] › verify.spec.ts:295:7 › verifd Web Verify E2E Tests › should navigate back to home page from success page 
+
+    Error: Timed out 20000ms waiting for expect(locator).toBeVisible()
+
+    Locator: getByTestId('success-page')
+    Expected: visible
+    Received: <element(s) not found>
+    Call log:
+      - Expect "toBeVisible" with timeout 20000ms
+      - waiting for getByTestId('success-page')
+
+
+      308 |
+      309 |     // Wait for success page
+    > 310 |     await expect(page.getByTestId('success-page')).toBeVisible();
+          |                                                    ^
+      311 |     
+      312 |     // Click back button
+      313 |     await page.getByTestId('back-button').click();
+        at /Users/harshilpatel/Desktop/Claude_Projects/verifd/apps/web-verify/tests/verify.spec.ts:310:52
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/verify-verifd-Web-Verify-E-52182-home-page-from-success-page-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../test-results/verify-verifd-Web-Verify-E-52182-home-page-from-success-page-chromium/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../test-results/verify-verifd-Web-Verify-E-52182-home-page-from-success-page-chromium/trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace ../test-results/verify-verifd-Web-Verify-E-52182-home-page-from-success-page-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+]]>
+</failure>
+<system-out>
+<![CDATA[🔍 Checking API readiness...
+✅ API ready at http://localhost:3001/health/healthz
+✅ API ready at http://localhost:3001/health/healthz
+📤 Mocked /verify/start called with: {
+  phoneNumber: [32m'+1555000000'[39m,
+  name: [32m'Navigation Test'[39m,
+  reason: [32m'Testing navigation'[39m
+}
+
+[[ATTACHMENT|verify-verifd-Web-Verify-E-52182-home-page-from-success-page-chromium/test-failed-1.png]]
+
+[[ATTACHMENT|verify-verifd-Web-Verify-E-52182-home-page-from-success-page-chromium/error-context.md]]
+
+[[ATTACHMENT|verify-verifd-Web-Verify-E-52182-home-page-from-success-page-chromium/trace.zip]]
+]]>
+</system-out>
+</testcase>
+<testcase name="verifd Web Verify E2E Tests › should complete E2E flow: /v/&lt;token&gt; redirect → submit → vPass → pass/check allowed:true" classname="verify.spec.ts" time="21.081">
+<failure message="verify.spec.ts:327:7 should complete E2E flow: /v/&lt;token&gt; redirect → submit → vPass → pass/check allowed:true" type="FAILURE">
+<![CDATA[  [chromium] › verify.spec.ts:327:7 › verifd Web Verify E2E Tests › should complete E2E flow: /v/<token> redirect → submit → vPass → pass/check allowed:true 
+
+    Error: Timed out 20000ms waiting for expect(locator).toBeVisible()
+
+    Locator: getByTestId('success-page')
+    Expected: visible
+    Received: <element(s) not found>
+    Call log:
+      - Expect "toBeVisible" with timeout 20000ms
+      - waiting for getByTestId('success-page')
+
+
+      361 |     
+      362 |     // Wait for the success page to be visible
+    > 363 |     await expect(page.getByTestId('success-page')).toBeVisible();
+          |                                                    ^
+      364 |     
+      365 |     // Wait for pass status to load (may be very fast with mocks, so check both states)
+      366 |     const loadingState = page.getByTestId('loading-state');
+        at /Users/harshilpatel/Desktop/Claude_Projects/verifd/apps/web-verify/tests/verify.spec.ts:363:52
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/verify-verifd-Web-Verify-E-faeef-s-→-pass-check-allowed-true-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../test-results/verify-verifd-Web-Verify-E-faeef-s-→-pass-check-allowed-true-chromium/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../test-results/verify-verifd-Web-Verify-E-faeef-s-→-pass-check-allowed-true-chromium/trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace ../test-results/verify-verifd-Web-Verify-E-faeef-s-→-pass-check-allowed-true-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+]]>
+</failure>
+<system-out>
+<![CDATA[🔍 Checking API readiness...
+✅ API ready at http://localhost:3001/health/healthz
+✅ API ready at http://localhost:3001/health/healthz
+📤 Got verification token: undefined
+
+[[ATTACHMENT|verify-verifd-Web-Verify-E-faeef-s-→-pass-check-allowed-true-chromium/test-failed-1.png]]
+
+[[ATTACHMENT|verify-verifd-Web-Verify-E-faeef-s-→-pass-check-allowed-true-chromium/error-context.md]]
+
+[[ATTACHMENT|verify-verifd-Web-Verify-E-faeef-s-→-pass-check-allowed-true-chromium/trace.zip]]
+]]>
+</system-out>
+</testcase>
+<testcase name="API Health Checks › backend health endpoints respond correctly" classname="verify.spec.ts" time="0.076">
+<system-out>
+<![CDATA[✅ /health/healthz endpoint verified
+✅ All health endpoints verified
+]]>
+</system-out>
+</testcase>
+</testsuite>
+<testsuite name="simple.spec.ts" timestamp="2025-08-15T02:43:06.491Z" hostname="firefox" tests="3" failures="0" skipped="0" time="2.583" errors="0">
+<testcase name="Web Verify Basic Tests › should load the home page" classname="simple.spec.ts" time="1.183">
+<system-out>
+<![CDATA[✅ Home page loaded successfully
+]]>
+</system-out>
+</testcase>
+<testcase name="Web Verify Basic Tests › should validate form fields" classname="simple.spec.ts" time="0.683">
+<system-out>
+<![CDATA[✅ Form validation working
+]]>
+</system-out>
+</testcase>
+<testcase name="Web Verify Basic Tests › should fill form fields" classname="simple.spec.ts" time="0.717">
+<system-out>
+<![CDATA[✅ Form filling works correctly
+]]>
+</system-out>
+</testcase>
+</testsuite>
+<testsuite name="verify.spec.ts" timestamp="2025-08-15T02:43:06.491Z" hostname="firefox" tests="8" failures="4" skipped="0" time="90.404" errors="0">
+<testcase name="verifd Web Verify E2E Tests › should complete full verification flow with active pass" classname="verify.spec.ts" time="21.246">
+<failure message="verify.spec.ts:129:7 should complete full verification flow with active pass" type="FAILURE">
+<![CDATA[  [firefox] › verify.spec.ts:129:7 › verifd Web Verify E2E Tests › should complete full verification flow with active pass 
+
+    Error: Timed out 20000ms waiting for expect(locator).toBeVisible()
+
+    Locator: getByTestId('success-page')
+    Expected: visible
+    Received: <element(s) not found>
+    Call log:
+      - Expect "toBeVisible" with timeout 20000ms
+      - waiting for getByTestId('success-page')
+
+
+      155 |     // Wait for navigation to success page at /v/[token]
+      156 |     await page.waitForURL(/\/v\/[^\/]+$/, { timeout: 20_000 });
+    > 157 |     await expect(page.getByTestId('success-page')).toBeVisible();
+          |                                                    ^
+      158 |     
+      159 |     // Wait for pass status to load (may be very fast with mocks, so check both states)
+      160 |     const loadingState = page.getByTestId('loading-state');
+        at /Users/harshilpatel/Desktop/Claude_Projects/verifd/apps/web-verify/tests/verify.spec.ts:157:52
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/verify-verifd-Web-Verify-E-f361f-ation-flow-with-active-pass-firefox/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../test-results/verify-verifd-Web-Verify-E-f361f-ation-flow-with-active-pass-firefox/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../test-results/verify-verifd-Web-Verify-E-f361f-ation-flow-with-active-pass-firefox/trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace ../test-results/verify-verifd-Web-Verify-E-f361f-ation-flow-with-active-pass-firefox/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+]]>
+</failure>
+<system-out>
+<![CDATA[🔍 Checking API readiness...
+✅ API ready at http://localhost:3001/health/healthz
+✅ API ready at http://localhost:3001/health/healthz
+📤 Mocked /verify/start called with: {
+  phoneNumber: [32m'+1234567890'[39m,
+  name: [32m'John Doe'[39m,
+  reason: [32m'Test verification call'[39m,
+  voicePing: [32m'This is a test voice message'[39m
+}
+
+[[ATTACHMENT|verify-verifd-Web-Verify-E-f361f-ation-flow-with-active-pass-firefox/test-failed-1.png]]
+
+[[ATTACHMENT|verify-verifd-Web-Verify-E-f361f-ation-flow-with-active-pass-firefox/error-context.md]]
+
+[[ATTACHMENT|verify-verifd-Web-Verify-E-f361f-ation-flow-with-active-pass-firefox/trace.zip]]
+]]>
+</system-out>
+</testcase>
+<testcase name="verifd Web Verify E2E Tests › should complete verification flow with no active pass" classname="verify.spec.ts" time="22.04">
+<failure message="verify.spec.ts:184:7 should complete verification flow with no active pass" type="FAILURE">
+<![CDATA[  [firefox] › verify.spec.ts:184:7 › verifd Web Verify E2E Tests › should complete verification flow with no active pass 
+
+    Error: Timed out 20000ms waiting for expect(locator).toBeVisible()
+
+    Locator: getByTestId('success-page')
+    Expected: visible
+    Received: <element(s) not found>
+    Call log:
+      - Expect "toBeVisible" with timeout 20000ms
+      - waiting for getByTestId('success-page')
+
+
+      203 |     // Wait for navigation to success page at /v/[token]
+      204 |     await page.waitForURL(/\/v\/[^\/]+$/, { timeout: 20_000 });
+    > 205 |     await expect(page.getByTestId('success-page')).toBeVisible();
+          |                                                    ^
+      206 |     
+      207 |     // Wait for pass status to load
+      208 |     await expect(page.getByTestId('loading-state')).not.toBeVisible();
+        at /Users/harshilpatel/Desktop/Claude_Projects/verifd/apps/web-verify/tests/verify.spec.ts:205:52
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/verify-verifd-Web-Verify-E-b655a-on-flow-with-no-active-pass-firefox/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../test-results/verify-verifd-Web-Verify-E-b655a-on-flow-with-no-active-pass-firefox/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../test-results/verify-verifd-Web-Verify-E-b655a-on-flow-with-no-active-pass-firefox/trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace ../test-results/verify-verifd-Web-Verify-E-b655a-on-flow-with-no-active-pass-firefox/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+]]>
+</failure>
+<system-out>
+<![CDATA[🔍 Checking API readiness...
+✅ API ready at http://localhost:3001/health/healthz
+✅ API ready at http://localhost:3001/health/healthz
+📤 Mocked /verify/start called with: {
+  phoneNumber: [32m'+1987654321'[39m,
+  name: [32m'Jane Smith'[39m,
+  reason: [32m'Quick call'[39m
+}
+
+[[ATTACHMENT|verify-verifd-Web-Verify-E-b655a-on-flow-with-no-active-pass-firefox/test-failed-1.png]]
+
+[[ATTACHMENT|verify-verifd-Web-Verify-E-b655a-on-flow-with-no-active-pass-firefox/error-context.md]]
+
+[[ATTACHMENT|verify-verifd-Web-Verify-E-b655a-on-flow-with-no-active-pass-firefox/trace.zip]]
+]]>
+</system-out>
+</testcase>
+<testcase name="verifd Web Verify E2E Tests › should handle API errors gracefully" classname="verify.spec.ts" time="1.955">
+<system-out>
+<![CDATA[🔍 Checking API readiness...
+✅ API ready at http://localhost:3001/health/healthz
+✅ API ready at http://localhost:3001/health/healthz
+✅ Error screenshots saved to /Users/harshilpatel/Desktop/Claude_Projects/verifd/handoff/artifacts
+]]>
+</system-out>
+</testcase>
+<testcase name="verifd Web Verify E2E Tests › should verify LOG_SALT affects phone number hashing" classname="verify.spec.ts" time="1.011">
+<system-out>
+<![CDATA[🔍 Checking API readiness...
+✅ API ready at http://localhost:3001/health/healthz
+✅ API ready at http://localhost:3001/health/healthz
+✅ LOG_SALT functionality verified (endpoint responsive)
+]]>
+</system-out>
+</testcase>
+<testcase name="verifd Web Verify E2E Tests › should verify both /health/z and /healthz endpoints work" classname="verify.spec.ts" time="1.117">
+<system-out>
+<![CDATA[🔍 Checking API readiness...
+✅ API ready at http://localhost:3001/health/healthz
+✅ API ready at http://localhost:3001/health/healthz
+✅ /health/healthz endpoint verified
+]]>
+</system-out>
+</testcase>
+<testcase name="verifd Web Verify E2E Tests › should navigate back to home page from success page" classname="verify.spec.ts" time="21.284">
+<failure message="verify.spec.ts:295:7 should navigate back to home page from success page" type="FAILURE">
+<![CDATA[  [firefox] › verify.spec.ts:295:7 › verifd Web Verify E2E Tests › should navigate back to home page from success page 
+
+    Error: Timed out 20000ms waiting for expect(locator).toBeVisible()
+
+    Locator: getByTestId('success-page')
+    Expected: visible
+    Received: <element(s) not found>
+    Call log:
+      - Expect "toBeVisible" with timeout 20000ms
+      - waiting for getByTestId('success-page')
+
+
+      308 |
+      309 |     // Wait for success page
+    > 310 |     await expect(page.getByTestId('success-page')).toBeVisible();
+          |                                                    ^
+      311 |     
+      312 |     // Click back button
+      313 |     await page.getByTestId('back-button').click();
+        at /Users/harshilpatel/Desktop/Claude_Projects/verifd/apps/web-verify/tests/verify.spec.ts:310:52
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/verify-verifd-Web-Verify-E-52182-home-page-from-success-page-firefox/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../test-results/verify-verifd-Web-Verify-E-52182-home-page-from-success-page-firefox/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../test-results/verify-verifd-Web-Verify-E-52182-home-page-from-success-page-firefox/trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace ../test-results/verify-verifd-Web-Verify-E-52182-home-page-from-success-page-firefox/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+]]>
+</failure>
+<system-out>
+<![CDATA[🔍 Checking API readiness...
+✅ API ready at http://localhost:3001/health/healthz
+✅ API ready at http://localhost:3001/health/healthz
+📤 Mocked /verify/start called with: {
+  phoneNumber: [32m'+1555000000'[39m,
+  name: [32m'Navigation Test'[39m,
+  reason: [32m'Testing navigation'[39m
+}
+
+[[ATTACHMENT|verify-verifd-Web-Verify-E-52182-home-page-from-success-page-firefox/test-failed-1.png]]
+
+[[ATTACHMENT|verify-verifd-Web-Verify-E-52182-home-page-from-success-page-firefox/error-context.md]]
+
+[[ATTACHMENT|verify-verifd-Web-Verify-E-52182-home-page-from-success-page-firefox/trace.zip]]
+]]>
+</system-out>
+</testcase>
+<testcase name="verifd Web Verify E2E Tests › should complete E2E flow: /v/&lt;token&gt; redirect → submit → vPass → pass/check allowed:true" classname="verify.spec.ts" time="21.504">
+<failure message="verify.spec.ts:327:7 should complete E2E flow: /v/&lt;token&gt; redirect → submit → vPass → pass/check allowed:true" type="FAILURE">
+<![CDATA[  [firefox] › verify.spec.ts:327:7 › verifd Web Verify E2E Tests › should complete E2E flow: /v/<token> redirect → submit → vPass → pass/check allowed:true 
+
+    Error: Timed out 20000ms waiting for expect(locator).toBeVisible()
+
+    Locator: getByTestId('success-page')
+    Expected: visible
+    Received: <element(s) not found>
+    Call log:
+      - Expect "toBeVisible" with timeout 20000ms
+      - waiting for getByTestId('success-page')
+
+
+      361 |     
+      362 |     // Wait for the success page to be visible
+    > 363 |     await expect(page.getByTestId('success-page')).toBeVisible();
+          |                                                    ^
+      364 |     
+      365 |     // Wait for pass status to load (may be very fast with mocks, so check both states)
+      366 |     const loadingState = page.getByTestId('loading-state');
+        at /Users/harshilpatel/Desktop/Claude_Projects/verifd/apps/web-verify/tests/verify.spec.ts:363:52
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/verify-verifd-Web-Verify-E-faeef-s-→-pass-check-allowed-true-firefox/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../test-results/verify-verifd-Web-Verify-E-faeef-s-→-pass-check-allowed-true-firefox/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../test-results/verify-verifd-Web-Verify-E-faeef-s-→-pass-check-allowed-true-firefox/trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace ../test-results/verify-verifd-Web-Verify-E-faeef-s-→-pass-check-allowed-true-firefox/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+]]>
+</failure>
+<system-out>
+<![CDATA[🔍 Checking API readiness...
+✅ API ready at http://localhost:3001/health/healthz
+✅ API ready at http://localhost:3001/health/healthz
+📤 Got verification token: undefined
+
+[[ATTACHMENT|verify-verifd-Web-Verify-E-faeef-s-→-pass-check-allowed-true-firefox/test-failed-1.png]]
+
+[[ATTACHMENT|verify-verifd-Web-Verify-E-faeef-s-→-pass-check-allowed-true-firefox/error-context.md]]
+
+[[ATTACHMENT|verify-verifd-Web-Verify-E-faeef-s-→-pass-check-allowed-true-firefox/trace.zip]]
+]]>
+</system-out>
+</testcase>
+<testcase name="API Health Checks › backend health endpoints respond correctly" classname="verify.spec.ts" time="0.247">
+<system-out>
+<![CDATA[✅ /health/healthz endpoint verified
+✅ All health endpoints verified
+]]>
+</system-out>
+</testcase>
+</testsuite>
+<testsuite name="simple.spec.ts" timestamp="2025-08-15T02:43:06.491Z" hostname="webkit" tests="3" failures="0" skipped="0" time="2.616" errors="0">
+<testcase name="Web Verify Basic Tests › should load the home page" classname="simple.spec.ts" time="1.003">
+<system-out>
+<![CDATA[✅ Home page loaded successfully
+]]>
+</system-out>
+</testcase>
+<testcase name="Web Verify Basic Tests › should validate form fields" classname="simple.spec.ts" time="0.806">
+<system-out>
+<![CDATA[✅ Form validation working
+]]>
+</system-out>
+</testcase>
+<testcase name="Web Verify Basic Tests › should fill form fields" classname="simple.spec.ts" time="0.807">
+<system-out>
+<![CDATA[✅ Form filling works correctly
+]]>
+</system-out>
+</testcase>
+</testsuite>
+<testsuite name="verify.spec.ts" timestamp="2025-08-15T02:43:06.491Z" hostname="webkit" tests="8" failures="4" skipped="0" time="86.346" errors="0">
+<testcase name="verifd Web Verify E2E Tests › should complete full verification flow with active pass" classname="verify.spec.ts" time="21.029">
+<failure message="verify.spec.ts:129:7 should complete full verification flow with active pass" type="FAILURE">
+<![CDATA[  [webkit] › verify.spec.ts:129:7 › verifd Web Verify E2E Tests › should complete full verification flow with active pass 
+
+    Error: Timed out 20000ms waiting for expect(locator).toBeVisible()
+
+    Locator: getByTestId('success-page')
+    Expected: visible
+    Received: <element(s) not found>
+    Call log:
+      - Expect "toBeVisible" with timeout 20000ms
+      - waiting for getByTestId('success-page')
+
+
+      155 |     // Wait for navigation to success page at /v/[token]
+      156 |     await page.waitForURL(/\/v\/[^\/]+$/, { timeout: 20_000 });
+    > 157 |     await expect(page.getByTestId('success-page')).toBeVisible();
+          |                                                    ^
+      158 |     
+      159 |     // Wait for pass status to load (may be very fast with mocks, so check both states)
+      160 |     const loadingState = page.getByTestId('loading-state');
+        at /Users/harshilpatel/Desktop/Claude_Projects/verifd/apps/web-verify/tests/verify.spec.ts:157:52
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/verify-verifd-Web-Verify-E-f361f-ation-flow-with-active-pass-webkit/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../test-results/verify-verifd-Web-Verify-E-f361f-ation-flow-with-active-pass-webkit/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../test-results/verify-verifd-Web-Verify-E-f361f-ation-flow-with-active-pass-webkit/trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace ../test-results/verify-verifd-Web-Verify-E-f361f-ation-flow-with-active-pass-webkit/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+]]>
+</failure>
+<system-out>
+<![CDATA[🔍 Checking API readiness...
+✅ API ready at http://localhost:3001/health/healthz
+✅ API ready at http://localhost:3001/health/healthz
+📤 Mocked /verify/start called with: {
+  phoneNumber: [32m'+1234567890'[39m,
+  name: [32m'John Doe'[39m,
+  reason: [32m'Test verification call'[39m,
+  voicePing: [32m'This is a test voice message'[39m
+}
+
+[[ATTACHMENT|verify-verifd-Web-Verify-E-f361f-ation-flow-with-active-pass-webkit/test-failed-1.png]]
+
+[[ATTACHMENT|verify-verifd-Web-Verify-E-f361f-ation-flow-with-active-pass-webkit/error-context.md]]
+
+[[ATTACHMENT|verify-verifd-Web-Verify-E-f361f-ation-flow-with-active-pass-webkit/trace.zip]]
+]]>
+</system-out>
+</testcase>
+<testcase name="verifd Web Verify E2E Tests › should complete verification flow with no active pass" classname="verify.spec.ts" time="21.01">
+<failure message="verify.spec.ts:184:7 should complete verification flow with no active pass" type="FAILURE">
+<![CDATA[  [webkit] › verify.spec.ts:184:7 › verifd Web Verify E2E Tests › should complete verification flow with no active pass 
+
+    Error: Timed out 20000ms waiting for expect(locator).toBeVisible()
+
+    Locator: getByTestId('success-page')
+    Expected: visible
+    Received: <element(s) not found>
+    Call log:
+      - Expect "toBeVisible" with timeout 20000ms
+      - waiting for getByTestId('success-page')
+
+
+      203 |     // Wait for navigation to success page at /v/[token]
+      204 |     await page.waitForURL(/\/v\/[^\/]+$/, { timeout: 20_000 });
+    > 205 |     await expect(page.getByTestId('success-page')).toBeVisible();
+          |                                                    ^
+      206 |     
+      207 |     // Wait for pass status to load
+      208 |     await expect(page.getByTestId('loading-state')).not.toBeVisible();
+        at /Users/harshilpatel/Desktop/Claude_Projects/verifd/apps/web-verify/tests/verify.spec.ts:205:52
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/verify-verifd-Web-Verify-E-b655a-on-flow-with-no-active-pass-webkit/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../test-results/verify-verifd-Web-Verify-E-b655a-on-flow-with-no-active-pass-webkit/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../test-results/verify-verifd-Web-Verify-E-b655a-on-flow-with-no-active-pass-webkit/trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace ../test-results/verify-verifd-Web-Verify-E-b655a-on-flow-with-no-active-pass-webkit/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+]]>
+</failure>
+<system-out>
+<![CDATA[🔍 Checking API readiness...
+✅ API ready at http://localhost:3001/health/healthz
+✅ API ready at http://localhost:3001/health/healthz
+📤 Mocked /verify/start called with: {
+  phoneNumber: [32m'+1987654321'[39m,
+  name: [32m'Jane Smith'[39m,
+  reason: [32m'Quick call'[39m
+}
+
+[[ATTACHMENT|verify-verifd-Web-Verify-E-b655a-on-flow-with-no-active-pass-webkit/test-failed-1.png]]
+
+[[ATTACHMENT|verify-verifd-Web-Verify-E-b655a-on-flow-with-no-active-pass-webkit/error-context.md]]
+
+[[ATTACHMENT|verify-verifd-Web-Verify-E-b655a-on-flow-with-no-active-pass-webkit/trace.zip]]
+]]>
+</system-out>
+</testcase>
+<testcase name="verifd Web Verify E2E Tests › should handle API errors gracefully" classname="verify.spec.ts" time="1.3">
+<system-out>
+<![CDATA[🔍 Checking API readiness...
+✅ API ready at http://localhost:3001/health/healthz
+✅ API ready at http://localhost:3001/health/healthz
+✅ Error screenshots saved to /Users/harshilpatel/Desktop/Claude_Projects/verifd/handoff/artifacts
+]]>
+</system-out>
+</testcase>
+<testcase name="verifd Web Verify E2E Tests › should verify LOG_SALT affects phone number hashing" classname="verify.spec.ts" time="0.72">
+<system-out>
+<![CDATA[🔍 Checking API readiness...
+✅ API ready at http://localhost:3001/health/healthz
+✅ API ready at http://localhost:3001/health/healthz
+✅ LOG_SALT functionality verified (endpoint responsive)
+]]>
+</system-out>
+</testcase>
+<testcase name="verifd Web Verify E2E Tests › should verify both /health/z and /healthz endpoints work" classname="verify.spec.ts" time="0.548">
+<system-out>
+<![CDATA[🔍 Checking API readiness...
+✅ API ready at http://localhost:3001/health/healthz
+✅ API ready at http://localhost:3001/health/healthz
+✅ /health/healthz endpoint verified
+]]>
+</system-out>
+</testcase>
+<testcase name="verifd Web Verify E2E Tests › should navigate back to home page from success page" classname="verify.spec.ts" time="20.706">
+<failure message="verify.spec.ts:295:7 should navigate back to home page from success page" type="FAILURE">
+<![CDATA[  [webkit] › verify.spec.ts:295:7 › verifd Web Verify E2E Tests › should navigate back to home page from success page 
+
+    Error: Timed out 20000ms waiting for expect(locator).toBeVisible()
+
+    Locator: getByTestId('success-page')
+    Expected: visible
+    Received: <element(s) not found>
+    Call log:
+      - Expect "toBeVisible" with timeout 20000ms
+      - waiting for getByTestId('success-page')
+
+
+      308 |
+      309 |     // Wait for success page
+    > 310 |     await expect(page.getByTestId('success-page')).toBeVisible();
+          |                                                    ^
+      311 |     
+      312 |     // Click back button
+      313 |     await page.getByTestId('back-button').click();
+        at /Users/harshilpatel/Desktop/Claude_Projects/verifd/apps/web-verify/tests/verify.spec.ts:310:52
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/verify-verifd-Web-Verify-E-52182-home-page-from-success-page-webkit/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../test-results/verify-verifd-Web-Verify-E-52182-home-page-from-success-page-webkit/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../test-results/verify-verifd-Web-Verify-E-52182-home-page-from-success-page-webkit/trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace ../test-results/verify-verifd-Web-Verify-E-52182-home-page-from-success-page-webkit/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+]]>
+</failure>
+<system-out>
+<![CDATA[🔍 Checking API readiness...
+✅ API ready at http://localhost:3001/health/healthz
+✅ API ready at http://localhost:3001/health/healthz
+📤 Mocked /verify/start called with: {
+  phoneNumber: [32m'+1555000000'[39m,
+  name: [32m'Navigation Test'[39m,
+  reason: [32m'Testing navigation'[39m
+}
+
+[[ATTACHMENT|verify-verifd-Web-Verify-E-52182-home-page-from-success-page-webkit/test-failed-1.png]]
+
+[[ATTACHMENT|verify-verifd-Web-Verify-E-52182-home-page-from-success-page-webkit/error-context.md]]
+
+[[ATTACHMENT|verify-verifd-Web-Verify-E-52182-home-page-from-success-page-webkit/trace.zip]]
+]]>
+</system-out>
+</testcase>
+<testcase name="verifd Web Verify E2E Tests › should complete E2E flow: /v/&lt;token&gt; redirect → submit → vPass → pass/check allowed:true" classname="verify.spec.ts" time="20.874">
+<failure message="verify.spec.ts:327:7 should complete E2E flow: /v/&lt;token&gt; redirect → submit → vPass → pass/check allowed:true" type="FAILURE">
+<![CDATA[  [webkit] › verify.spec.ts:327:7 › verifd Web Verify E2E Tests › should complete E2E flow: /v/<token> redirect → submit → vPass → pass/check allowed:true 
+
+    Error: Timed out 20000ms waiting for expect(locator).toBeVisible()
+
+    Locator: getByTestId('success-page')
+    Expected: visible
+    Received: <element(s) not found>
+    Call log:
+      - Expect "toBeVisible" with timeout 20000ms
+      - waiting for getByTestId('success-page')
+
+
+      361 |     
+      362 |     // Wait for the success page to be visible
+    > 363 |     await expect(page.getByTestId('success-page')).toBeVisible();
+          |                                                    ^
+      364 |     
+      365 |     // Wait for pass status to load (may be very fast with mocks, so check both states)
+      366 |     const loadingState = page.getByTestId('loading-state');
+        at /Users/harshilpatel/Desktop/Claude_Projects/verifd/apps/web-verify/tests/verify.spec.ts:363:52
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/verify-verifd-Web-Verify-E-faeef-s-→-pass-check-allowed-true-webkit/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../test-results/verify-verifd-Web-Verify-E-faeef-s-→-pass-check-allowed-true-webkit/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../test-results/verify-verifd-Web-Verify-E-faeef-s-→-pass-check-allowed-true-webkit/trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace ../test-results/verify-verifd-Web-Verify-E-faeef-s-→-pass-check-allowed-true-webkit/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+]]>
+</failure>
+<system-out>
+<![CDATA[🔍 Checking API readiness...
+✅ API ready at http://localhost:3001/health/healthz
+✅ API ready at http://localhost:3001/health/healthz
+📤 Got verification token: undefined
+
+[[ATTACHMENT|verify-verifd-Web-Verify-E-faeef-s-→-pass-check-allowed-true-webkit/test-failed-1.png]]
+
+[[ATTACHMENT|verify-verifd-Web-Verify-E-faeef-s-→-pass-check-allowed-true-webkit/error-context.md]]
+
+[[ATTACHMENT|verify-verifd-Web-Verify-E-faeef-s-→-pass-check-allowed-true-webkit/trace.zip]]
+]]>
+</system-out>
+</testcase>
+<testcase name="API Health Checks › backend health endpoints respond correctly" classname="verify.spec.ts" time="0.159">
+<system-out>
+<![CDATA[✅ /health/healthz endpoint verified
+✅ All health endpoints verified
+]]>
+</system-out>
+</testcase>
+</testsuite>
 </testsuites>
