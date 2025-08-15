@@ -1,13 +1,12 @@
 import 'dotenv/config';
 import Fastify from 'fastify';
 import helmet from '@fastify/helmet';
-import cors from '@fastify/cors';
 import rateLimit from '@fastify/rate-limit';
 import { setupRoutes } from './routes/index.js';
 import { initDatabase } from './db/index.js';
 import { startBackgroundJobs } from './jobs/index.js';
 import { config } from './config.js';
-import { corsOriginFunction, getCorsConfig } from './config/cors.js';
+import { registerCors } from './config/cors.js';
 
 const server = Fastify({
   logger: {
@@ -25,13 +24,7 @@ const server = Fastify({
 async function start() {
   try {
     // CORS must be registered before helmet
-    const corsConfig = getCorsConfig();
-    await server.register(cors, {
-      origin: corsOriginFunction,
-      credentials: corsConfig.credentials,
-      methods: corsConfig.methods,
-      allowedHeaders: corsConfig.allowedHeaders
-    });
+    await registerCors(server);
     
     // Security plugins
     await server.register(helmet, {
