@@ -242,32 +242,122 @@ jobs:
         run: pnpm install --frozen-lockfile
         
       - name: Build packages
-        run: pnpm -r --filter @verifd/shared --filter web-verify build
+        run: pnpm -r --filter @verifd/shared --filter @verifd/backend --filter web-verify build
         
       - name: Install Playwright browsers
         run: pnpm --filter web-verify exec playwright install --with-deps
         
       - name: Start backend server
-        run: pnpm --filter @verifd/backend dev &
+        run: |
+          # Navigate to backend directory and create test database directory  
+          cd apps/backend
+          mkdir -p var/db
+          
+          # Start backend in background from backend directory
+          PORT=3001 NODE_ENV=test DB_PATH=var/db/test.db pnpm dev &
+          BACKEND_PID=$!
+          echo "BACKEND_PID=$BACKEND_PID" >> $GITHUB_ENV
         env:
-          NODE_ENV: test
           PORT: 3001
+          NODE_ENV: test
+          DB_PATH: var/db/test.db
+          JWT_SECRET: test-secret-for-ci
+          HMAC_SECRET: test-hmac-secret-for-ci
           
       - name: Wait for backend health check
         run: |
-          timeout 30s bash -c 'until curl -f http://localhost:3001/health/healthz; do sleep 1; done'
+          echo "Waiting for backend to be ready..."
+          echo "Backend PID: $BACKEND_PID"
+          
+          # Give it some extra time for database initialization
+          sleep 5
+          
+          for i in {1..60}; do
+            echo "⏳ Backend health check attempt $i/60..."
+            
+            # Check if process is still running
+            if ! kill -0 $BACKEND_PID 2>/dev/null; then
+              echo "❌ Backend process died! Check logs above."
+              exit 1
+            fi
+            
+            # Test health endpoint
+            if curl -f -s http://localhost:3001/health/healthz >/dev/null 2>&1; then
+              echo "✅ Backend is ready at http://localhost:3001/health/healthz"
+              # Also verify the response format
+              HEALTH_RESPONSE=$(curl -s http://localhost:3001/health/healthz)
+              echo "Health response: $HEALTH_RESPONSE"
+              break
+            fi
+            
+            # Show more verbose output on every 10th attempt
+            if [ $((i % 10)) -eq 0 ]; then
+              echo "Verbose check on attempt $i:"
+              curl -v http://localhost:3001/health/healthz || true
+              echo "Checking if any process is listening on port 3001:"
+              lsof -i:3001 || echo "No process listening on port 3001"
+            fi
+            
+            sleep 2
+            if [ $i -eq 60 ]; then
+              echo "❌ Backend failed to start within 120 seconds"
+              echo "Final debug information:"
+              curl -v http://localhost:3001/health/healthz || true
+              curl -v http://localhost:3001/health/ || true  
+              curl -v http://localhost:3001/ || true
+              echo "Processes on port 3001:"
+              lsof -i:3001 || echo "No process listening on port 3001"
+              exit 1
+            fi
+          done
         
       - name: Start web-verify server
-        run: pnpm --filter web-verify dev &
+        run: |
+          # Start web-verify in background
+          NODE_ENV=test pnpm --filter web-verify dev &
+          WEB_PID=$!
+          echo "WEB_PID=$WEB_PID" >> $GITHUB_ENV
         env:
           NODE_ENV: test
           
       - name: Wait for web-verify to be ready
         run: |
-          timeout 30s bash -c 'until curl -f http://localhost:3000; do sleep 1; done'
+          echo "Waiting for web-verify to be ready..."
+          for i in {1..30}; do
+            if curl -f -s http://localhost:3000 >/dev/null 2>&1; then
+              echo "✅ Web-verify is ready at http://localhost:3000"
+              break
+            fi
+            echo "⏳ Web-verify not ready yet (attempt $i/30)..."
+            sleep 2
+            if [ $i -eq 30 ]; then
+              echo "❌ Web-verify failed to start within 60 seconds"
+              curl -v http://localhost:3000 || true
+              exit 1
+            fi
+          done
         
       - name: Run Playwright tests
         run: pnpm test:web
+        env:
+          # Don't use mocks - test against real backend
+          MOCK_API: 0
+        
+      - name: Cleanup background processes
+        if: always()
+        run: |
+          echo "🧹 Cleaning up background processes..."
+          if [ -n "$BACKEND_PID" ]; then
+            kill $BACKEND_PID 2>/dev/null || true
+            echo "Backend process ($BACKEND_PID) terminated"
+          fi
+          if [ -n "$WEB_PID" ]; then
+            kill $WEB_PID 2>/dev/null || true
+            echo "Web-verify process ($WEB_PID) terminated"
+          fi
+          # Also kill any remaining processes on the ports as backup
+          lsof -ti:3001 | xargs kill -9 2>/dev/null || true
+          lsof -ti:3000 | xargs kill -9 2>/dev/null || true
         
       - name: Upload test screenshots
         if: failure()
