@@ -31,23 +31,34 @@ jobs:
       - name: Choose BASE_URL (prod if secret set)
         shell: bash
         run: |
-          if [ -n "${{ secrets.VERCEL_DEPLOYMENT_URL }}" ]; then
+          if [ -n "${{ secrets.VERCEL_DEPLOYMENT_URL }}" ] && [ "${{ secrets.VERCEL_DEPLOYMENT_URL }}" != "vercel_deployment_url" ]; then
             URL="${{ secrets.VERCEL_DEPLOYMENT_URL }}"
             # Add https:// if no protocol specified
             if [[ ! "$URL" =~ ^https?:// ]]; then
               URL="https://$URL"
             fi
-            echo "BASE_URL=$URL" >> $GITHUB_ENV
-            echo "Using prod URL: $URL"
+            # Validate it's not a placeholder
+            if [[ "$URL" == *"vercel_deployment_url"* ]] || [[ "$URL" == *"example.com"* ]]; then
+              echo "::warning::VERCEL_DEPLOYMENT_URL appears to be a placeholder. Using local server instead."
+              echo "Using local server at $BASE_URL"
+            else
+              echo "BASE_URL=$URL" >> $GITHUB_ENV
+              echo "Using prod URL: $URL"
+            fi
           else
             echo "Using local server at $BASE_URL"
           fi
       - name: Start local server (only if using local BASE_URL)
-        if: env.BASE_URL == 'http://localhost:3000'
+        shell: bash
         run: |
-          sudo fuser -k 3000/tcp || true
-          pnpm -C apps/web-verify start &
-          npx --yes wait-on http-get://localhost:3000
+          if [ "$BASE_URL" = "http://localhost:3000" ]; then
+            echo "Starting local server..."
+            sudo fuser -k 3000/tcp || true
+            pnpm -C apps/web-verify start &
+            npx --yes wait-on http-get://localhost:3000
+          else
+            echo "Skipping local server (using $BASE_URL)"
+          fi
       - name: Run Playwright (Chromium only CI config)
         env:
           E2E_BASE_URL: ${{ env.BASE_URL }}
