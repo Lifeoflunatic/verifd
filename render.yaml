@@ -5,14 +5,16 @@ services:
     plan: free
     rootDir: apps/backend
     buildCommand: |
-      cd ../.. && pnpm install --frozen-lockfile
+      corepack enable && corepack prepare pnpm@9 --activate
+      cd ../..
+      pnpm install --frozen-lockfile
       pnpm -w --filter @verifd/shared build || true
-      pnpm -w --filter @verifd/backend build || true
+      pnpm -w --filter @verifd/backend build
     startCommand: pnpm -w --filter @verifd/backend start
     autoDeploy: true
     healthCheckPath: /healthz
     envVars:
       - key: NODE_VERSION
-        value: 22
+        value: "22"
       - key: PORT
-        value: 3002
+        value: "3002"
