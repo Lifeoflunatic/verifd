@@ -4047,3 +4047,2089 @@ Asks for PM:
 - Approve or request changes based on diff/test tails; if unclear, ask Claude to regenerate via /handoff:prep.
 
 ---END-HANDOFF---
+
+
+## 2025-08-14T20:03:42Z
+
+---HANDOFF---
+Task: (auto) Fallback handoff — assistant reply had no explicit ---HANDOFF---
+When: 2025-08-14T20:03:42Z
+Branch: main
+
+Diff Summary:
+
+
+Files Touched:
+
+
+Last Commit:
+86841e9 feat(deploy): add CI smoke tests and hardened deployment configuration
+
+Commands/Tests Run (tail):
+
+> @verifd/backend@0.1.0 test /Users/harshilpatel/Desktop/Claude_Projects/verifd/apps/backend
+> vitest
+
+[33mThe CJS build of Vite's Node API is deprecated. See https://vite.dev/guide/troubleshooting.html#vite-cjs-node-api-deprecated for more details.[39m
+
+ DEV  v2.1.9 /Users/harshilpatel/Desktop/Claude_Projects/verifd/apps/backend
+
+ ✓ test/pass.check.simple.test.ts (6 tests | 1 skipped) 2ms
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > returns allowed=false for unknown number
+[DEBUG] No active pass found for number: ph_8a59780bb8cd2ba0
+
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > returns allowed=true for active pass
+[INFO] Active pass found for number: ph_8a59780bb8cd2ba0, expires: 1754771816
+
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > returns allowed=false for expired pass
+[DEBUG] No active pass found for number: ph_8a59780bb8cd2ba0
+
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > includes Cache-Control header
+[DEBUG] No active pass found for number: ph_8a59780bb8cd2ba0
+
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > correctly identifies 30m scope
+[INFO] Active pass found for number: ph_f5be76815beedc12, expires: 1754770016
+
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > correctly identifies 30d scope
+[INFO] Active pass found for number: ph_554285f82182d3dd, expires: 1757360216
+
+ ✓ test/pass.check.mock.test.ts (7 tests) 65ms
+
+ Test Files  2 passed (2)
+      Tests  12 passed | 1 skipped (13)
+   Start at  15:36:55
+   Duration  378ms (transform 78ms, setup 0ms, collect 174ms, tests 67ms, environment 0ms, prepare 106ms)
+
+ PASS  Waiting for file changes...
+       press h to show help, press q to quit
+
+Playwright (tail):
+
+
+Open Risks:
+- Auto-generated handoff; ask Claude to run /handoff:prep next time for richer details.
+
+Asks for PM:
+- Approve or request changes based on diff/test tails; if unclear, ask Claude to regenerate via /handoff:prep.
+
+---END-HANDOFF---
+
+
+## 2025-08-14T20:24:53Z
+
+---HANDOFF---
+Task: (auto) Fallback handoff — assistant reply had no explicit ---HANDOFF---
+When: 2025-08-14T20:24:53Z
+Branch: main
+
+Diff Summary:
+ OPS/HANDOFF_HISTORY.md                | 66 +++++++++++++++++++++++++++++++++++
+ OPS/LAST_HANDOFF.txt                  | 11 +++---
+ apps/backend/package.json             |  3 +-
+ apps/backend/src/plugins/cors.ts      | 17 +++++----
+ apps/backend/src/routes/index.ts      | 12 +++++--
+ apps/web-verify/app/v/[code]/page.tsx |  6 ++--
+ packages/shared/src/types/index.ts    | 36 +++++++++++++++++++
+ pnpm-lock.yaml                        | 55 ++++++++++++++++++++++++-----
+ 8 files changed, 179 insertions(+), 27 deletions(-)
+
+Files Touched:
+OPS/HANDOFF_HISTORY.md
+OPS/LAST_HANDOFF.txt
+apps/backend/package.json
+apps/backend/src/plugins/cors.ts
+apps/backend/src/routes/index.ts
+apps/web-verify/app/v/[code]/page.tsx
+packages/shared/src/types/index.ts
+pnpm-lock.yaml
+
+Last Commit:
+86841e9 feat(deploy): add CI smoke tests and hardened deployment configuration
+
+Commands/Tests Run (tail):
+
+> @verifd/backend@0.1.0 test /Users/harshilpatel/Desktop/Claude_Projects/verifd/apps/backend
+> vitest
+
+[33mThe CJS build of Vite's Node API is deprecated. See https://vite.dev/guide/troubleshooting.html#vite-cjs-node-api-deprecated for more details.[39m
+
+ DEV  v2.1.9 /Users/harshilpatel/Desktop/Claude_Projects/verifd/apps/backend
+
+ ✓ test/pass.check.simple.test.ts (6 tests | 1 skipped) 2ms
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > returns allowed=false for unknown number
+[DEBUG] No active pass found for number: ph_8a59780bb8cd2ba0
+
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > returns allowed=true for active pass
+[INFO] Active pass found for number: ph_8a59780bb8cd2ba0, expires: 1754771816
+
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > returns allowed=false for expired pass
+[DEBUG] No active pass found for number: ph_8a59780bb8cd2ba0
+
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > includes Cache-Control header
+[DEBUG] No active pass found for number: ph_8a59780bb8cd2ba0
+
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > correctly identifies 30m scope
+[INFO] Active pass found for number: ph_f5be76815beedc12, expires: 1754770016
+
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > correctly identifies 30d scope
+[INFO] Active pass found for number: ph_554285f82182d3dd, expires: 1757360216
+
+ ✓ test/pass.check.mock.test.ts (7 tests) 65ms
+
+ Test Files  2 passed (2)
+      Tests  12 passed | 1 skipped (13)
+   Start at  15:36:55
+   Duration  378ms (transform 78ms, setup 0ms, collect 174ms, tests 67ms, environment 0ms, prepare 106ms)
+
+ PASS  Waiting for file changes...
+       press h to show help, press q to quit
+
+Playwright (tail):
+
+
+Open Risks:
+- Auto-generated handoff; ask Claude to run /handoff:prep next time for richer details.
+
+Asks for PM:
+- Approve or request changes based on diff/test tails; if unclear, ask Claude to regenerate via /handoff:prep.
+
+---END-HANDOFF---
+
+
+## 2025-08-14T20:51:16Z
+
+---HANDOFF---
+Task: (auto) Fallback handoff — assistant reply had no explicit ---HANDOFF---
+When: 2025-08-14T20:51:16Z
+Branch: main
+
+Diff Summary:
+ .github/workflows/android-staging-apk.yml |   2 +-
+ .github/workflows/ci.yml                  |   4 +-
+ OPS/HANDOFF_HISTORY.md                    | 147 ++++++++++++++++++++++++++++++
+ OPS/LAST_HANDOFF.txt                      |  22 ++++-
+ apps/backend/package.json                 |   3 +-
+ apps/backend/src/plugins/cors.ts          |  17 ++--
+ apps/backend/src/routes/index.ts          |  12 ++-
+ apps/web-verify/app/v/[code]/page.tsx     |   6 +-
+ package.json                              |   3 +-
+ packages/shared/src/types/index.ts        |  36 ++++++++
+ pnpm-lock.yaml                            |  55 +++++++++--
+ 11 files changed, 278 insertions(+), 29 deletions(-)
+
+Files Touched:
+.github/workflows/android-staging-apk.yml
+.github/workflows/ci.yml
+OPS/HANDOFF_HISTORY.md
+OPS/LAST_HANDOFF.txt
+apps/backend/package.json
+apps/backend/src/plugins/cors.ts
+apps/backend/src/routes/index.ts
+apps/web-verify/app/v/[code]/page.tsx
+package.json
+packages/shared/src/types/index.ts
+pnpm-lock.yaml
+
+Last Commit:
+86841e9 feat(deploy): add CI smoke tests and hardened deployment configuration
+
+Commands/Tests Run (tail):
+
+> @verifd/backend@0.1.0 test /Users/harshilpatel/Desktop/Claude_Projects/verifd/apps/backend
+> vitest
+
+[33mThe CJS build of Vite's Node API is deprecated. See https://vite.dev/guide/troubleshooting.html#vite-cjs-node-api-deprecated for more details.[39m
+
+ DEV  v2.1.9 /Users/harshilpatel/Desktop/Claude_Projects/verifd/apps/backend
+
+ ✓ test/pass.check.simple.test.ts (6 tests | 1 skipped) 2ms
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > returns allowed=false for unknown number
+[DEBUG] No active pass found for number: ph_8a59780bb8cd2ba0
+
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > returns allowed=true for active pass
+[INFO] Active pass found for number: ph_8a59780bb8cd2ba0, expires: 1754771816
+
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > returns allowed=false for expired pass
+[DEBUG] No active pass found for number: ph_8a59780bb8cd2ba0
+
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > includes Cache-Control header
+[DEBUG] No active pass found for number: ph_8a59780bb8cd2ba0
+
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > correctly identifies 30m scope
+[INFO] Active pass found for number: ph_f5be76815beedc12, expires: 1754770016
+
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > correctly identifies 30d scope
+[INFO] Active pass found for number: ph_554285f82182d3dd, expires: 1757360216
+
+ ✓ test/pass.check.mock.test.ts (7 tests) 65ms
+
+ Test Files  2 passed (2)
+      Tests  12 passed | 1 skipped (13)
+   Start at  15:36:55
+   Duration  378ms (transform 78ms, setup 0ms, collect 174ms, tests 67ms, environment 0ms, prepare 106ms)
+
+ PASS  Waiting for file changes...
+       press h to show help, press q to quit
+
+Playwright (tail):
+
+
+Open Risks:
+- Auto-generated handoff; ask Claude to run /handoff:prep next time for richer details.
+
+Asks for PM:
+- Approve or request changes based on diff/test tails; if unclear, ask Claude to regenerate via /handoff:prep.
+
+---END-HANDOFF---
+
+
+## 2025-08-14T20:59:56Z
+
+---HANDOFF---
+Task: (auto) Fallback handoff — assistant reply had no explicit ---HANDOFF---
+When: 2025-08-14T20:59:56Z
+Branch: main
+
+Diff Summary:
+ .github/workflows/android-staging-apk.yml |   2 +-
+ .github/workflows/ci.yml                  |   4 +-
+ OPS/HANDOFF_HISTORY.md                    | 234 ++++++++++++++++++++++++++++++
+ OPS/LAST_HANDOFF.txt                      |  28 +++-
+ apps/backend/package.json                 |   3 +-
+ apps/backend/src/plugins/cors.ts          |  18 ++-
+ apps/backend/src/routes/index.ts          |  12 +-
+ apps/web-verify/app/v/[code]/page.tsx     |   6 +-
+ package.json                              |   3 +-
+ packages/shared/src/types/index.ts        |  36 +++++
+ pnpm-lock.yaml                            |  52 ++++++-
+ 11 files changed, 369 insertions(+), 29 deletions(-)
+
+Files Touched:
+.github/workflows/android-staging-apk.yml
+.github/workflows/ci.yml
+OPS/HANDOFF_HISTORY.md
+OPS/LAST_HANDOFF.txt
+apps/backend/package.json
+apps/backend/src/plugins/cors.ts
+apps/backend/src/routes/index.ts
+apps/web-verify/app/v/[code]/page.tsx
+package.json
+packages/shared/src/types/index.ts
+pnpm-lock.yaml
+
+Last Commit:
+86841e9 feat(deploy): add CI smoke tests and hardened deployment configuration
+
+Commands/Tests Run (tail):
+
+> @verifd/backend@0.1.0 test /Users/harshilpatel/Desktop/Claude_Projects/verifd/apps/backend
+> vitest
+
+[33mThe CJS build of Vite's Node API is deprecated. See https://vite.dev/guide/troubleshooting.html#vite-cjs-node-api-deprecated for more details.[39m
+
+ DEV  v2.1.9 /Users/harshilpatel/Desktop/Claude_Projects/verifd/apps/backend
+
+ ✓ test/pass.check.simple.test.ts (6 tests | 1 skipped) 2ms
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > returns allowed=false for unknown number
+[DEBUG] No active pass found for number: ph_8a59780bb8cd2ba0
+
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > returns allowed=true for active pass
+[INFO] Active pass found for number: ph_8a59780bb8cd2ba0, expires: 1754771816
+
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > returns allowed=false for expired pass
+[DEBUG] No active pass found for number: ph_8a59780bb8cd2ba0
+
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > includes Cache-Control header
+[DEBUG] No active pass found for number: ph_8a59780bb8cd2ba0
+
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > correctly identifies 30m scope
+[INFO] Active pass found for number: ph_f5be76815beedc12, expires: 1754770016
+
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > correctly identifies 30d scope
+[INFO] Active pass found for number: ph_554285f82182d3dd, expires: 1757360216
+
+ ✓ test/pass.check.mock.test.ts (7 tests) 65ms
+
+ Test Files  2 passed (2)
+      Tests  12 passed | 1 skipped (13)
+   Start at  15:36:55
+   Duration  378ms (transform 78ms, setup 0ms, collect 174ms, tests 67ms, environment 0ms, prepare 106ms)
+
+ PASS  Waiting for file changes...
+       press h to show help, press q to quit
+
+Playwright (tail):
+
+
+Open Risks:
+- Auto-generated handoff; ask Claude to run /handoff:prep next time for richer details.
+
+Asks for PM:
+- Approve or request changes based on diff/test tails; if unclear, ask Claude to regenerate via /handoff:prep.
+
+---END-HANDOFF---
+
+
+## 2025-08-14T21:04:22Z
+
+---HANDOFF---
+Task: (auto) Fallback handoff — assistant reply had no explicit ---HANDOFF---
+When: 2025-08-14T21:04:22Z
+Branch: main
+
+Diff Summary:
+ .github/workflows/android-staging-apk.yml |   2 +-
+ .github/workflows/ci.yml                  |   4 +-
+ OPS/HANDOFF_HISTORY.md                    | 321 ++++++++++++++++++++++++++++++
+ OPS/LAST_HANDOFF.txt                      |  28 ++-
+ apps/backend/package.json                 |   3 +-
+ apps/backend/src/plugins/cors.ts          |  18 +-
+ apps/backend/src/routes/index.ts          |  12 +-
+ apps/web-verify/app/v/[code]/page.tsx     |   6 +-
+ package.json                              |   3 +-
+ packages/shared/src/types/index.ts        |  36 ++++
+ pnpm-lock.yaml                            |  52 ++++-
+ 11 files changed, 456 insertions(+), 29 deletions(-)
+
+Files Touched:
+.github/workflows/android-staging-apk.yml
+.github/workflows/ci.yml
+OPS/HANDOFF_HISTORY.md
+OPS/LAST_HANDOFF.txt
+apps/backend/package.json
+apps/backend/src/plugins/cors.ts
+apps/backend/src/routes/index.ts
+apps/web-verify/app/v/[code]/page.tsx
+package.json
+packages/shared/src/types/index.ts
+pnpm-lock.yaml
+
+Last Commit:
+86841e9 feat(deploy): add CI smoke tests and hardened deployment configuration
+
+Commands/Tests Run (tail):
+
+> @verifd/backend@0.1.0 test /Users/harshilpatel/Desktop/Claude_Projects/verifd/apps/backend
+> vitest
+
+[33mThe CJS build of Vite's Node API is deprecated. See https://vite.dev/guide/troubleshooting.html#vite-cjs-node-api-deprecated for more details.[39m
+
+ DEV  v2.1.9 /Users/harshilpatel/Desktop/Claude_Projects/verifd/apps/backend
+
+ ✓ test/pass.check.simple.test.ts (6 tests | 1 skipped) 2ms
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > returns allowed=false for unknown number
+[DEBUG] No active pass found for number: ph_8a59780bb8cd2ba0
+
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > returns allowed=true for active pass
+[INFO] Active pass found for number: ph_8a59780bb8cd2ba0, expires: 1754771816
+
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > returns allowed=false for expired pass
+[DEBUG] No active pass found for number: ph_8a59780bb8cd2ba0
+
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > includes Cache-Control header
+[DEBUG] No active pass found for number: ph_8a59780bb8cd2ba0
+
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > correctly identifies 30m scope
+[INFO] Active pass found for number: ph_f5be76815beedc12, expires: 1754770016
+
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > correctly identifies 30d scope
+[INFO] Active pass found for number: ph_554285f82182d3dd, expires: 1757360216
+
+ ✓ test/pass.check.mock.test.ts (7 tests) 65ms
+
+ Test Files  2 passed (2)
+      Tests  12 passed | 1 skipped (13)
+   Start at  15:36:55
+   Duration  378ms (transform 78ms, setup 0ms, collect 174ms, tests 67ms, environment 0ms, prepare 106ms)
+
+ PASS  Waiting for file changes...
+       press h to show help, press q to quit
+
+Playwright (tail):
+
+
+Open Risks:
+- Auto-generated handoff; ask Claude to run /handoff:prep next time for richer details.
+
+Asks for PM:
+- Approve or request changes based on diff/test tails; if unclear, ask Claude to regenerate via /handoff:prep.
+
+---END-HANDOFF---
+
+
+## 2025-08-14T21:07:16Z
+
+---HANDOFF---
+Task: (auto) Fallback handoff — assistant reply had no explicit ---HANDOFF---
+When: 2025-08-14T21:07:16Z
+Branch: main
+
+Diff Summary:
+ .github/workflows/android-staging-apk.yml |   2 +-
+ .github/workflows/ci.yml                  |   4 +-
+ OPS/HANDOFF_HISTORY.md                    | 408 ++++++++++++++++++++++++++++++
+ OPS/LAST_HANDOFF.txt                      |  28 +-
+ apps/backend/package.json                 |   3 +-
+ apps/backend/src/plugins/cors.ts          |  18 +-
+ apps/backend/src/routes/index.ts          |  12 +-
+ apps/backend/src/server.ts                |  18 +-
+ apps/web-verify/app/v/[code]/page.tsx     |   6 +-
+ package.json                              |   3 +-
+ packages/shared/src/types/index.ts        |  36 +++
+ pnpm-lock.yaml                            |  52 +++-
+ 12 files changed, 558 insertions(+), 32 deletions(-)
+
+Files Touched:
+.github/workflows/android-staging-apk.yml
+.github/workflows/ci.yml
+OPS/HANDOFF_HISTORY.md
+OPS/LAST_HANDOFF.txt
+apps/backend/package.json
+apps/backend/src/plugins/cors.ts
+apps/backend/src/routes/index.ts
+apps/backend/src/server.ts
+apps/web-verify/app/v/[code]/page.tsx
+package.json
+packages/shared/src/types/index.ts
+pnpm-lock.yaml
+
+Last Commit:
+86841e9 feat(deploy): add CI smoke tests and hardened deployment configuration
+
+Commands/Tests Run (tail):
+
+> @verifd/backend@0.1.0 test /Users/harshilpatel/Desktop/Claude_Projects/verifd/apps/backend
+> vitest
+
+[33mThe CJS build of Vite's Node API is deprecated. See https://vite.dev/guide/troubleshooting.html#vite-cjs-node-api-deprecated for more details.[39m
+
+ DEV  v2.1.9 /Users/harshilpatel/Desktop/Claude_Projects/verifd/apps/backend
+
+ ✓ test/pass.check.simple.test.ts (6 tests | 1 skipped) 2ms
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > returns allowed=false for unknown number
+[DEBUG] No active pass found for number: ph_8a59780bb8cd2ba0
+
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > returns allowed=true for active pass
+[INFO] Active pass found for number: ph_8a59780bb8cd2ba0, expires: 1754771816
+
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > returns allowed=false for expired pass
+[DEBUG] No active pass found for number: ph_8a59780bb8cd2ba0
+
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > includes Cache-Control header
+[DEBUG] No active pass found for number: ph_8a59780bb8cd2ba0
+
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > correctly identifies 30m scope
+[INFO] Active pass found for number: ph_f5be76815beedc12, expires: 1754770016
+
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > correctly identifies 30d scope
+[INFO] Active pass found for number: ph_554285f82182d3dd, expires: 1757360216
+
+ ✓ test/pass.check.mock.test.ts (7 tests) 65ms
+
+ Test Files  2 passed (2)
+      Tests  12 passed | 1 skipped (13)
+   Start at  15:36:55
+   Duration  378ms (transform 78ms, setup 0ms, collect 174ms, tests 67ms, environment 0ms, prepare 106ms)
+
+ PASS  Waiting for file changes...
+       press h to show help, press q to quit
+
+Playwright (tail):
+
+
+Open Risks:
+- Auto-generated handoff; ask Claude to run /handoff:prep next time for richer details.
+
+Asks for PM:
+- Approve or request changes based on diff/test tails; if unclear, ask Claude to regenerate via /handoff:prep.
+
+---END-HANDOFF---
+
+
+## 2025-08-14T21:09:58Z
+
+---HANDOFF---
+Task: (auto) Fallback handoff — assistant reply had no explicit ---HANDOFF---
+When: 2025-08-14T21:09:58Z
+Branch: main
+
+Diff Summary:
+ .github/workflows/android-staging-apk.yml |   2 +-
+ .github/workflows/ci.yml                  |   4 +-
+ OPS/HANDOFF_HISTORY.md                    | 497 ++++++++++++++++++++++++++++++
+ OPS/LAST_HANDOFF.txt                      |  30 +-
+ apps/backend/package.json                 |   3 +-
+ apps/backend/src/plugins/cors.ts          |  18 +-
+ apps/backend/src/routes/index.ts          |  12 +-
+ apps/backend/src/server.ts                |  18 +-
+ apps/web-verify/app/v/[code]/page.tsx     |   6 +-
+ package.json                              |   3 +-
+ packages/shared/src/types/index.ts        |  36 +++
+ pnpm-lock.yaml                            |  52 +++-
+ 12 files changed, 649 insertions(+), 32 deletions(-)
+
+Files Touched:
+.github/workflows/android-staging-apk.yml
+.github/workflows/ci.yml
+OPS/HANDOFF_HISTORY.md
+OPS/LAST_HANDOFF.txt
+apps/backend/package.json
+apps/backend/src/plugins/cors.ts
+apps/backend/src/routes/index.ts
+apps/backend/src/server.ts
+apps/web-verify/app/v/[code]/page.tsx
+package.json
+packages/shared/src/types/index.ts
+pnpm-lock.yaml
+
+Last Commit:
+86841e9 feat(deploy): add CI smoke tests and hardened deployment configuration
+
+Commands/Tests Run (tail):
+
+> @verifd/backend@0.1.0 test /Users/harshilpatel/Desktop/Claude_Projects/verifd/apps/backend
+> vitest
+
+[33mThe CJS build of Vite's Node API is deprecated. See https://vite.dev/guide/troubleshooting.html#vite-cjs-node-api-deprecated for more details.[39m
+
+ DEV  v2.1.9 /Users/harshilpatel/Desktop/Claude_Projects/verifd/apps/backend
+
+ ✓ test/pass.check.simple.test.ts (6 tests | 1 skipped) 2ms
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > returns allowed=false for unknown number
+[DEBUG] No active pass found for number: ph_8a59780bb8cd2ba0
+
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > returns allowed=true for active pass
+[INFO] Active pass found for number: ph_8a59780bb8cd2ba0, expires: 1754771816
+
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > returns allowed=false for expired pass
+[DEBUG] No active pass found for number: ph_8a59780bb8cd2ba0
+
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > includes Cache-Control header
+[DEBUG] No active pass found for number: ph_8a59780bb8cd2ba0
+
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > correctly identifies 30m scope
+[INFO] Active pass found for number: ph_f5be76815beedc12, expires: 1754770016
+
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > correctly identifies 30d scope
+[INFO] Active pass found for number: ph_554285f82182d3dd, expires: 1757360216
+
+ ✓ test/pass.check.mock.test.ts (7 tests) 65ms
+
+ Test Files  2 passed (2)
+      Tests  12 passed | 1 skipped (13)
+   Start at  15:36:55
+   Duration  378ms (transform 78ms, setup 0ms, collect 174ms, tests 67ms, environment 0ms, prepare 106ms)
+
+ PASS  Waiting for file changes...
+       press h to show help, press q to quit
+
+Playwright (tail):
+
+
+Open Risks:
+- Auto-generated handoff; ask Claude to run /handoff:prep next time for richer details.
+
+Asks for PM:
+- Approve or request changes based on diff/test tails; if unclear, ask Claude to regenerate via /handoff:prep.
+
+---END-HANDOFF---
+
+
+## 2025-08-14T21:26:31Z
+
+---HANDOFF---
+Task: (auto) Fallback handoff — assistant reply had no explicit ---HANDOFF---
+When: 2025-08-14T21:26:31Z
+Branch: main
+
+Diff Summary:
+ .github/workflows/android-staging-apk.yml |   2 +-
+ .github/workflows/ci.yml                  |   4 +-
+ OPS/HANDOFF_HISTORY.md                    | 586 ++++++++++++++++++++++++++++++
+ OPS/LAST_HANDOFF.txt                      |  30 +-
+ apps/backend/package.json                 |   3 +-
+ apps/backend/src/plugins/cors.ts          |  18 +-
+ apps/backend/src/routes/index.ts          |  12 +-
+ apps/backend/src/server.ts                |  18 +-
+ apps/web-verify/app/v/[code]/page.tsx     |   6 +-
+ package.json                              |   3 +-
+ packages/shared/src/types/index.ts        |  36 ++
+ pnpm-lock.yaml                            |  52 ++-
+ 12 files changed, 738 insertions(+), 32 deletions(-)
+
+Files Touched:
+.github/workflows/android-staging-apk.yml
+.github/workflows/ci.yml
+OPS/HANDOFF_HISTORY.md
+OPS/LAST_HANDOFF.txt
+apps/backend/package.json
+apps/backend/src/plugins/cors.ts
+apps/backend/src/routes/index.ts
+apps/backend/src/server.ts
+apps/web-verify/app/v/[code]/page.tsx
+package.json
+packages/shared/src/types/index.ts
+pnpm-lock.yaml
+
+Last Commit:
+86841e9 feat(deploy): add CI smoke tests and hardened deployment configuration
+
+Commands/Tests Run (tail):
+
+> @verifd/backend@0.1.0 test /Users/harshilpatel/Desktop/Claude_Projects/verifd/apps/backend
+> vitest
+
+[33mThe CJS build of Vite's Node API is deprecated. See https://vite.dev/guide/troubleshooting.html#vite-cjs-node-api-deprecated for more details.[39m
+
+ DEV  v2.1.9 /Users/harshilpatel/Desktop/Claude_Projects/verifd/apps/backend
+
+ ✓ test/pass.check.simple.test.ts (6 tests | 1 skipped) 2ms
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > returns allowed=false for unknown number
+[DEBUG] No active pass found for number: ph_8a59780bb8cd2ba0
+
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > returns allowed=true for active pass
+[INFO] Active pass found for number: ph_8a59780bb8cd2ba0, expires: 1754771816
+
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > returns allowed=false for expired pass
+[DEBUG] No active pass found for number: ph_8a59780bb8cd2ba0
+
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > includes Cache-Control header
+[DEBUG] No active pass found for number: ph_8a59780bb8cd2ba0
+
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > correctly identifies 30m scope
+[INFO] Active pass found for number: ph_f5be76815beedc12, expires: 1754770016
+
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > correctly identifies 30d scope
+[INFO] Active pass found for number: ph_554285f82182d3dd, expires: 1757360216
+
+ ✓ test/pass.check.mock.test.ts (7 tests) 65ms
+
+ Test Files  2 passed (2)
+      Tests  12 passed | 1 skipped (13)
+   Start at  15:36:55
+   Duration  378ms (transform 78ms, setup 0ms, collect 174ms, tests 67ms, environment 0ms, prepare 106ms)
+
+ PASS  Waiting for file changes...
+       press h to show help, press q to quit
+
+Playwright (tail):
+
+
+Open Risks:
+- Auto-generated handoff; ask Claude to run /handoff:prep next time for richer details.
+
+Asks for PM:
+- Approve or request changes based on diff/test tails; if unclear, ask Claude to regenerate via /handoff:prep.
+
+---END-HANDOFF---
+
+
+## 2025-08-14T21:32:26Z
+
+---HANDOFF---
+Task: (auto) Fallback handoff — assistant reply had no explicit ---HANDOFF---
+When: 2025-08-14T21:32:26Z
+Branch: main
+
+Diff Summary:
+ .github/workflows/android-staging-apk.yml |    2 +-
+ .github/workflows/ci.yml                  |    4 +-
+ OPS/HANDOFF_HISTORY.md                    |  675 +++++++++++++++
+ OPS/LAST_HANDOFF.txt                      |   30 +-
+ apps/backend/.env.example                 |   40 +-
+ apps/backend/package.json                 |    5 +-
+ apps/backend/src/plugins/cors.ts          |   18 +-
+ apps/backend/src/routes/index.ts          |   14 +-
+ apps/backend/src/server.ts                |   18 +-
+ apps/web-verify/app/v/[code]/page.tsx     |    6 +-
+ package.json                              |    3 +-
+ packages/shared/src/types/index.ts        |   36 +
+ pnpm-lock.yaml                            | 1278 ++++++++++++++++++++++++++++-
+ 13 files changed, 2084 insertions(+), 45 deletions(-)
+
+Files Touched:
+.github/workflows/android-staging-apk.yml
+.github/workflows/ci.yml
+OPS/HANDOFF_HISTORY.md
+OPS/LAST_HANDOFF.txt
+apps/backend/.env.example
+apps/backend/package.json
+apps/backend/src/plugins/cors.ts
+apps/backend/src/routes/index.ts
+apps/backend/src/server.ts
+apps/web-verify/app/v/[code]/page.tsx
+package.json
+packages/shared/src/types/index.ts
+pnpm-lock.yaml
+
+Last Commit:
+86841e9 feat(deploy): add CI smoke tests and hardened deployment configuration
+
+Commands/Tests Run (tail):
+
+> @verifd/backend@0.1.0 test /Users/harshilpatel/Desktop/Claude_Projects/verifd/apps/backend
+> vitest
+
+[33mThe CJS build of Vite's Node API is deprecated. See https://vite.dev/guide/troubleshooting.html#vite-cjs-node-api-deprecated for more details.[39m
+
+ DEV  v2.1.9 /Users/harshilpatel/Desktop/Claude_Projects/verifd/apps/backend
+
+ ✓ test/pass.check.simple.test.ts (6 tests | 1 skipped) 2ms
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > returns allowed=false for unknown number
+[DEBUG] No active pass found for number: ph_8a59780bb8cd2ba0
+
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > returns allowed=true for active pass
+[INFO] Active pass found for number: ph_8a59780bb8cd2ba0, expires: 1754771816
+
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > returns allowed=false for expired pass
+[DEBUG] No active pass found for number: ph_8a59780bb8cd2ba0
+
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > includes Cache-Control header
+[DEBUG] No active pass found for number: ph_8a59780bb8cd2ba0
+
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > correctly identifies 30m scope
+[INFO] Active pass found for number: ph_f5be76815beedc12, expires: 1754770016
+
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > correctly identifies 30d scope
+[INFO] Active pass found for number: ph_554285f82182d3dd, expires: 1757360216
+
+ ✓ test/pass.check.mock.test.ts (7 tests) 65ms
+
+ Test Files  2 passed (2)
+      Tests  12 passed | 1 skipped (13)
+   Start at  15:36:55
+   Duration  378ms (transform 78ms, setup 0ms, collect 174ms, tests 67ms, environment 0ms, prepare 106ms)
+
+ PASS  Waiting for file changes...
+       press h to show help, press q to quit
+
+Playwright (tail):
+
+
+Open Risks:
+- Auto-generated handoff; ask Claude to run /handoff:prep next time for richer details.
+
+Asks for PM:
+- Approve or request changes based on diff/test tails; if unclear, ask Claude to regenerate via /handoff:prep.
+
+---END-HANDOFF---
+
+
+## 2025-08-14T21:38:34Z
+
+---HANDOFF---
+Task: (auto) Fallback handoff — assistant reply had no explicit ---HANDOFF---
+When: 2025-08-14T21:38:34Z
+Branch: main
+
+Diff Summary:
+ .github/workflows/android-staging-apk.yml |    2 +-
+ .github/workflows/ci.yml                  |    4 +-
+ OPS/HANDOFF_HISTORY.md                    |  766 +++++++++++++++++
+ OPS/LAST_HANDOFF.txt                      |   32 +-
+ apps/backend/.env.example                 |   43 +-
+ apps/backend/package.json                 |    5 +-
+ apps/backend/src/plugins/cors.ts          |   18 +-
+ apps/backend/src/routes/index.ts          |   18 +-
+ apps/backend/src/server.ts                |   17 +-
+ apps/web-verify/app/v/[code]/page.tsx     |    6 +-
+ package.json                              |    3 +-
+ packages/shared/src/types/index.ts        |   36 +
+ pnpm-lock.yaml                            | 1278 ++++++++++++++++++++++++++++-
+ 13 files changed, 2183 insertions(+), 45 deletions(-)
+
+Files Touched:
+.github/workflows/android-staging-apk.yml
+.github/workflows/ci.yml
+OPS/HANDOFF_HISTORY.md
+OPS/LAST_HANDOFF.txt
+apps/backend/.env.example
+apps/backend/package.json
+apps/backend/src/plugins/cors.ts
+apps/backend/src/routes/index.ts
+apps/backend/src/server.ts
+apps/web-verify/app/v/[code]/page.tsx
+package.json
+packages/shared/src/types/index.ts
+pnpm-lock.yaml
+
+Last Commit:
+86841e9 feat(deploy): add CI smoke tests and hardened deployment configuration
+
+Commands/Tests Run (tail):
+
+> @verifd/backend@0.1.0 test /Users/harshilpatel/Desktop/Claude_Projects/verifd/apps/backend
+> vitest
+
+[33mThe CJS build of Vite's Node API is deprecated. See https://vite.dev/guide/troubleshooting.html#vite-cjs-node-api-deprecated for more details.[39m
+
+ DEV  v2.1.9 /Users/harshilpatel/Desktop/Claude_Projects/verifd/apps/backend
+
+ ✓ test/pass.check.simple.test.ts (6 tests | 1 skipped) 2ms
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > returns allowed=false for unknown number
+[DEBUG] No active pass found for number: ph_8a59780bb8cd2ba0
+
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > returns allowed=true for active pass
+[INFO] Active pass found for number: ph_8a59780bb8cd2ba0, expires: 1754771816
+
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > returns allowed=false for expired pass
+[DEBUG] No active pass found for number: ph_8a59780bb8cd2ba0
+
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > includes Cache-Control header
+[DEBUG] No active pass found for number: ph_8a59780bb8cd2ba0
+
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > correctly identifies 30m scope
+[INFO] Active pass found for number: ph_f5be76815beedc12, expires: 1754770016
+
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > correctly identifies 30d scope
+[INFO] Active pass found for number: ph_554285f82182d3dd, expires: 1757360216
+
+ ✓ test/pass.check.mock.test.ts (7 tests) 65ms
+
+ Test Files  2 passed (2)
+      Tests  12 passed | 1 skipped (13)
+   Start at  15:36:55
+   Duration  378ms (transform 78ms, setup 0ms, collect 174ms, tests 67ms, environment 0ms, prepare 106ms)
+
+ PASS  Waiting for file changes...
+       press h to show help, press q to quit
+
+Playwright (tail):
+
+
+Open Risks:
+- Auto-generated handoff; ask Claude to run /handoff:prep next time for richer details.
+
+Asks for PM:
+- Approve or request changes based on diff/test tails; if unclear, ask Claude to regenerate via /handoff:prep.
+
+---END-HANDOFF---
+
+
+## 2025-08-14T21:40:08Z
+
+---HANDOFF---
+Task: (auto) Fallback handoff — assistant reply had no explicit ---HANDOFF---
+When: 2025-08-14T21:40:08Z
+Branch: main
+
+Diff Summary:
+ .github/workflows/android-staging-apk.yml |    2 +-
+ .github/workflows/ci.yml                  |    4 +-
+ OPS/HANDOFF_HISTORY.md                    |  857 +++++++++++++++++++
+ OPS/LAST_HANDOFF.txt                      |   32 +-
+ apps/backend/.env.example                 |   43 +-
+ apps/backend/package.json                 |    5 +-
+ apps/backend/src/plugins/cors.ts          |   18 +-
+ apps/backend/src/routes/index.ts          |   18 +-
+ apps/backend/src/server.ts                |   17 +-
+ apps/web-verify/app/v/[code]/page.tsx     |    6 +-
+ package.json                              |    5 +-
+ packages/shared/src/types/index.ts        |   36 +
+ pnpm-lock.yaml                            | 1278 ++++++++++++++++++++++++++++-
+ 13 files changed, 2276 insertions(+), 45 deletions(-)
+
+Files Touched:
+.github/workflows/android-staging-apk.yml
+.github/workflows/ci.yml
+OPS/HANDOFF_HISTORY.md
+OPS/LAST_HANDOFF.txt
+apps/backend/.env.example
+apps/backend/package.json
+apps/backend/src/plugins/cors.ts
+apps/backend/src/routes/index.ts
+apps/backend/src/server.ts
+apps/web-verify/app/v/[code]/page.tsx
+package.json
+packages/shared/src/types/index.ts
+pnpm-lock.yaml
+
+Last Commit:
+86841e9 feat(deploy): add CI smoke tests and hardened deployment configuration
+
+Commands/Tests Run (tail):
+
+> @verifd/backend@0.1.0 test /Users/harshilpatel/Desktop/Claude_Projects/verifd/apps/backend
+> vitest
+
+[33mThe CJS build of Vite's Node API is deprecated. See https://vite.dev/guide/troubleshooting.html#vite-cjs-node-api-deprecated for more details.[39m
+
+ DEV  v2.1.9 /Users/harshilpatel/Desktop/Claude_Projects/verifd/apps/backend
+
+ ✓ test/pass.check.simple.test.ts (6 tests | 1 skipped) 2ms
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > returns allowed=false for unknown number
+[DEBUG] No active pass found for number: ph_8a59780bb8cd2ba0
+
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > returns allowed=true for active pass
+[INFO] Active pass found for number: ph_8a59780bb8cd2ba0, expires: 1754771816
+
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > returns allowed=false for expired pass
+[DEBUG] No active pass found for number: ph_8a59780bb8cd2ba0
+
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > includes Cache-Control header
+[DEBUG] No active pass found for number: ph_8a59780bb8cd2ba0
+
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > correctly identifies 30m scope
+[INFO] Active pass found for number: ph_f5be76815beedc12, expires: 1754770016
+
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > correctly identifies 30d scope
+[INFO] Active pass found for number: ph_554285f82182d3dd, expires: 1757360216
+
+ ✓ test/pass.check.mock.test.ts (7 tests) 65ms
+
+ Test Files  2 passed (2)
+      Tests  12 passed | 1 skipped (13)
+   Start at  15:36:55
+   Duration  378ms (transform 78ms, setup 0ms, collect 174ms, tests 67ms, environment 0ms, prepare 106ms)
+
+ PASS  Waiting for file changes...
+       press h to show help, press q to quit
+
+Playwright (tail):
+
+
+Open Risks:
+- Auto-generated handoff; ask Claude to run /handoff:prep next time for richer details.
+
+Asks for PM:
+- Approve or request changes based on diff/test tails; if unclear, ask Claude to regenerate via /handoff:prep.
+
+---END-HANDOFF---
+
+
+## 2025-08-14T21:43:53Z
+
+---HANDOFF---
+Task: (auto) Fallback handoff — assistant reply had no explicit ---HANDOFF---
+When: 2025-08-14T21:43:53Z
+Branch: main
+
+Diff Summary:
+ .github/workflows/android-staging-apk.yml |    2 +-
+ .github/workflows/ci.yml                  |    4 +-
+ OPS/HANDOFF_HISTORY.md                    |  948 +++++++++++++++++++++
+ OPS/LAST_HANDOFF.txt                      |   32 +-
+ apps/backend/.env.example                 |   43 +-
+ apps/backend/package.json                 |    5 +-
+ apps/backend/src/plugins/cors.ts          |   18 +-
+ apps/backend/src/routes/index.ts          |   18 +-
+ apps/backend/src/server.ts                |   17 +-
+ apps/web-verify/app/v/[code]/page.tsx     |    6 +-
+ package.json                              |    5 +-
+ packages/shared/src/types/index.ts        |   36 +
+ pnpm-lock.yaml                            | 1278 ++++++++++++++++++++++++++++-
+ 13 files changed, 2367 insertions(+), 45 deletions(-)
+
+Files Touched:
+.github/workflows/android-staging-apk.yml
+.github/workflows/ci.yml
+OPS/HANDOFF_HISTORY.md
+OPS/LAST_HANDOFF.txt
+apps/backend/.env.example
+apps/backend/package.json
+apps/backend/src/plugins/cors.ts
+apps/backend/src/routes/index.ts
+apps/backend/src/server.ts
+apps/web-verify/app/v/[code]/page.tsx
+package.json
+packages/shared/src/types/index.ts
+pnpm-lock.yaml
+
+Last Commit:
+86841e9 feat(deploy): add CI smoke tests and hardened deployment configuration
+
+Commands/Tests Run (tail):
+
+> @verifd/backend@0.1.0 test /Users/harshilpatel/Desktop/Claude_Projects/verifd/apps/backend
+> vitest
+
+[33mThe CJS build of Vite's Node API is deprecated. See https://vite.dev/guide/troubleshooting.html#vite-cjs-node-api-deprecated for more details.[39m
+
+ DEV  v2.1.9 /Users/harshilpatel/Desktop/Claude_Projects/verifd/apps/backend
+
+ ✓ test/pass.check.simple.test.ts (6 tests | 1 skipped) 2ms
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > returns allowed=false for unknown number
+[DEBUG] No active pass found for number: ph_8a59780bb8cd2ba0
+
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > returns allowed=true for active pass
+[INFO] Active pass found for number: ph_8a59780bb8cd2ba0, expires: 1754771816
+
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > returns allowed=false for expired pass
+[DEBUG] No active pass found for number: ph_8a59780bb8cd2ba0
+
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > includes Cache-Control header
+[DEBUG] No active pass found for number: ph_8a59780bb8cd2ba0
+
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > correctly identifies 30m scope
+[INFO] Active pass found for number: ph_f5be76815beedc12, expires: 1754770016
+
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > correctly identifies 30d scope
+[INFO] Active pass found for number: ph_554285f82182d3dd, expires: 1757360216
+
+ ✓ test/pass.check.mock.test.ts (7 tests) 65ms
+
+ Test Files  2 passed (2)
+      Tests  12 passed | 1 skipped (13)
+   Start at  15:36:55
+   Duration  378ms (transform 78ms, setup 0ms, collect 174ms, tests 67ms, environment 0ms, prepare 106ms)
+
+ PASS  Waiting for file changes...
+       press h to show help, press q to quit
+
+Playwright (tail):
+
+
+Open Risks:
+- Auto-generated handoff; ask Claude to run /handoff:prep next time for richer details.
+
+Asks for PM:
+- Approve or request changes based on diff/test tails; if unclear, ask Claude to regenerate via /handoff:prep.
+
+---END-HANDOFF---
+
+
+## 2025-08-14T21:52:29Z
+
+---HANDOFF---
+Task: (auto) Fallback handoff — assistant reply had no explicit ---HANDOFF---
+When: 2025-08-14T21:52:29Z
+Branch: main
+
+Diff Summary:
+ .github/workflows/android-staging-apk.yml |    2 +-
+ .github/workflows/ci.yml                  |    4 +-
+ OPS/HANDOFF_HISTORY.md                    | 1039 +++++++++++++++++++++++
+ OPS/LAST_HANDOFF.txt                      |   32 +-
+ apps/backend/.env.example                 |   43 +-
+ apps/backend/package.json                 |    5 +-
+ apps/backend/src/plugins/cors.ts          |   18 +-
+ apps/backend/src/routes/index.ts          |   20 +-
+ apps/backend/src/server.ts                |   17 +-
+ apps/web-verify/app/v/[code]/page.tsx     |    6 +-
+ package.json                              |    5 +-
+ packages/shared/src/types/index.ts        |   36 +
+ pnpm-lock.yaml                            | 1278 ++++++++++++++++++++++++++++-
+ 13 files changed, 2460 insertions(+), 45 deletions(-)
+
+Files Touched:
+.github/workflows/android-staging-apk.yml
+.github/workflows/ci.yml
+OPS/HANDOFF_HISTORY.md
+OPS/LAST_HANDOFF.txt
+apps/backend/.env.example
+apps/backend/package.json
+apps/backend/src/plugins/cors.ts
+apps/backend/src/routes/index.ts
+apps/backend/src/server.ts
+apps/web-verify/app/v/[code]/page.tsx
+package.json
+packages/shared/src/types/index.ts
+pnpm-lock.yaml
+
+Last Commit:
+86841e9 feat(deploy): add CI smoke tests and hardened deployment configuration
+
+Commands/Tests Run (tail):
+
+> @verifd/backend@0.1.0 test /Users/harshilpatel/Desktop/Claude_Projects/verifd/apps/backend
+> vitest
+
+[33mThe CJS build of Vite's Node API is deprecated. See https://vite.dev/guide/troubleshooting.html#vite-cjs-node-api-deprecated for more details.[39m
+
+ DEV  v2.1.9 /Users/harshilpatel/Desktop/Claude_Projects/verifd/apps/backend
+
+ ✓ test/pass.check.simple.test.ts (6 tests | 1 skipped) 2ms
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > returns allowed=false for unknown number
+[DEBUG] No active pass found for number: ph_8a59780bb8cd2ba0
+
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > returns allowed=true for active pass
+[INFO] Active pass found for number: ph_8a59780bb8cd2ba0, expires: 1754771816
+
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > returns allowed=false for expired pass
+[DEBUG] No active pass found for number: ph_8a59780bb8cd2ba0
+
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > includes Cache-Control header
+[DEBUG] No active pass found for number: ph_8a59780bb8cd2ba0
+
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > correctly identifies 30m scope
+[INFO] Active pass found for number: ph_f5be76815beedc12, expires: 1754770016
+
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > correctly identifies 30d scope
+[INFO] Active pass found for number: ph_554285f82182d3dd, expires: 1757360216
+
+ ✓ test/pass.check.mock.test.ts (7 tests) 65ms
+
+ Test Files  2 passed (2)
+      Tests  12 passed | 1 skipped (13)
+   Start at  15:36:55
+   Duration  378ms (transform 78ms, setup 0ms, collect 174ms, tests 67ms, environment 0ms, prepare 106ms)
+
+ PASS  Waiting for file changes...
+       press h to show help, press q to quit
+
+Playwright (tail):
+
+
+Open Risks:
+- Auto-generated handoff; ask Claude to run /handoff:prep next time for richer details.
+
+Asks for PM:
+- Approve or request changes based on diff/test tails; if unclear, ask Claude to regenerate via /handoff:prep.
+
+---END-HANDOFF---
+
+
+## 2025-08-14T22:08:42Z
+
+---HANDOFF---
+Task: (auto) Fallback handoff — assistant reply had no explicit ---HANDOFF---
+When: 2025-08-14T22:08:42Z
+Branch: main
+
+Diff Summary:
+ .github/workflows/android-staging-apk.yml |    2 +-
+ .github/workflows/ci.yml                  |    4 +-
+ OPS/HANDOFF_HISTORY.md                    | 1130 +++++++++++++++++++++++++
+ OPS/LAST_HANDOFF.txt                      |   32 +-
+ apps/backend/.env.example                 |   43 +-
+ apps/backend/package.json                 |    5 +-
+ apps/backend/src/plugins/cors.ts          |   18 +-
+ apps/backend/src/routes/index.ts          |   20 +-
+ apps/backend/src/server.ts                |   17 +-
+ apps/web-verify/app/v/[code]/page.tsx     |    6 +-
+ package.json                              |    5 +-
+ packages/shared/src/types/index.ts        |   36 +
+ pnpm-lock.yaml                            | 1278 ++++++++++++++++++++++++++++-
+ 13 files changed, 2551 insertions(+), 45 deletions(-)
+
+Files Touched:
+.github/workflows/android-staging-apk.yml
+.github/workflows/ci.yml
+OPS/HANDOFF_HISTORY.md
+OPS/LAST_HANDOFF.txt
+apps/backend/.env.example
+apps/backend/package.json
+apps/backend/src/plugins/cors.ts
+apps/backend/src/routes/index.ts
+apps/backend/src/server.ts
+apps/web-verify/app/v/[code]/page.tsx
+package.json
+packages/shared/src/types/index.ts
+pnpm-lock.yaml
+
+Last Commit:
+86841e9 feat(deploy): add CI smoke tests and hardened deployment configuration
+
+Commands/Tests Run (tail):
+
+> @verifd/backend@0.1.0 test /Users/harshilpatel/Desktop/Claude_Projects/verifd/apps/backend
+> vitest
+
+[33mThe CJS build of Vite's Node API is deprecated. See https://vite.dev/guide/troubleshooting.html#vite-cjs-node-api-deprecated for more details.[39m
+
+ DEV  v2.1.9 /Users/harshilpatel/Desktop/Claude_Projects/verifd/apps/backend
+
+ ✓ test/pass.check.simple.test.ts (6 tests | 1 skipped) 2ms
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > returns allowed=false for unknown number
+[DEBUG] No active pass found for number: ph_8a59780bb8cd2ba0
+
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > returns allowed=true for active pass
+[INFO] Active pass found for number: ph_8a59780bb8cd2ba0, expires: 1754771816
+
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > returns allowed=false for expired pass
+[DEBUG] No active pass found for number: ph_8a59780bb8cd2ba0
+
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > includes Cache-Control header
+[DEBUG] No active pass found for number: ph_8a59780bb8cd2ba0
+
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > correctly identifies 30m scope
+[INFO] Active pass found for number: ph_f5be76815beedc12, expires: 1754770016
+
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > correctly identifies 30d scope
+[INFO] Active pass found for number: ph_554285f82182d3dd, expires: 1757360216
+
+ ✓ test/pass.check.mock.test.ts (7 tests) 65ms
+
+ Test Files  2 passed (2)
+      Tests  12 passed | 1 skipped (13)
+   Start at  15:36:55
+   Duration  378ms (transform 78ms, setup 0ms, collect 174ms, tests 67ms, environment 0ms, prepare 106ms)
+
+ PASS  Waiting for file changes...
+       press h to show help, press q to quit
+
+Playwright (tail):
+
+
+Open Risks:
+- Auto-generated handoff; ask Claude to run /handoff:prep next time for richer details.
+
+Asks for PM:
+- Approve or request changes based on diff/test tails; if unclear, ask Claude to regenerate via /handoff:prep.
+
+---END-HANDOFF---
+
+
+## 2025-08-14T22:52:04Z
+
+---HANDOFF---
+Task: (auto) Fallback handoff — assistant reply had no explicit ---HANDOFF---
+When: 2025-08-14T22:52:04Z
+Branch: main
+
+Diff Summary:
+ .github/workflows/android-staging-apk.yml  |    2 +-
+ .github/workflows/ci.yml                   |    4 +-
+ OPS/HANDOFF_HISTORY.md                     | 1221 ++++++++++++++++++++++++++
+ OPS/LAST_HANDOFF.txt                       |   32 +-
+ apps/backend/.env.example                  |   43 +-
+ apps/backend/package.json                  |    5 +-
+ apps/backend/src/plugins/cors.ts           |   18 +-
+ apps/backend/src/routes/index.ts           |   20 +-
+ apps/backend/src/server.ts                 |   17 +-
+ apps/web-verify/app/v/[code]/page.tsx      |    6 +-
+ apps/web-verify/tsconfig.json              |    3 +-
+ apps/web-verify/types/@verifd__shared.d.ts |   12 -
+ package.json                               |    5 +-
+ packages/shared/src/types/index.ts         |   36 +
+ pnpm-lock.yaml                             | 1278 +++++++++++++++++++++++++++-
+ 15 files changed, 2643 insertions(+), 59 deletions(-)
+
+Files Touched:
+.github/workflows/android-staging-apk.yml
+.github/workflows/ci.yml
+OPS/HANDOFF_HISTORY.md
+OPS/LAST_HANDOFF.txt
+apps/backend/.env.example
+apps/backend/package.json
+apps/backend/src/plugins/cors.ts
+apps/backend/src/routes/index.ts
+apps/backend/src/server.ts
+apps/web-verify/app/v/[code]/page.tsx
+apps/web-verify/tsconfig.json
+apps/web-verify/types/@verifd__shared.d.ts
+package.json
+packages/shared/src/types/index.ts
+pnpm-lock.yaml
+
+Last Commit:
+86841e9 feat(deploy): add CI smoke tests and hardened deployment configuration
+
+Commands/Tests Run (tail):
+
+> @verifd/backend@0.1.0 test /Users/harshilpatel/Desktop/Claude_Projects/verifd/apps/backend
+> vitest
+
+[33mThe CJS build of Vite's Node API is deprecated. See https://vite.dev/guide/troubleshooting.html#vite-cjs-node-api-deprecated for more details.[39m
+
+ DEV  v2.1.9 /Users/harshilpatel/Desktop/Claude_Projects/verifd/apps/backend
+
+ ✓ test/pass.check.simple.test.ts (6 tests | 1 skipped) 2ms
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > returns allowed=false for unknown number
+[DEBUG] No active pass found for number: ph_8a59780bb8cd2ba0
+
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > returns allowed=true for active pass
+[INFO] Active pass found for number: ph_8a59780bb8cd2ba0, expires: 1754771816
+
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > returns allowed=false for expired pass
+[DEBUG] No active pass found for number: ph_8a59780bb8cd2ba0
+
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > includes Cache-Control header
+[DEBUG] No active pass found for number: ph_8a59780bb8cd2ba0
+
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > correctly identifies 30m scope
+[INFO] Active pass found for number: ph_f5be76815beedc12, expires: 1754770016
+
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > correctly identifies 30d scope
+[INFO] Active pass found for number: ph_554285f82182d3dd, expires: 1757360216
+
+ ✓ test/pass.check.mock.test.ts (7 tests) 65ms
+
+ Test Files  2 passed (2)
+      Tests  12 passed | 1 skipped (13)
+   Start at  15:36:55
+   Duration  378ms (transform 78ms, setup 0ms, collect 174ms, tests 67ms, environment 0ms, prepare 106ms)
+
+ PASS  Waiting for file changes...
+       press h to show help, press q to quit
+
+Playwright (tail):
+
+
+Open Risks:
+- Auto-generated handoff; ask Claude to run /handoff:prep next time for richer details.
+
+Asks for PM:
+- Approve or request changes based on diff/test tails; if unclear, ask Claude to regenerate via /handoff:prep.
+
+---END-HANDOFF---
+
+
+## 2025-08-14T23:01:36Z
+
+---HANDOFF---
+Task: (auto) Fallback handoff — assistant reply had no explicit ---HANDOFF---
+When: 2025-08-14T23:01:36Z
+Branch: main
+
+Diff Summary:
+ .github/workflows/android-staging-apk.yml  |    2 +-
+ .github/workflows/ci.yml                   |    4 +-
+ OPS/HANDOFF_HISTORY.md                     | 1316 ++++++++++++++++++++++++++++
+ OPS/LAST_HANDOFF.txt                       |   36 +-
+ apps/backend/.env.example                  |   43 +-
+ apps/backend/package.json                  |    5 +-
+ apps/backend/src/plugins/cors.ts           |   18 +-
+ apps/backend/src/routes/index.ts           |   20 +-
+ apps/backend/src/server.ts                 |   17 +-
+ apps/web-verify/app/v/[code]/page.tsx      |    6 +-
+ apps/web-verify/tsconfig.json              |    3 +-
+ apps/web-verify/types/@verifd__shared.d.ts |   12 -
+ package.json                               |    5 +-
+ packages/shared/src/types/index.ts         |   36 +
+ pnpm-lock.yaml                             | 1278 ++++++++++++++++++++++++++-
+ 15 files changed, 2742 insertions(+), 59 deletions(-)
+
+Files Touched:
+.github/workflows/android-staging-apk.yml
+.github/workflows/ci.yml
+OPS/HANDOFF_HISTORY.md
+OPS/LAST_HANDOFF.txt
+apps/backend/.env.example
+apps/backend/package.json
+apps/backend/src/plugins/cors.ts
+apps/backend/src/routes/index.ts
+apps/backend/src/server.ts
+apps/web-verify/app/v/[code]/page.tsx
+apps/web-verify/tsconfig.json
+apps/web-verify/types/@verifd__shared.d.ts
+package.json
+packages/shared/src/types/index.ts
+pnpm-lock.yaml
+
+Last Commit:
+86841e9 feat(deploy): add CI smoke tests and hardened deployment configuration
+
+Commands/Tests Run (tail):
+
+> @verifd/backend@0.1.0 test /Users/harshilpatel/Desktop/Claude_Projects/verifd/apps/backend
+> vitest
+
+[33mThe CJS build of Vite's Node API is deprecated. See https://vite.dev/guide/troubleshooting.html#vite-cjs-node-api-deprecated for more details.[39m
+
+ DEV  v2.1.9 /Users/harshilpatel/Desktop/Claude_Projects/verifd/apps/backend
+
+ ✓ test/pass.check.simple.test.ts (6 tests | 1 skipped) 2ms
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > returns allowed=false for unknown number
+[DEBUG] No active pass found for number: ph_8a59780bb8cd2ba0
+
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > returns allowed=true for active pass
+[INFO] Active pass found for number: ph_8a59780bb8cd2ba0, expires: 1754771816
+
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > returns allowed=false for expired pass
+[DEBUG] No active pass found for number: ph_8a59780bb8cd2ba0
+
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > includes Cache-Control header
+[DEBUG] No active pass found for number: ph_8a59780bb8cd2ba0
+
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > correctly identifies 30m scope
+[INFO] Active pass found for number: ph_f5be76815beedc12, expires: 1754770016
+
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > correctly identifies 30d scope
+[INFO] Active pass found for number: ph_554285f82182d3dd, expires: 1757360216
+
+ ✓ test/pass.check.mock.test.ts (7 tests) 65ms
+
+ Test Files  2 passed (2)
+      Tests  12 passed | 1 skipped (13)
+   Start at  15:36:55
+   Duration  378ms (transform 78ms, setup 0ms, collect 174ms, tests 67ms, environment 0ms, prepare 106ms)
+
+ PASS  Waiting for file changes...
+       press h to show help, press q to quit
+
+Playwright (tail):
+
+
+Open Risks:
+- Auto-generated handoff; ask Claude to run /handoff:prep next time for richer details.
+
+Asks for PM:
+- Approve or request changes based on diff/test tails; if unclear, ask Claude to regenerate via /handoff:prep.
+
+---END-HANDOFF---
+
+
+## 2025-08-14T23:12:06Z
+
+---HANDOFF---
+Task: (auto) Fallback handoff — assistant reply had no explicit ---HANDOFF---
+When: 2025-08-14T23:12:06Z
+Branch: main
+
+Diff Summary:
+ .github/workflows/android-staging-apk.yml  |    2 +-
+ .github/workflows/ci.yml                   |    4 +-
+ OPS/HANDOFF_HISTORY.md                     | 1411 ++++++++++++++++++++++++++++
+ OPS/LAST_HANDOFF.txt                       |   36 +-
+ apps/backend/.env.example                  |   43 +-
+ apps/backend/package.json                  |    5 +-
+ apps/backend/src/plugins/cors.ts           |   18 +-
+ apps/backend/src/routes/index.ts           |   20 +-
+ apps/backend/src/server.ts                 |   17 +-
+ apps/web-verify/app/v/[code]/page.tsx      |    6 +-
+ apps/web-verify/tsconfig.json              |    3 +-
+ apps/web-verify/types/@verifd__shared.d.ts |   12 -
+ package.json                               |    5 +-
+ packages/shared/src/types/index.ts         |   36 +
+ pnpm-lock.yaml                             | 1278 ++++++++++++++++++++++++-
+ 15 files changed, 2837 insertions(+), 59 deletions(-)
+
+Files Touched:
+.github/workflows/android-staging-apk.yml
+.github/workflows/ci.yml
+OPS/HANDOFF_HISTORY.md
+OPS/LAST_HANDOFF.txt
+apps/backend/.env.example
+apps/backend/package.json
+apps/backend/src/plugins/cors.ts
+apps/backend/src/routes/index.ts
+apps/backend/src/server.ts
+apps/web-verify/app/v/[code]/page.tsx
+apps/web-verify/tsconfig.json
+apps/web-verify/types/@verifd__shared.d.ts
+package.json
+packages/shared/src/types/index.ts
+pnpm-lock.yaml
+
+Last Commit:
+86841e9 feat(deploy): add CI smoke tests and hardened deployment configuration
+
+Commands/Tests Run (tail):
+
+> @verifd/backend@0.1.0 test /Users/harshilpatel/Desktop/Claude_Projects/verifd/apps/backend
+> vitest
+
+[33mThe CJS build of Vite's Node API is deprecated. See https://vite.dev/guide/troubleshooting.html#vite-cjs-node-api-deprecated for more details.[39m
+
+ DEV  v2.1.9 /Users/harshilpatel/Desktop/Claude_Projects/verifd/apps/backend
+
+ ✓ test/pass.check.simple.test.ts (6 tests | 1 skipped) 2ms
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > returns allowed=false for unknown number
+[DEBUG] No active pass found for number: ph_8a59780bb8cd2ba0
+
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > returns allowed=true for active pass
+[INFO] Active pass found for number: ph_8a59780bb8cd2ba0, expires: 1754771816
+
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > returns allowed=false for expired pass
+[DEBUG] No active pass found for number: ph_8a59780bb8cd2ba0
+
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > includes Cache-Control header
+[DEBUG] No active pass found for number: ph_8a59780bb8cd2ba0
+
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > correctly identifies 30m scope
+[INFO] Active pass found for number: ph_f5be76815beedc12, expires: 1754770016
+
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > correctly identifies 30d scope
+[INFO] Active pass found for number: ph_554285f82182d3dd, expires: 1757360216
+
+ ✓ test/pass.check.mock.test.ts (7 tests) 65ms
+
+ Test Files  2 passed (2)
+      Tests  12 passed | 1 skipped (13)
+   Start at  15:36:55
+   Duration  378ms (transform 78ms, setup 0ms, collect 174ms, tests 67ms, environment 0ms, prepare 106ms)
+
+ PASS  Waiting for file changes...
+       press h to show help, press q to quit
+
+Playwright (tail):
+
+
+Open Risks:
+- Auto-generated handoff; ask Claude to run /handoff:prep next time for richer details.
+
+Asks for PM:
+- Approve or request changes based on diff/test tails; if unclear, ask Claude to regenerate via /handoff:prep.
+
+---END-HANDOFF---
+
+
+## 2025-08-14T23:27:23Z
+
+---HANDOFF---
+Task: (auto) Fallback handoff — assistant reply had no explicit ---HANDOFF---
+When: 2025-08-14T23:27:23Z
+Branch: main
+
+Diff Summary:
+ .github/workflows/android-staging-apk.yml  |    2 +-
+ .github/workflows/ci.yml                   |    4 +-
+ OPS/HANDOFF_HISTORY.md                     | 1506 ++++++++++++++++++++++++++++
+ OPS/LAST_HANDOFF.txt                       |   36 +-
+ apps/backend/.env.example                  |   43 +-
+ apps/backend/package.json                  |    5 +-
+ apps/backend/src/plugins/cors.ts           |   18 +-
+ apps/backend/src/routes/index.ts           |   20 +-
+ apps/backend/src/server.ts                 |   17 +-
+ apps/web-verify/app/v/[code]/page.tsx      |    6 +-
+ apps/web-verify/tsconfig.json              |    3 +-
+ apps/web-verify/types/@verifd__shared.d.ts |   12 -
+ package.json                               |    5 +-
+ packages/shared/src/types/index.ts         |   36 +
+ pnpm-lock.yaml                             | 1278 ++++++++++++++++++++++-
+ 15 files changed, 2932 insertions(+), 59 deletions(-)
+
+Files Touched:
+.github/workflows/android-staging-apk.yml
+.github/workflows/ci.yml
+OPS/HANDOFF_HISTORY.md
+OPS/LAST_HANDOFF.txt
+apps/backend/.env.example
+apps/backend/package.json
+apps/backend/src/plugins/cors.ts
+apps/backend/src/routes/index.ts
+apps/backend/src/server.ts
+apps/web-verify/app/v/[code]/page.tsx
+apps/web-verify/tsconfig.json
+apps/web-verify/types/@verifd__shared.d.ts
+package.json
+packages/shared/src/types/index.ts
+pnpm-lock.yaml
+
+Last Commit:
+86841e9 feat(deploy): add CI smoke tests and hardened deployment configuration
+
+Commands/Tests Run (tail):
+
+> @verifd/backend@0.1.0 test /Users/harshilpatel/Desktop/Claude_Projects/verifd/apps/backend
+> vitest
+
+[33mThe CJS build of Vite's Node API is deprecated. See https://vite.dev/guide/troubleshooting.html#vite-cjs-node-api-deprecated for more details.[39m
+
+ DEV  v2.1.9 /Users/harshilpatel/Desktop/Claude_Projects/verifd/apps/backend
+
+ ✓ test/pass.check.simple.test.ts (6 tests | 1 skipped) 2ms
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > returns allowed=false for unknown number
+[DEBUG] No active pass found for number: ph_8a59780bb8cd2ba0
+
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > returns allowed=true for active pass
+[INFO] Active pass found for number: ph_8a59780bb8cd2ba0, expires: 1754771816
+
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > returns allowed=false for expired pass
+[DEBUG] No active pass found for number: ph_8a59780bb8cd2ba0
+
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > includes Cache-Control header
+[DEBUG] No active pass found for number: ph_8a59780bb8cd2ba0
+
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > correctly identifies 30m scope
+[INFO] Active pass found for number: ph_f5be76815beedc12, expires: 1754770016
+
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > correctly identifies 30d scope
+[INFO] Active pass found for number: ph_554285f82182d3dd, expires: 1757360216
+
+ ✓ test/pass.check.mock.test.ts (7 tests) 65ms
+
+ Test Files  2 passed (2)
+      Tests  12 passed | 1 skipped (13)
+   Start at  15:36:55
+   Duration  378ms (transform 78ms, setup 0ms, collect 174ms, tests 67ms, environment 0ms, prepare 106ms)
+
+ PASS  Waiting for file changes...
+       press h to show help, press q to quit
+
+Playwright (tail):
+
+
+Open Risks:
+- Auto-generated handoff; ask Claude to run /handoff:prep next time for richer details.
+
+Asks for PM:
+- Approve or request changes based on diff/test tails; if unclear, ask Claude to regenerate via /handoff:prep.
+
+---END-HANDOFF---
+
+
+## 2025-08-14T23:31:00Z
+
+---HANDOFF---
+Task: (auto) Fallback handoff — assistant reply had no explicit ---HANDOFF---
+When: 2025-08-14T23:31:00Z
+Branch: main
+
+Diff Summary:
+ .github/workflows/android-staging-apk.yml  |    2 +-
+ .github/workflows/ci.yml                   |    4 +-
+ .gitignore                                 |    4 +
+ OPS/HANDOFF_HISTORY.md                     | 1601 ++++++++++++++++++++++++++++
+ OPS/LAST_HANDOFF.txt                       |   36 +-
+ apps/backend/.env.example                  |   43 +-
+ apps/backend/package.json                  |    5 +-
+ apps/backend/src/plugins/cors.ts           |   18 +-
+ apps/backend/src/routes/index.ts           |   20 +-
+ apps/backend/src/server.ts                 |   17 +-
+ apps/web-verify/app/v/[code]/page.tsx      |    6 +-
+ apps/web-verify/tsconfig.json              |    3 +-
+ apps/web-verify/types/@verifd__shared.d.ts |   12 -
+ package.json                               |    5 +-
+ packages/shared/src/types/index.ts         |   36 +
+ pnpm-lock.yaml                             | 1278 +++++++++++++++++++++-
+ 16 files changed, 3031 insertions(+), 59 deletions(-)
+
+Files Touched:
+.github/workflows/android-staging-apk.yml
+.github/workflows/ci.yml
+.gitignore
+OPS/HANDOFF_HISTORY.md
+OPS/LAST_HANDOFF.txt
+apps/backend/.env.example
+apps/backend/package.json
+apps/backend/src/plugins/cors.ts
+apps/backend/src/routes/index.ts
+apps/backend/src/server.ts
+apps/web-verify/app/v/[code]/page.tsx
+apps/web-verify/tsconfig.json
+apps/web-verify/types/@verifd__shared.d.ts
+package.json
+packages/shared/src/types/index.ts
+pnpm-lock.yaml
+
+Last Commit:
+86841e9 feat(deploy): add CI smoke tests and hardened deployment configuration
+
+Commands/Tests Run (tail):
+
+> @verifd/backend@0.1.0 test /Users/harshilpatel/Desktop/Claude_Projects/verifd/apps/backend
+> vitest
+
+[33mThe CJS build of Vite's Node API is deprecated. See https://vite.dev/guide/troubleshooting.html#vite-cjs-node-api-deprecated for more details.[39m
+
+ DEV  v2.1.9 /Users/harshilpatel/Desktop/Claude_Projects/verifd/apps/backend
+
+ ✓ test/pass.check.simple.test.ts (6 tests | 1 skipped) 2ms
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > returns allowed=false for unknown number
+[DEBUG] No active pass found for number: ph_8a59780bb8cd2ba0
+
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > returns allowed=true for active pass
+[INFO] Active pass found for number: ph_8a59780bb8cd2ba0, expires: 1754771816
+
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > returns allowed=false for expired pass
+[DEBUG] No active pass found for number: ph_8a59780bb8cd2ba0
+
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > includes Cache-Control header
+[DEBUG] No active pass found for number: ph_8a59780bb8cd2ba0
+
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > correctly identifies 30m scope
+[INFO] Active pass found for number: ph_f5be76815beedc12, expires: 1754770016
+
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > correctly identifies 30d scope
+[INFO] Active pass found for number: ph_554285f82182d3dd, expires: 1757360216
+
+ ✓ test/pass.check.mock.test.ts (7 tests) 65ms
+
+ Test Files  2 passed (2)
+      Tests  12 passed | 1 skipped (13)
+   Start at  15:36:55
+   Duration  378ms (transform 78ms, setup 0ms, collect 174ms, tests 67ms, environment 0ms, prepare 106ms)
+
+ PASS  Waiting for file changes...
+       press h to show help, press q to quit
+
+Playwright (tail):
+
+
+Open Risks:
+- Auto-generated handoff; ask Claude to run /handoff:prep next time for richer details.
+
+Asks for PM:
+- Approve or request changes based on diff/test tails; if unclear, ask Claude to regenerate via /handoff:prep.
+
+---END-HANDOFF---
+
+
+## 2025-08-14T23:37:50Z
+
+---HANDOFF---
+Task: (auto) Fallback handoff — assistant reply had no explicit ---HANDOFF---
+When: 2025-08-14T23:37:50Z
+Branch: main
+
+Diff Summary:
+ .github/workflows/android-staging-apk.yml  |    2 +-
+ .github/workflows/ci.yml                   |    4 +-
+ .gitignore                                 |    4 +
+ OPS/HANDOFF_HISTORY.md                     | 1698 ++++++++++++++++++++++++++++
+ OPS/LAST_HANDOFF.txt                       |   38 +-
+ apps/backend/.env.example                  |   43 +-
+ apps/backend/package.json                  |    5 +-
+ apps/backend/src/plugins/cors.ts           |   18 +-
+ apps/backend/src/routes/index.ts           |   20 +-
+ apps/backend/src/server.ts                 |   17 +-
+ apps/web-verify/app/v/[code]/page.tsx      |    6 +-
+ apps/web-verify/tsconfig.json              |    3 +-
+ apps/web-verify/types/@verifd__shared.d.ts |   12 -
+ package.json                               |    5 +-
+ packages/shared/src/types/index.ts         |   36 +
+ pnpm-lock.yaml                             | 1278 ++++++++++++++++++++-
+ 16 files changed, 3130 insertions(+), 59 deletions(-)
+
+Files Touched:
+.github/workflows/android-staging-apk.yml
+.github/workflows/ci.yml
+.gitignore
+OPS/HANDOFF_HISTORY.md
+OPS/LAST_HANDOFF.txt
+apps/backend/.env.example
+apps/backend/package.json
+apps/backend/src/plugins/cors.ts
+apps/backend/src/routes/index.ts
+apps/backend/src/server.ts
+apps/web-verify/app/v/[code]/page.tsx
+apps/web-verify/tsconfig.json
+apps/web-verify/types/@verifd__shared.d.ts
+package.json
+packages/shared/src/types/index.ts
+pnpm-lock.yaml
+
+Last Commit:
+86841e9 feat(deploy): add CI smoke tests and hardened deployment configuration
+
+Commands/Tests Run (tail):
+
+> @verifd/backend@0.1.0 test /Users/harshilpatel/Desktop/Claude_Projects/verifd/apps/backend
+> vitest
+
+[33mThe CJS build of Vite's Node API is deprecated. See https://vite.dev/guide/troubleshooting.html#vite-cjs-node-api-deprecated for more details.[39m
+
+ DEV  v2.1.9 /Users/harshilpatel/Desktop/Claude_Projects/verifd/apps/backend
+
+ ✓ test/pass.check.simple.test.ts (6 tests | 1 skipped) 2ms
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > returns allowed=false for unknown number
+[DEBUG] No active pass found for number: ph_8a59780bb8cd2ba0
+
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > returns allowed=true for active pass
+[INFO] Active pass found for number: ph_8a59780bb8cd2ba0, expires: 1754771816
+
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > returns allowed=false for expired pass
+[DEBUG] No active pass found for number: ph_8a59780bb8cd2ba0
+
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > includes Cache-Control header
+[DEBUG] No active pass found for number: ph_8a59780bb8cd2ba0
+
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > correctly identifies 30m scope
+[INFO] Active pass found for number: ph_f5be76815beedc12, expires: 1754770016
+
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > correctly identifies 30d scope
+[INFO] Active pass found for number: ph_554285f82182d3dd, expires: 1757360216
+
+ ✓ test/pass.check.mock.test.ts (7 tests) 65ms
+
+ Test Files  2 passed (2)
+      Tests  12 passed | 1 skipped (13)
+   Start at  15:36:55
+   Duration  378ms (transform 78ms, setup 0ms, collect 174ms, tests 67ms, environment 0ms, prepare 106ms)
+
+ PASS  Waiting for file changes...
+       press h to show help, press q to quit
+
+Playwright (tail):
+
+
+Open Risks:
+- Auto-generated handoff; ask Claude to run /handoff:prep next time for richer details.
+
+Asks for PM:
+- Approve or request changes based on diff/test tails; if unclear, ask Claude to regenerate via /handoff:prep.
+
+---END-HANDOFF---
+
+
+## 2025-08-14T23:42:01Z
+
+---HANDOFF---
+Task: (auto) Fallback handoff — assistant reply had no explicit ---HANDOFF---
+When: 2025-08-14T23:42:01Z
+Branch: main
+
+Diff Summary:
+ .github/workflows/android-staging-apk.yml  |    2 +-
+ .github/workflows/ci.yml                   |    4 +-
+ .gitignore                                 |    4 +
+ OPS/HANDOFF_HISTORY.md                     | 1795 ++++++++++++++++++++++++++++
+ OPS/LAST_HANDOFF.txt                       |   38 +-
+ apps/backend/.env.example                  |   43 +-
+ apps/backend/package.json                  |    5 +-
+ apps/backend/src/plugins/cors.ts           |   18 +-
+ apps/backend/src/routes/index.ts           |   20 +-
+ apps/backend/src/server.ts                 |   17 +-
+ apps/web-verify/app/v/[code]/page.tsx      |    6 +-
+ apps/web-verify/tsconfig.json              |    3 +-
+ apps/web-verify/types/@verifd__shared.d.ts |   12 -
+ package.json                               |    5 +-
+ packages/shared/src/types/index.ts         |   36 +
+ pnpm-lock.yaml                             | 1278 +++++++++++++++++++-
+ 16 files changed, 3227 insertions(+), 59 deletions(-)
+
+Files Touched:
+.github/workflows/android-staging-apk.yml
+.github/workflows/ci.yml
+.gitignore
+OPS/HANDOFF_HISTORY.md
+OPS/LAST_HANDOFF.txt
+apps/backend/.env.example
+apps/backend/package.json
+apps/backend/src/plugins/cors.ts
+apps/backend/src/routes/index.ts
+apps/backend/src/server.ts
+apps/web-verify/app/v/[code]/page.tsx
+apps/web-verify/tsconfig.json
+apps/web-verify/types/@verifd__shared.d.ts
+package.json
+packages/shared/src/types/index.ts
+pnpm-lock.yaml
+
+Last Commit:
+86841e9 feat(deploy): add CI smoke tests and hardened deployment configuration
+
+Commands/Tests Run (tail):
+
+> @verifd/backend@0.1.0 test /Users/harshilpatel/Desktop/Claude_Projects/verifd/apps/backend
+> vitest
+
+[33mThe CJS build of Vite's Node API is deprecated. See https://vite.dev/guide/troubleshooting.html#vite-cjs-node-api-deprecated for more details.[39m
+
+ DEV  v2.1.9 /Users/harshilpatel/Desktop/Claude_Projects/verifd/apps/backend
+
+ ✓ test/pass.check.simple.test.ts (6 tests | 1 skipped) 2ms
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > returns allowed=false for unknown number
+[DEBUG] No active pass found for number: ph_8a59780bb8cd2ba0
+
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > returns allowed=true for active pass
+[INFO] Active pass found for number: ph_8a59780bb8cd2ba0, expires: 1754771816
+
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > returns allowed=false for expired pass
+[DEBUG] No active pass found for number: ph_8a59780bb8cd2ba0
+
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > includes Cache-Control header
+[DEBUG] No active pass found for number: ph_8a59780bb8cd2ba0
+
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > correctly identifies 30m scope
+[INFO] Active pass found for number: ph_f5be76815beedc12, expires: 1754770016
+
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > correctly identifies 30d scope
+[INFO] Active pass found for number: ph_554285f82182d3dd, expires: 1757360216
+
+ ✓ test/pass.check.mock.test.ts (7 tests) 65ms
+
+ Test Files  2 passed (2)
+      Tests  12 passed | 1 skipped (13)
+   Start at  15:36:55
+   Duration  378ms (transform 78ms, setup 0ms, collect 174ms, tests 67ms, environment 0ms, prepare 106ms)
+
+ PASS  Waiting for file changes...
+       press h to show help, press q to quit
+
+Playwright (tail):
+
+
+Open Risks:
+- Auto-generated handoff; ask Claude to run /handoff:prep next time for richer details.
+
+Asks for PM:
+- Approve or request changes based on diff/test tails; if unclear, ask Claude to regenerate via /handoff:prep.
+
+---END-HANDOFF---
+
+
+## 2025-08-14T23:43:16Z
+
+---HANDOFF---
+Task: (auto) Fallback handoff — assistant reply had no explicit ---HANDOFF---
+When: 2025-08-14T23:43:16Z
+Branch: main
+
+Diff Summary:
+ .github/workflows/android-staging-apk.yml  |    2 +-
+ .github/workflows/ci.yml                   |    4 +-
+ .gitignore                                 |    4 +
+ OPS/HANDOFF_HISTORY.md                     | 1892 ++++++++++++++++++++++++++++
+ OPS/LAST_HANDOFF.txt                       |   38 +-
+ apps/backend/.env.example                  |   43 +-
+ apps/backend/package.json                  |    5 +-
+ apps/backend/src/plugins/cors.ts           |   18 +-
+ apps/backend/src/routes/index.ts           |   20 +-
+ apps/backend/src/server.ts                 |   17 +-
+ apps/web-verify/app/v/[code]/page.tsx      |    6 +-
+ apps/web-verify/tsconfig.json              |    3 +-
+ apps/web-verify/types/@verifd__shared.d.ts |   12 -
+ package.json                               |    5 +-
+ packages/shared/src/types/index.ts         |   36 +
+ pnpm-lock.yaml                             | 1278 ++++++++++++++++++-
+ 16 files changed, 3324 insertions(+), 59 deletions(-)
+
+Files Touched:
+.github/workflows/android-staging-apk.yml
+.github/workflows/ci.yml
+.gitignore
+OPS/HANDOFF_HISTORY.md
+OPS/LAST_HANDOFF.txt
+apps/backend/.env.example
+apps/backend/package.json
+apps/backend/src/plugins/cors.ts
+apps/backend/src/routes/index.ts
+apps/backend/src/server.ts
+apps/web-verify/app/v/[code]/page.tsx
+apps/web-verify/tsconfig.json
+apps/web-verify/types/@verifd__shared.d.ts
+package.json
+packages/shared/src/types/index.ts
+pnpm-lock.yaml
+
+Last Commit:
+86841e9 feat(deploy): add CI smoke tests and hardened deployment configuration
+
+Commands/Tests Run (tail):
+
+> @verifd/backend@0.1.0 test /Users/harshilpatel/Desktop/Claude_Projects/verifd/apps/backend
+> vitest
+
+[33mThe CJS build of Vite's Node API is deprecated. See https://vite.dev/guide/troubleshooting.html#vite-cjs-node-api-deprecated for more details.[39m
+
+ DEV  v2.1.9 /Users/harshilpatel/Desktop/Claude_Projects/verifd/apps/backend
+
+ ✓ test/pass.check.simple.test.ts (6 tests | 1 skipped) 2ms
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > returns allowed=false for unknown number
+[DEBUG] No active pass found for number: ph_8a59780bb8cd2ba0
+
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > returns allowed=true for active pass
+[INFO] Active pass found for number: ph_8a59780bb8cd2ba0, expires: 1754771816
+
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > returns allowed=false for expired pass
+[DEBUG] No active pass found for number: ph_8a59780bb8cd2ba0
+
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > includes Cache-Control header
+[DEBUG] No active pass found for number: ph_8a59780bb8cd2ba0
+
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > correctly identifies 30m scope
+[INFO] Active pass found for number: ph_f5be76815beedc12, expires: 1754770016
+
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > correctly identifies 30d scope
+[INFO] Active pass found for number: ph_554285f82182d3dd, expires: 1757360216
+
+ ✓ test/pass.check.mock.test.ts (7 tests) 65ms
+
+ Test Files  2 passed (2)
+      Tests  12 passed | 1 skipped (13)
+   Start at  15:36:55
+   Duration  378ms (transform 78ms, setup 0ms, collect 174ms, tests 67ms, environment 0ms, prepare 106ms)
+
+ PASS  Waiting for file changes...
+       press h to show help, press q to quit
+
+Playwright (tail):
+
+
+Open Risks:
+- Auto-generated handoff; ask Claude to run /handoff:prep next time for richer details.
+
+Asks for PM:
+- Approve or request changes based on diff/test tails; if unclear, ask Claude to regenerate via /handoff:prep.
+
+---END-HANDOFF---
+
+
+## 2025-08-14T23:53:05Z
+
+---HANDOFF---
+Task: (auto) Fallback handoff — assistant reply had no explicit ---HANDOFF---
+When: 2025-08-14T23:53:05Z
+Branch: main
+
+Diff Summary:
+ .github/workflows/android-staging-apk.yml  |    2 +-
+ .github/workflows/ci.yml                   |    4 +-
+ .gitignore                                 |    4 +
+ OPS/HANDOFF_HISTORY.md                     | 1989 ++++++++++++++++++++++++++++
+ OPS/LAST_HANDOFF.txt                       |   38 +-
+ apps/backend/.env.example                  |   43 +-
+ apps/backend/package.json                  |    5 +-
+ apps/backend/src/plugins/cors.ts           |   18 +-
+ apps/backend/src/routes/index.ts           |   20 +-
+ apps/backend/src/server.ts                 |   17 +-
+ apps/web-verify/app/v/[code]/page.tsx      |    6 +-
+ apps/web-verify/tsconfig.json              |    3 +-
+ apps/web-verify/types/@verifd__shared.d.ts |   12 -
+ package.json                               |    5 +-
+ packages/shared/src/types/index.ts         |   36 +
+ pnpm-lock.yaml                             | 1278 +++++++++++++++++-
+ 16 files changed, 3421 insertions(+), 59 deletions(-)
+
+Files Touched:
+.github/workflows/android-staging-apk.yml
+.github/workflows/ci.yml
+.gitignore
+OPS/HANDOFF_HISTORY.md
+OPS/LAST_HANDOFF.txt
+apps/backend/.env.example
+apps/backend/package.json
+apps/backend/src/plugins/cors.ts
+apps/backend/src/routes/index.ts
+apps/backend/src/server.ts
+apps/web-verify/app/v/[code]/page.tsx
+apps/web-verify/tsconfig.json
+apps/web-verify/types/@verifd__shared.d.ts
+package.json
+packages/shared/src/types/index.ts
+pnpm-lock.yaml
+
+Last Commit:
+86841e9 feat(deploy): add CI smoke tests and hardened deployment configuration
+
+Commands/Tests Run (tail):
+
+> @verifd/backend@0.1.0 test /Users/harshilpatel/Desktop/Claude_Projects/verifd/apps/backend
+> vitest
+
+[33mThe CJS build of Vite's Node API is deprecated. See https://vite.dev/guide/troubleshooting.html#vite-cjs-node-api-deprecated for more details.[39m
+
+ DEV  v2.1.9 /Users/harshilpatel/Desktop/Claude_Projects/verifd/apps/backend
+
+ ✓ test/pass.check.simple.test.ts (6 tests | 1 skipped) 2ms
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > returns allowed=false for unknown number
+[DEBUG] No active pass found for number: ph_8a59780bb8cd2ba0
+
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > returns allowed=true for active pass
+[INFO] Active pass found for number: ph_8a59780bb8cd2ba0, expires: 1754771816
+
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > returns allowed=false for expired pass
+[DEBUG] No active pass found for number: ph_8a59780bb8cd2ba0
+
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > includes Cache-Control header
+[DEBUG] No active pass found for number: ph_8a59780bb8cd2ba0
+
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > correctly identifies 30m scope
+[INFO] Active pass found for number: ph_f5be76815beedc12, expires: 1754770016
+
+stdout | test/pass.check.mock.test.ts > GET /pass/check - Integration Tests (Mocked) > correctly identifies 30d scope
+[INFO] Active pass found for number: ph_554285f82182d3dd, expires: 1757360216
+
+ ✓ test/pass.check.mock.test.ts (7 tests) 65ms
+
+ Test Files  2 passed (2)
+      Tests  12 passed | 1 skipped (13)
+   Start at  15:36:55
+   Duration  378ms (transform 78ms, setup 0ms, collect 174ms, tests 67ms, environment 0ms, prepare 106ms)
+
+ PASS  Waiting for file changes...
+       press h to show help, press q to quit
+
+Playwright (tail):
+
+
+Open Risks:
+- Auto-generated handoff; ask Claude to run /handoff:prep next time for richer details.
+
+Asks for PM:
+- Approve or request changes based on diff/test tails; if unclear, ask Claude to regenerate via /handoff:prep.
+
+---END-HANDOFF---

@@ -88,6 +88,42 @@ export interface PassCheckResponse {
   expires_at?: string; // ISO8601 format
 }
 
+// New verify flow types for MVP
+export interface VerifyCodeStartRequest {
+  phoneNumber?: string; // Optional for MVP
+}
+
+export interface VerifyCodeStartResponse {
+  code: string;
+  verifyUrl: string;
+  expiresIn: number; // seconds
+}
+
+export interface VerifyCodeStatusResponse {
+  status: 'pending' | 'verified' | 'expired';
+  name?: string;
+  reason?: string;
+}
+
+export interface VerifyCodeSubmitRequest {
+  code: string;
+  name: string;
+  reason: string;
+  voiceUrl?: string;
+}
+
+export interface VerifyCodeSubmitResponse {
+  ok: boolean;
+}
+
+export interface PassCheckQueryResponse {
+  pass: '30m' | '24h' | '30d' | null;
+}
+
+export interface VoiceUploadResponse {
+  voiceUrl: string;
+}
+
 // SMS Templates
 export interface IdentityPingTemplate {
   name: string;

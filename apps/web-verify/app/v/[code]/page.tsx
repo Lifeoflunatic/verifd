@@ -3,10 +3,10 @@
 export const dynamic = 'force-dynamic';
 export const fetchCache = 'force-no-store';
 
-import SuccessView from '@/components/SuccessView';
+import VerifyView from '@/components/VerifyView';
 
 export default function VerifyCodePage({ params }: { params: { code: string } }) {
   const { code } = params;
-  // Render the same UI we previously rendered on /success using the ?code param
-  return <SuccessView code={code} />;
+  // Use the new VerifyView component for MVP verify flow
+  return <VerifyView code={code} />;
 }

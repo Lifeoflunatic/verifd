@@ -2,10 +2,16 @@ import { FastifyPluginAsync } from 'fastify';
 
 /**
  * CORS plugin for verifd backend
- * Only allows origins from WEB_VERIFY_DEV_ORIGIN environment variable
+ * Allows origins from WEB_VERIFY_DEV_ORIGIN and production domain
  */
 export const corsPlugin: FastifyPluginAsync = async (server) => {
-  const webVerifyOrigin = process.env.WEB_VERIFY_DEV_ORIGIN;
+  // Support both dev and production origins
+  const allowedOrigins = [
+    process.env.WEB_VERIFY_DEV_ORIGIN,
+    'http://localhost:3000',
+    'https://verify.getpryvacy.com',
+    'https://web-verify.vercel.app'
+  ].filter(Boolean);
 
   server.addHook('onRequest', async (request, reply) => {
     const origin = request.headers.origin;
@@ -14,9 +20,9 @@ export const corsPlugin: FastifyPluginAsync = async (server) => {
     reply.header('Vary', 'Origin');
 
     // If origin matches our allowlist, add CORS headers
-    if (webVerifyOrigin && origin === webVerifyOrigin) {
+    if (origin && allowedOrigins.includes(origin)) {
       reply.header('Access-Control-Allow-Origin', origin);
-      reply.header('Access-Control-Allow-Methods', 'GET, OPTIONS');
+      reply.header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
       reply.header('Access-Control-Allow-Headers', 'Content-Type');
     }
   });
@@ -27,9 +33,9 @@ export const corsPlugin: FastifyPluginAsync = async (server) => {
     
     reply.header('Vary', 'Origin');
 
-    if (webVerifyOrigin && origin === webVerifyOrigin) {
+    if (origin && allowedOrigins.includes(origin)) {
       reply.header('Access-Control-Allow-Origin', origin);
-      reply.header('Access-Control-Allow-Methods', 'GET, OPTIONS');
+      reply.header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
       reply.header('Access-Control-Allow-Headers', 'Content-Type');
       reply.header('Access-Control-Max-Age', '600');
     }

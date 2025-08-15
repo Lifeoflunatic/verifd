@@ -12,6 +12,9 @@
     "lint": "turbo lint",
     "clean": "turbo clean",
     "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md}\"",
+    "check:node": "node scripts/check-node-version.js",
+    "preinstall": "node scripts/check-node-version.js",
+    "postinstall": "pnpm -w rebuild better-sqlite3 || true",
     "save-handoff": "cat OPS/LAST_HANDOFF.txt 2>/dev/null || echo 'No handoff found'",
     "get-handoff": "cat OPS/LAST_HANDOFF.txt 2>/dev/null || echo 'No handoff found'",
     "full-update": "echo \"Sync updated $(date -u)\" >> OPS/SYNC.md && git status -s",
@@ -26,6 +29,6 @@
   },
   "packageManager": "pnpm@9.5.0",
   "engines": {
-    "node": ">=20.0.0"
+    "node": "22.x"
   }
 }

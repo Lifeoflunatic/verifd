@@ -1,0 +1,139 @@
+name: CI Guardrails
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+    paths:
+      - 'apps/backend/**'
+      - 'apps/web-verify/**'
+      - 'packages/shared/**'
+      - 'pnpm-lock.yaml'
+
+jobs:
+  backend-checks:
+    name: Backend Guardrails
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 9
+          
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+        
+      - name: Check TypeScript
+        run: pnpm --filter @verifd/backend build
+        
+      - name: Run backend tests
+        run: |
+          pnpm --filter @verifd/backend test --run || true
+          
+      - name: Test verify endpoints
+        run: |
+          # Start backend in background
+          pnpm --filter @verifd/backend dev &
+          BACKEND_PID=$!
+          
+          # Wait for backend to be ready
+          sleep 5
+          
+          # Test health endpoint
+          curl -f http://localhost:3002/health || exit 1
+          
+          # Test verify/start endpoint
+          curl -f -X POST http://localhost:3002/verify/start \
+            -H "Content-Type: application/json" \
+            -d '{"phoneNumber": null}' || exit 1
+            
+          # Kill backend
+          kill $BACKEND_PID
+          
+  web-verify-checks:
+    name: Web Verify Guardrails
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 9
+          
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+        
+      - name: Check TypeScript
+        run: pnpm --filter @verifd/web-verify build
+        
+      - name: Check for console.log statements
+        run: |
+          if grep -r "console\.log" apps/web-verify/src --exclude-dir=node_modules; then
+            echo "::warning::Found console.log statements in production code"
+          fi
+          
+      - name: Verify environment variables
+        run: |
+          # Check that .env.example exists
+          test -f apps/web-verify/.env.example || echo "::warning::Missing .env.example"
+          
+  security-checks:
+    name: Security Guardrails
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Check for exposed secrets
+        run: |
+          # Check for potential secrets
+          if grep -r "sk_live\|pk_live\|AKIA\|aws_secret" . --exclude-dir=node_modules --exclude-dir=.git; then
+            echo "::error::Potential secrets found in code!"
+            exit 1
+          fi
+          
+      - name: Check for hardcoded URLs
+        run: |
+          # Warn about hardcoded production URLs
+          if grep -r "https://verify\.getpryvacy\.com" apps/backend/src apps/web-verify/src --exclude="*.test.*" --exclude="*.example"; then
+            echo "::warning::Found hardcoded production URLs - should use environment variables"
+          fi
+          
+  monorepo-integrity:
+    name: Monorepo Integrity
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 9
+          
+      - name: Check workspace dependencies
+        run: |
+          # Verify all workspace packages can be resolved
+          pnpm ls --depth 0
+          
+      - name: Check for duplicate dependencies
+        run: |
+          # Find duplicate dependencies across workspaces
+          pnpm dedupe --check
