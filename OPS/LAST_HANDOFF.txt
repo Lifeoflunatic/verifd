@@ -1,6 +1,6 @@
 ---HANDOFF---
 Task: (auto) Fallback handoff — assistant reply had no explicit ---HANDOFF---
-When: 2025-08-15T02:56:14Z
+When: 2025-08-15T03:16:52Z
 Branch: main
 
 Diff Summary:
@@ -10,7 +10,7 @@ Files Touched:
 
 
 Last Commit:
-1bd940f feat(e2e): deterministic API mocks + CI retries, fake media, and server readiness
+a5c0ee8 feat(ci): stabilize E2E — no backend on CI (MOCK_API=1), conditional webServer, redact docs, dedupe, artifact@v4
 
 Commands/Tests Run (tail):
 

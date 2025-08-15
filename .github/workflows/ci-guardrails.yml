@@ -100,7 +100,11 @@ jobs:
       - name: Check for exposed secrets
         run: |
           # Check for potential secrets
-          if grep -r "sk_live\|pk_live\|AKIA\|aws_secret" . --exclude-dir=node_modules --exclude-dir=.git; then
+          if grep -r "sk_live\|pk_live\|AKIA\|aws_secret" . \
+            --exclude-dir=node_modules \
+            --exclude-dir=.git \
+            --exclude-dir=playwright-report \
+            --exclude-dir=test-results; then
             echo "::error::Potential secrets found in code!"
             exit 1
           fi
