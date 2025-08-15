@@ -20,6 +20,16 @@ export default defineConfig({
       ],
     },
   },
+  // Important: CI workflow already starts servers & waits for readiness.
+  // Avoid port clash by disabling Playwright-managed server on CI.
+  webServer: CI
+    ? undefined
+    : {
+        command: 'pnpm -w --filter @verifd/web-verify dev --port 3000',
+        port: 3000,
+        reuseExistingServer: true,
+        timeout: 120_000,
+      },
   projects: [
     {
       name: 'chromium',
@@ -37,13 +47,6 @@ export default defineConfig({
       use: { ...require('@playwright/test').devices['Desktop Safari'] },
     },
   ],
-  webServer: {
-    command: 'pnpm dev',
-    port: 3000,
-    reuseExistingServer: !CI,
-    stdout: 'pipe',
-    stderr: 'pipe',
-  },
   outputDir: 'test-results/',
   reporter: CI ? [['html'], ['list']] : [['html'], ['list', { printSteps: true }]],
 });

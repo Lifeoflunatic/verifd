@@ -136,8 +136,8 @@ wrangler r2 bucket update verifd-voices --public
 ```bash
 # AWS S3
 AWS_REGION=us-east-1
-AWS_ACCESS_KEY_ID=AKIA...
-AWS_SECRET_ACCESS_KEY=...
+AWS_ACCESS_KEY_ID=<AWS_ACCESS_KEY_ID>      # NEVER commit real keys
+AWS_SECRET_ACCESS_KEY=<AWS_SECRET_ACCESS_KEY>
 S3_BUCKET_NAME=verifd-voices
 S3_PUBLIC_DOMAIN=https://verifd-voices.s3.amazonaws.com
 

@@ -25,7 +25,7 @@ jobs:
 
   post-deploy-check:
     runs-on: ubuntu-latest
-    if: ${{ github.ref == 'refs/heads/main' }}
+    if: ${{ github.ref == 'refs/heads/main' && secrets.VERCEL_DEPLOYMENT_URL != '' }}
     steps:
       - name: Get latest deployment url
         id: get

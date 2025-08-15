@@ -44,7 +44,7 @@ Complete list of environment variables required for each service across developm
 | Variable | Development | Preview | Production | Required | Description |
 |----------|------------|---------|------------|----------|-------------|
 | `AWS_REGION` | - | `us-east-1` | `us-east-1` | ❌* | S3 region |
-| `AWS_ACCESS_KEY_ID` | - | `AKIA...` | `AKIA...` | ❌* | AWS/R2 access key |
+| `AWS_ACCESS_KEY_ID` | - | `<AWS_ACCESS_KEY_ID>` | `<AWS_ACCESS_KEY_ID>` | ❌* | AWS/R2 access key |
 | `AWS_SECRET_ACCESS_KEY` | - | `...` | `...` | ❌* | AWS/R2 secret |
 | `S3_BUCKET_NAME` | - | `verifd-voices-preview` | `verifd-voices` | ❌* | S3 bucket |
 | `S3_PUBLIC_DOMAIN` | - | `https://....s3.amazonaws.com` | `https://voices.getpryvacy.com` | ❌* | CDN/public URL |
