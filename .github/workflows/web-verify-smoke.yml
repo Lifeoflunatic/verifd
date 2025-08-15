@@ -41,11 +41,18 @@ jobs:
       - name: Decide BASE_URL (prod if secret present, else local)
         shell: bash
         run: |
-          if [ -n "${{ secrets.VERCEL_DEPLOYMENT_URL }}" ]; then
-            echo "BASE_URL=${{ secrets.VERCEL_DEPLOYMENT_URL }}" >> $GITHUB_ENV
-            echo "Using production URL: ${{ secrets.VERCEL_DEPLOYMENT_URL }}"
+          # Check if secret exists and is a valid URL
+          VERCEL_URL="${{ secrets.VERCEL_DEPLOYMENT_URL }}"
+          if [ -n "$VERCEL_URL" ] && [[ "$VERCEL_URL" =~ ^https?:// ]]; then
+            echo "BASE_URL=$VERCEL_URL" >> $GITHUB_ENV
+            echo "Using production URL from VERCEL_DEPLOYMENT_URL secret"
           else
-            echo "No VERCEL_DEPLOYMENT_URL secret set; using local dev server."
+            echo "BASE_URL=http://localhost:3000" >> $GITHUB_ENV
+            if [ -n "$VERCEL_URL" ]; then
+              echo "VERCEL_DEPLOYMENT_URL secret exists but is not a valid URL, falling back to local dev server"
+            else
+              echo "No VERCEL_DEPLOYMENT_URL secret set; using local dev server"
+            fi
           fi
 
       - name: Start local server (only if using local BASE_URL)
