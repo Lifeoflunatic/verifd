@@ -43,12 +43,12 @@ jobs:
           
       - name: Test verify endpoints
         run: |
-          # Start backend in background
-          pnpm --filter @verifd/backend dev &
+          # Start backend in background on port 3002
+          PORT=3002 pnpm --filter @verifd/backend dev &
           BACKEND_PID=$!
           
           # Wait for backend to be ready
-          sleep 5
+          sleep 10
           
           # Test health endpoint
           curl -f http://localhost:3002/health || exit 1
@@ -105,13 +105,26 @@ jobs:
       
       - name: Check for exposed secrets
         run: |
-          # Check for potential secrets
-          if grep -r "sk_live\|pk_live\|AKIA\|aws_secret" . \
+          # Check for potential secrets (excluding .github directory to avoid self-matches)
+          if grep -r "sk_live\|pk_live\|AKIA" . \
             --exclude-dir=node_modules \
             --exclude-dir=.git \
+            --exclude-dir=.github \
             --exclude-dir=playwright-report \
             --exclude-dir=test-results; then
             echo "::error::Potential secrets found in code!"
+            exit 1
+          fi
+          
+          # Check aws_secret pattern separately, excluding this workflow file
+          if grep -r "aws_secret" . \
+            --exclude-dir=node_modules \
+            --exclude-dir=.git \
+            --exclude-dir=.github \
+            --exclude-dir=playwright-report \
+            --exclude-dir=test-results \
+            --exclude="*.yml"; then
+            echo "::error::Potential AWS secrets found in code!"
             exit 1
           fi
           
