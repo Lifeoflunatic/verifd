@@ -1,6 +1,7 @@
 import { test, expect, type Page } from '@playwright/test';
 import path from 'path';
 import fs from 'fs';
+import { setupApiMocks } from './setupApiMocks';
 
 // Test configuration
 const API_BASE_URL = 'http://localhost:3001';
@@ -62,76 +63,30 @@ async function waitForApiReady(page: Page, endpoint: string = '/health/healthz',
   throw new Error(`API not ready after ${maxRetries} attempts`);
 }
 
-// Mock API responses
-async function setupApiMocks(page: Page, allowPassCheck: boolean = false) {
-  // Mock /verify/start endpoint
-  await page.route(`${API_BASE_URL}/verify/start`, async (route) => {
-    const request = route.request();
-    const body = JSON.parse(request.postData() || '{}');
-    
-    console.log('📤 Mocked /verify/start called with:', body);
-    
-    await route.fulfill({
-      status: 200,
-      contentType: 'application/json',
-      body: JSON.stringify(MOCK_VERIFY_RESPONSE),
-    });
-  });
 
-  // Mock /verify/submit endpoint
-  await page.route(`${API_BASE_URL}/verify/submit`, async (route) => {
-    const request = route.request();
-    const body = JSON.parse(request.postData() || '{}');
-    
-    console.log('📤 Mocked /verify/submit called with:', body);
-    
-    await route.fulfill({
-      status: 200,
-      contentType: 'application/json',
-      body: JSON.stringify({
-        success: true,
-        passGranted: allowPassCheck,
-        passId: allowPassCheck ? 'pass_12345' : undefined,
-        callerName: MOCK_VERIFY_DATA.name
-      }),
-    });
-  });
-
-  // Mock /pass/check endpoint
-  await page.route(`${API_BASE_URL}/pass/check*`, async (route) => {
-    const url = new URL(route.request().url());
-    const numberE164 = url.searchParams.get('number_e164');
-    
-    console.log('📤 Mocked /pass/check called for number:', numberE164);
-    
-    // Always return a response even if phone number is missing/undefined
-    const response = allowPassCheck ? MOCK_PASS_CHECK_RESPONSE_ALLOWED : MOCK_PASS_CHECK_RESPONSE_DENIED;
-    
-    await route.fulfill({
-      status: 200,
-      contentType: 'application/json',
-      body: JSON.stringify(response),
-    });
-  });
-}
 
 test.describe('verifd Web Verify E2E Tests', () => {
   test.beforeEach(async ({ page }) => {
-    // Wait for backend to be ready
-    console.log('🔍 Checking API readiness...');
+    // Setup API mocks if MOCK_API=1
+    await setupApiMocks(page);
     
-    // Test the health endpoint
-    await waitForApiReady(page, '/health/healthz');
-    
-    console.log('✅ API ready at http://localhost:3001/health/healthz');
+    // Only wait for backend if not using mocks
+    if (process.env.MOCK_API !== '1') {
+      // Wait for backend to be ready
+      console.log('🔍 Checking API readiness...');
+      
+      // Test the health endpoint
+      await waitForApiReady(page, '/health/healthz');
+      
+      console.log('✅ API ready at http://localhost:3001/health/healthz');
+    }
   });
 
   test('should complete full verification flow with active pass', async ({ page }) => {
     const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
     const artifactsDir = ensureArtifactsDir();
     
-    // Setup mocks for successful pass check
-    await setupApiMocks(page, true);
+
 
     // Navigate to home page
     await page.goto('/');
@@ -185,8 +140,7 @@ test.describe('verifd Web Verify E2E Tests', () => {
     const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
     const artifactsDir = ensureArtifactsDir();
     
-    // Setup mocks for no active pass
-    await setupApiMocks(page, false);
+
 
     // Navigate to home page
     await page.goto('/');
@@ -296,8 +250,7 @@ test.describe('verifd Web Verify E2E Tests', () => {
     const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
     const artifactsDir = ensureArtifactsDir();
     
-    // Setup mocks
-    await setupApiMocks(page, true);
+
 
     // Go through verification flow
     await page.goto('/');
@@ -328,8 +281,7 @@ test.describe('verifd Web Verify E2E Tests', () => {
     const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
     const artifactsDir = ensureArtifactsDir();
     
-    // Setup mocks for successful pass check
-    await setupApiMocks(page, true);
+
 
     // Step 1: Call /verify/start to get a token (simulate existing verification request)
     const verifyStartResponse = await page.request.post(`${API_BASE_URL}/verify/start`, {

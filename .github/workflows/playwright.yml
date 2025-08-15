@@ -39,24 +39,25 @@ jobs:
       - name: Build web-verify
         run: pnpm -w --filter @verifd/web-verify build
         
-      - name: Install Playwright browsers
-        run: pnpm -w --filter @verifd/web-verify exec playwright install --with-deps chromium
+      - name: Install Playwright browsers with deps
+        run: pnpm -w --filter @verifd/web-verify exec playwright install --with-deps chromium firefox webkit
         
       - name: Install wait-on
         run: npm i -g wait-on
         
-      - name: Start backend server
+      - name: Start backend server (production mode)
         run: |
           PORT=3002 CORS_ALLOWED_ORIGINS=http://localhost:3000 pnpm -w --filter @verifd/backend start &
         env:
           PORT: 3002
           CORS_ALLOWED_ORIGINS: http://localhost:3000
           
-      - name: Start web-verify server
+      - name: Start web-verify server (production mode)
         run: |
           pnpm -w --filter @verifd/web-verify start -- --port 3000 &
         env:
           NEXT_PUBLIC_API_BASE_URL: http://localhost:3002
+          NEXT_PUBLIC_API_BASE: http://localhost:3002
           
       - name: Wait for servers to be ready
         run: |
@@ -68,12 +69,14 @@ jobs:
           wait-on http-get://localhost:3000 --timeout 30000
           echo "Web-verify is ready!"
           
-      - name: Run Playwright tests
+      - name: Run Playwright tests with mocks
         run: pnpm -w --filter @verifd/web-verify test
         env:
-          NEXT_PUBLIC_API_BASE_URL: http://localhost:3002
-          CORS_ALLOWED_ORIGINS: http://localhost:3000
           E2E_BASE_URL: http://localhost:3000
+          NEXT_PUBLIC_API_BASE: http://localhost:3002
+          CORS_ALLOWED_ORIGINS: http://localhost:3000
+          MOCK_API: '1'
+          CI: true
           
       - name: Upload test results
         uses: actions/upload-artifact@v3
@@ -83,4 +86,20 @@ jobs:
           path: |
             apps/web-verify/test-results/
             apps/web-verify/playwright-report/
+          retention-days: 7
+          
+      - name: Upload test videos
+        uses: actions/upload-artifact@v3
+        if: failure()
+        with:
+          name: playwright-videos
+          path: apps/web-verify/test-results/**/*.webm
+          retention-days: 7
+          
+      - name: Upload test traces
+        uses: actions/upload-artifact@v3
+        if: failure()
+        with:
+          name: playwright-traces
+          path: apps/web-verify/test-results/**/*.zip
           retention-days: 7
