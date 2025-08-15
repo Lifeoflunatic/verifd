@@ -44,7 +44,7 @@ jobs:
         
       - name: Start web-verify server (production mode)
         run: |
-          pnpm -w --filter @verifd/web-verify start -- --port 3000 &
+          cd apps/web-verify && PORT=3000 pnpm start &
         env:
           NEXT_PUBLIC_API_BASE_URL: http://localhost:3002
           NEXT_PUBLIC_API_BASE: http://localhost:3002
