@@ -1,77 +1,53 @@
 name: web-verify smoke
-
 on:
   workflow_dispatch:
   push:
     branches: [ "main" ]
   pull_request:
     branches: [ "main" ]
-
 jobs:
   smoke:
     runs-on: ubuntu-latest
     env:
-      # Default to local; we'll override BASE_URL below if a secret is present.
       BASE_URL: http://localhost:3000
       MOCK_API: "1"
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup Node & pnpm
-        uses: actions/setup-node@v4
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: 22
       - name: Enable pnpm
         run: |
           corepack enable
           corepack prepare pnpm@9 --activate
-
       - name: Install deps
         run: pnpm install --frozen-lockfile
-
-      - name: Build shared + web only (no backend; mocks on)
+      - name: Build shared + web-verify
         run: |
           pnpm -w --filter @verifd/shared build
           pnpm -w --filter @verifd/web-verify build
-
       - name: Install Playwright browsers
         run: pnpm -C apps/web-verify exec playwright install --with-deps
-
-      - name: Decide BASE_URL (prod if secret present, else local)
+      - name: Choose BASE_URL (prod if secret set)
         shell: bash
         run: |
-          # Check if secret exists and is a valid URL
-          VERCEL_URL="${{ secrets.VERCEL_DEPLOYMENT_URL }}"
-          if [ -n "$VERCEL_URL" ] && [[ "$VERCEL_URL" =~ ^https?:// ]]; then
-            echo "BASE_URL=$VERCEL_URL" >> $GITHUB_ENV
-            echo "Using production URL from VERCEL_DEPLOYMENT_URL secret"
+          if [ -n "${{ secrets.VERCEL_DEPLOYMENT_URL }}" ]; then
+            echo "BASE_URL=${{ secrets.VERCEL_DEPLOYMENT_URL }}" >> $GITHUB_ENV
+            echo "Using prod URL: ${{ secrets.VERCEL_DEPLOYMENT_URL }}"
           else
-            echo "BASE_URL=http://localhost:3000" >> $GITHUB_ENV
-            if [ -n "$VERCEL_URL" ]; then
-              echo "VERCEL_DEPLOYMENT_URL secret exists but is not a valid URL, falling back to local dev server"
-            else
-              echo "No VERCEL_DEPLOYMENT_URL secret set; using local dev server"
-            fi
+            echo "Using local server at $BASE_URL"
           fi
-
       - name: Start local server (only if using local BASE_URL)
         if: env.BASE_URL == 'http://localhost:3000'
         run: |
-          # Just in case anything is already binding 3000
           sudo fuser -k 3000/tcp || true
-          # Start web-verify (production build)
           pnpm -C apps/web-verify start &
           npx --yes wait-on http-get://localhost:3000
-
-      - name: Run Playwright tests (MOCK_API=1)
+      - name: Run Playwright (Chromium only CI config)
         env:
           E2E_BASE_URL: ${{ env.BASE_URL }}
-        run: |
-          echo "Testing against: $E2E_BASE_URL"
-          pnpm -C apps/web-verify exec playwright test --reporter=github
-
-      - name: Upload Playwright report (always)
+        run: pnpm -C apps/web-verify e2e:ci
+      - name: Upload Playwright report
         if: always()
         uses: actions/upload-artifact@v4
         with:

@@ -13,12 +13,6 @@ export default defineConfig({
     trace: CI ? 'on-first-retry' : 'retain-on-failure',
     video: CI ? 'retain-on-failure' : 'off',
     screenshot: 'only-on-failure',
-    launchOptions: {
-      args: [
-        '--use-fake-ui-for-media-stream',
-        '--use-fake-device-for-media-stream',
-      ],
-    },
   },
   // Important: CI workflow already starts servers & waits for readiness.
   // Avoid port clash by disabling Playwright-managed server on CI.
