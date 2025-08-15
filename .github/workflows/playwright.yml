@@ -37,7 +37,7 @@ jobs:
         run: pnpm -w --filter @verifd/web-verify build
         
       - name: Install Playwright browsers with deps
-        run: pnpm -w --filter @verifd/web-verify exec playwright install --with-deps chromium firefox webkit
+        run: pnpm -C apps/web-verify exec playwright install --with-deps chromium firefox webkit
         
       - name: Install wait-on
         run: npm i -g wait-on
